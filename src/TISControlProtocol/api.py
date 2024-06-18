@@ -126,8 +126,8 @@ class TISEndPoint(HomeAssistantView):
         with open("appliance_data.json", "w") as f:
             json.dump(data, f, indent=4)
         # reload the platforms
-        # for entry in self.api._hass.config_entries.async_entries(self.api._domain):
-        #     await self.api._hass.config_entries.async_reload(entry.entry_id)
+        for entry in self.api._hass.config_entries.async_entries(self.api._domain):
+            await self.api._hass.config_entries.async_reload(entry.entry_id)
         await self.api._hass.services.async_call(
             self.api._domain, homeassistant.SERVICE_RELOAD_ALL
         )
