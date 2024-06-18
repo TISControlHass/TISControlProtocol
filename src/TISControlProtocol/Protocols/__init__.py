@@ -1,6 +1,6 @@
 from asyncio import get_event_loop, AbstractEventLoop
 import socket
-from TISControlProtocoll.Protocols.udp.PacketProtocol import PacketProtocol
+from TISControlProtocol.Protocols.udp.PacketProtocol import PacketProtocol
 
 loop = get_event_loop()
 

@@ -1,9 +1,9 @@
-from TISControlProtocoll.BytesHelper import *  # noqa: F403
-from TISControlProtocoll.Protocols.udp.PacketSender import PacketSender
-from TISControlProtocoll.Protocols.udp.PacketReceiver import PacketReceiver
-from TISControlProtocoll.Protocols.udp.AckCoordinator import AckCoordinator
+from TISControlProtocol.BytesHelper import *  # noqa: F403
+from TISControlProtocol.Protocols.udp.PacketSender import PacketSender
+from TISControlProtocol.Protocols.udp.PacketReceiver import PacketReceiver
+from TISControlProtocol.Protocols.udp.AckCoordinator import AckCoordinator
 
-from TISControlProtocoll.shared import ack_events
+from TISControlProtocol.shared import ack_events
 
 from homeassistant.core import HomeAssistant  # type: ignore
 from .PacketHandlers.BinaryFeedbackHandler import handle_binary_feedback

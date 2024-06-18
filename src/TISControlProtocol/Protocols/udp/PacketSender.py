@@ -1,8 +1,8 @@
 from socket import socket
-from TISControlProtocoll.Protocols.udp.AckCoordinator import AckCoordinator
+from TISControlProtocol.Protocols.udp.AckCoordinator import AckCoordinator
 import asyncio
 from abc import ABC, abstractmethod
-from TISControlProtocoll.shared import ack_events  # noqa: F401
+from TISControlProtocol.shared import ack_events  # noqa: F401
 import logging
 
 

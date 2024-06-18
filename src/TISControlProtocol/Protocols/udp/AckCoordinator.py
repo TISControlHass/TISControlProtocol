@@ -1,5 +1,5 @@
 import asyncio
-from TISControlProtocoll.shared import ack_events
+from TISControlProtocol.shared import ack_events
 from typing import Union
 
 

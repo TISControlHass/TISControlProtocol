@@ -1,5 +1,5 @@
 import binascii
-from TISControlProtocoll.crc import checkCRC, packCRC
+from TISControlProtocol.crc import checkCRC, packCRC
 
 
 def bytes2hex(data, rtype=[]):

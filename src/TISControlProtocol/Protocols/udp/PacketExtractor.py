@@ -1,4 +1,4 @@
-from TISControlProtocoll.BytesHelper import checkCRC
+from TISControlProtocol.BytesHelper import checkCRC
 
 
 # PacketExtractor.py

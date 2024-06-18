@@ -1,4 +1,4 @@
-from TISControlProtocoll.shared import ack_events
+from TISControlProtocol.shared import ack_events
 import asyncio
 from homeassistant.core import HomeAssistant
 

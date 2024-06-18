@@ -1,7 +1,7 @@
-from TISControlProtocoll.BytesHelper import *  # noqa: F403
+from TISControlProtocol.BytesHelper import *  # noqa: F403
 from socket import socket
-from TISControlProtocoll.Protocols.udp.PacketExtractor import PacketExtractor
-from TISControlProtocoll.Protocols.udp.PacketDispatcher import PacketDispatcher
+from TISControlProtocol.Protocols.udp.PacketExtractor import PacketExtractor
+from TISControlProtocol.Protocols.udp.PacketDispatcher import PacketDispatcher
 import logging
 from homeassistant.core import HomeAssistant  # type: ignore
 
