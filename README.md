@@ -1,7 +1,7 @@
 # TISControlProtocol
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version 0.0.13](https://img.shields.io/badge/version-0.0.13-blue)
+![Version 0.0.15](https://img.shields.io/badge/version-0.0.13-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-green)
 
 TISControlProtocol is a powerful Python package for controlling TIS devices. It provides a simple and intuitive API for interacting with TIS devices, making it easy to integrate TIS devices into your Python applications.
@@ -28,7 +28,7 @@ pip install TISControlProtocol
 To build the package, you can use the following commands:
 
 ```bash
-python -m build.py
+python -m build
 twine upload dist/*
 ```
 

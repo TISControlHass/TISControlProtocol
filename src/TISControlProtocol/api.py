@@ -3,12 +3,17 @@ from TISControlProtocol.BytesHelper import build_packet
 from homeassistant.core import HomeAssistant  # type: ignore
 from homeassistant.components.http import HomeAssistantView  # type: ignore
 from homeassistant.components import homeassistant  # type: ignore
+from typing import Optional
 from aiohttp import web  # type: ignore
 import socket
 import logging
 from collections import defaultdict
 import json
 import asyncio
+import ST7789
+from PIL import Image
+from PIL import ImageDraw  # noqa: F401
+from PIL import ImageFont  # noqa: F401
 
 
 class TISApi:
@@ -22,6 +27,7 @@ class TISApi:
         hass: HomeAssistant,
         domain: str,
         devices_dict: dict,
+        display_logo: Optional[str] = "./logo.png",
     ):
         """Initialize the API class."""
         self._host = host
@@ -33,9 +39,14 @@ class TISApi:
         self._config_entries = {}
         self._domain = domain
         self._devices_dict = devices_dict
+        self._display_logo = display_logo
 
     async def connect(self):
         """Connect to the TIS API."""
+        try:
+            self.hass.async_add_executor_job(self.run_display)
+        except Exception as e:
+            logging.error(f"error initializing display, {e}")
         self.loop = self._hass.loop
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -53,17 +64,44 @@ class TISApi:
         except Exception as e:
             logging.error(f"Error connecting to TIS API: {e}")
 
+    def run_display(self, style="dots"):
+        try:
+            disp = ST7789.ST7789(
+                width=320,
+                height=240,
+                rotation=0,
+                port=0,
+                cs=0,
+                dc=23,
+                rst=25,
+                backlight=12,
+                spi_speed_hz=60 * 1000 * 1000,
+                offset_left=0,
+                offset_top=0,
+            )
+            # Initialize display.
+            disp.begin()
+        except Exception as e:
+            logging.error(f"error initializing display, {e}")
+            return
+
+        if self._display_logo:
+            img = Image.open(self._display_logo)
+        else:
+            img = Image.open("./logo.png")
+        disp.set_backlight(0)
+        # reset display
+        disp.display(img)
+
     async def _parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""
         converted = {
             appliance: {
-                "device_id": [int(n) for n in details[0]["device_mac"].split(",")],
+                "device_id": [int(n) for n in details[0]["device_id"].split(",")],
                 "appliance_type": details[0]["appliance_type"]
                 .lower()
                 .replace(" ", "_"),
                 "appliance_class": details[0].get("appliance_class", None),
-                "floor": details[0]["floor"],
-                "room": details[0]["room"],
                 "is_protected": bool(int(details[0]["is_protected"])),
                 "channels": [
                     {
@@ -75,6 +113,7 @@ class TISApi:
                 ],
             }
             for appliance, details in data["appliances"].items()
+            if details[0]["gateway"] == self._host
         }
 
         grouped = defaultdict(list)
