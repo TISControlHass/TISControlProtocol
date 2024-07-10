@@ -90,3 +90,7 @@ class PacketSender:
         self.coordinator.remove_ack_event(unique_id)
         logging.error(f"ack not received after {attempts} attempts")
         return False
+
+    async def brodcast_packet(self, packet: list):
+        print(f"broadcasting {packet}")
+        self.socket.sendto(bytes(packet), ("<broadcast>", self.UDP_PORT))

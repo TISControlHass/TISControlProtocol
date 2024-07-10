@@ -9,6 +9,7 @@ class PacketExtractor:
         info = {}
         if packet_check:
             print("correct packet")
+            info["source_ip"] = packet[0:4]
             info["device_id"] = packet[17:19]
             info["device_type"] = packet[19:21]
             info["operation_code"] = packet[21:23]

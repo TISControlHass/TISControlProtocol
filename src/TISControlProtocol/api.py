@@ -199,6 +199,7 @@ class ScanDevicesEndPoint(HomeAssistantView):
                 "device_type": self.api._devices_dict.get(
                     tuple(device["device_type"]), tuple(device["device_type"])
                 ),
+                "gateway": device["source_ip"],
             }
             for device in devices
         ]
@@ -209,7 +210,7 @@ class ScanDevicesEndPoint(HomeAssistantView):
         # empty current discovered devices list
         self.api._hass.data[self.api._domain]["discovered_devices"] = []
         for i in range(prodcast_attempts):
-            await self.api._protocol.sender.send_packet(self._discovery_packet)
+            await self.api._protocol.sender.brodcast_packet(self._discovery_packet)
             # sleep for 1 sec
             await asyncio.sleep(1)
 
