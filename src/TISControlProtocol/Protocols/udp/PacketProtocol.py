@@ -14,6 +14,7 @@ from .PacketHandlers.AutoBinaryFeedbackHandler import handle_auto_binary_feedbac
 from .PacketHandlers.ClimateControlFeedbackHandler import (
     handle_climate_control_feedback,
 )
+from .PacketHandlers.ClimateBinaryFeedbackHandler import handle_climate_binary_feedback
 from .PacketHandlers.DiscoveryFeedbackHandler import handle_discovery_feedback
 
 import socket as Socket
@@ -23,6 +24,7 @@ OPERATIONS_DICT = {
     (0xEF, 0xFF): handle_binary_feedback,
     (0xDC, 0x22): handle_auto_binary_feedback,
     (0xE0, 0xEF): handle_climate_control_feedback,
+    (0xE3, 0xD9): handle_climate_binary_feedback,
     (0x00, 0x0F): handle_discovery_feedback,
 }
 # 1C 01 30 1B BA DC 22 FF FF 08 02 02 02 02 02 02 02 02 00 01 01 01 01 01 01 01 57 62

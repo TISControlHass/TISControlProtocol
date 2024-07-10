@@ -26,7 +26,7 @@ async def handle_climate_control_feedback(hass: HomeAssistant, info: dict):
         "auto_temp": auto_temp,
         "dry_temp": dry_temp,
     }
-    logging.info(f"climate control feedback: {event_data}")
+    logging.error(f"climate control feedback: {event_data}")
 
     try:
         hass.bus.async_fire(str(info["device_id"]), event_data)
