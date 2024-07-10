@@ -44,7 +44,7 @@ class TISApi:
     async def connect(self):
         """Connect to the TIS API."""
         try:
-            self.hass.async_add_executor_job(self.run_display)
+            self._hass.async_add_executor_job(self.run_display)
         except Exception as e:
             logging.error(f"error initializing display, {e}")
         self.loop = self._hass.loop
