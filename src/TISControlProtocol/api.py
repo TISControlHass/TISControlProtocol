@@ -103,6 +103,7 @@ class TISApi:
                 .replace(" ", "_"),
                 "appliance_class": details[0].get("appliance_class", None),
                 "is_protected": bool(int(details[0]["is_protected"])),
+                "gateway": details[0]["gateway"],
                 "channels": [
                     {
                         "channel_number": int(detail["channel_number"]),
