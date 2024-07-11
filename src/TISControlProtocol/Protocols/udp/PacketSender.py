@@ -1,4 +1,5 @@
-from socket import socket
+from socket import socket, SOL_SOCKET, SO_BROADCAST
+
 from TISControlProtocol.Protocols.udp.AckCoordinator import AckCoordinator
 import asyncio
 from abc import ABC, abstractmethod
@@ -29,6 +30,7 @@ class PacketSender:
         self.UDP_IP = UDP_IP
         self.UDP_PORT = UDP_PORT
         self.socket = socket
+        self.socket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
         self.coordinator = coordinator
         self.command_stacks = {}  # Holds the command stacks
         self.last_command_times = {}  # Holds the last command times for debouncing
