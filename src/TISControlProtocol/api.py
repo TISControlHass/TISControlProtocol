@@ -11,9 +11,7 @@ from collections import defaultdict
 import json
 import asyncio
 import ST7789
-from PIL import Image
-from PIL import ImageDraw  # noqa: F401
-from PIL import ImageFont  # noqa: F401
+from PIL import Image, ImageDraw, ImageFont  # noqa: F401
 
 
 class TISApi:
@@ -27,46 +25,43 @@ class TISApi:
         hass: HomeAssistant,
         domain: str,
         devices_dict: dict,
-        display_logo: Optional[str] = "./logo.png",
+        display_logo: Optional[str] = "./custom_components/tis_control/shakalpng.png",
     ):
         """Initialize the API class."""
-        self._host = host
-        self._port = port
-        self._local_ip = local_ip
-        self._protocol = None
-        self._transport = None
-        self._hass = hass
-        self._config_entries = {}
-        self._domain = domain
-        self._devices_dict = devices_dict
-        self._display_logo = display_logo
+        self.host = host
+        self.port = port
+        self.local_ip = local_ip
+        self.protocol = None
+        self.transport = None
+        self.hass = hass
+        self.config_entries = {}
+        self.domain = domain
+        self.devices_dict = devices_dict
+        self.display_logo = display_logo
+        self.display = None
 
     async def connect(self):
         """Connect to the TIS API."""
+        self.loop = self.hass.loop
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            self._hass.async_add_executor_job(self.run_display)
-        except Exception as e:
-            logging.error(f"error initializing display, {e}")
-        self.loop = self._hass.loop
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            self._transport, self._protocol = await setup_udp_protocol(
-                self._sock,
+            self.transport, self.protocol = await setup_udp_protocol(
+                self.sock,
                 self.loop,
-                self._host,
-                self._port,
-                self._local_ip,
-                self._hass,
+                self.host,
+                self.port,
+                self.local_ip,
+                self.hass,
             )
             logging.error(
-                f"Connected to TIS API successfully, ip_comport:{self._host},local:{self._local_ip}"
+                f"Connected to TIS API successfully, ip_comport:{self.host},local:{self.local_ip}"
             )
         except Exception as e:
             logging.error(f"Error connecting to TIS API: {e}")
 
     def run_display(self, style="dots"):
         try:
-            disp = ST7789.ST7789(
+            self.display = ST7789.ST7789(
                 width=320,
                 height=240,
                 rotation=0,
@@ -80,18 +75,18 @@ class TISApi:
                 offset_top=0,
             )
             # Initialize display.
-            disp.begin()
+            self.display.begin()
+            self.set_display_image()
+
         except Exception as e:
             logging.error(f"error initializing display, {e}")
             return
 
-        if self._display_logo:
-            img = Image.open(self._display_logo)
-        else:
-            img = Image.open("./logo.png")
-        disp.set_backlight(0)
+    def set_display_image(self):
+        img = Image.open(self.display_logo)
+        self.display.set_backlight(0)
         # reset display
-        disp.display(img)
+        self.display.display(img)
 
     async def _parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""
@@ -114,38 +109,37 @@ class TISApi:
                 ],
             }
             for appliance, details in data["appliances"].items()
-            if details[0]["gateway"] == self._host
         }
 
         grouped = defaultdict(list)
         for appliance, details in converted.items():
             if (
                 details["appliance_type"]
-                in self._hass.data[self._domain]["supported_platforms"]
+                in self.hass.data[self.domain]["supported_platforms"]
             ):
                 logging.error(f"appliance: {appliance}, details: {details}")
                 grouped[details["appliance_type"]].append({appliance: details})
 
-        self._config_entries = dict(grouped)
+        self.config_entries = dict(grouped)
         # add a lock module config entry
-        self._config_entries["lock_module"] = {
+        self.config_entries["lock_module"] = {
             "password": data["configs"]["lock_module_password"]
         }
-        logging.error(f"config_entries stored: {self._config_entries}")
+        logging.error(f"config_entries stored: {self.config_entries}")
         # await self.update_entities()
 
-    async def get_entities(self):
+    async def get_entities(self, platform: str = None):
         """Get the entities."""
         try:
             with open("appliance_data.json", "r") as f:
                 data = json.load(f)
-                await self._parse_device_manager_request(data)
+                await self.parse_device_manager_request(data)
                 logging.error(f"Data loaded from file: {data}")
         except Exception as e:
             # handle or log the exception
             logging.error(f"Error loading data from file: {e},file: {data}")
-        await self._parse_device_manager_request(data)
-        return self._config_entries
+        await self.parse_device_manager_request(data)
+        return self.config_entries[platform]
 
 
 class TISEndPoint(HomeAssistantView):
@@ -183,7 +177,7 @@ class ScanDevicesEndPoint(HomeAssistantView):
     def __init__(self, tis_api: TISApi):
         """Initialize the API endpoint."""
         self.api = tis_api
-        self._discovery_packet = build_packet(
+        self.discovery_packet = build_packet(
             operation_code=[0x00, 0x0E],
             ip_address=self.api._host,
             destination_mac="FF:FF:FF:FF:FF:FF",
@@ -211,7 +205,7 @@ class ScanDevicesEndPoint(HomeAssistantView):
         # empty current discovered devices list
         self.api._hass.data[self.api._domain]["discovered_devices"] = []
         for i in range(prodcast_attempts):
-            await self.api._protocol.sender.brodcast_packet(self._discovery_packet)
+            await self.api._protocol.sender.brodcast_packet(self.discovery_packet)
             # sleep for 1 sec
             await asyncio.sleep(1)
 
