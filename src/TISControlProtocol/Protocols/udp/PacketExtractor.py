@@ -13,6 +13,7 @@ class PacketExtractor:
             info["device_id"] = packet[17:19]
             info["device_type"] = packet[19:21]
             info["operation_code"] = packet[21:23]
+            info["source_device_id"] = packet[23:25]
             info["additional_bytes"] = packet[25:-2]
 
         else:

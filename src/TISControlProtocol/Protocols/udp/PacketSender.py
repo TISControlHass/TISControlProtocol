@@ -4,24 +4,8 @@ from TISControlProtocol.Protocols.udp.AckCoordinator import AckCoordinator
 import asyncio
 from abc import ABC, abstractmethod
 from TISControlProtocol.shared import ack_events  # noqa: F401
+from collections import deque
 import logging
-
-
-class IPacketSender(ABC):
-    @abstractmethod
-    async def send_packet(self, packet):
-        pass
-
-    @abstractmethod
-    async def send_packet_with_ack(
-        self,
-        packet: list,
-        packet_dict: dict = None,
-        channel_number: int = None,
-        attempts: int = 3,
-        timeout: float = 5.0,
-    ):
-        pass
 
 
 # PacketSender.py
@@ -34,13 +18,16 @@ class PacketSender:
         self.coordinator = coordinator
         self.command_stacks = {}  # Holds the command stacks
         self.last_command_times = {}  # Holds the last command times for debouncing
+        self.update_packet_queue = deque()  # holds update packets
+        self.update_device_queue = set()  # holds update device ids
 
-    async def send_packet(self, packet: list):
+    async def send_packet(self, packet: list, destination: str):
         print(f"sending {packet}")
-        self.socket.sendto(bytes(packet), (self.UDP_IP, self.UDP_PORT))
+        self.socket.sendto(bytes(packet), (destination, self.UDP_PORT))
 
     async def send_packet_with_ack(
         self,
+        destination: str,
         packet: list,
         packet_dict: dict = None,
         channel_number: int = None,
@@ -76,7 +63,7 @@ class PacketSender:
         event = self.coordinator.create_ack_event(unique_id)
 
         for attempt in range(attempts):
-            await self.send_packet(packet)
+            await self.send_packet(packet, destination)
             try:
                 await asyncio.wait_for(event.wait(), timeout)
                 logging.error(f"ack received for {unique_id}")
@@ -96,3 +83,7 @@ class PacketSender:
     async def brodcast_packet(self, packet: list):
         print(f"broadcasting {packet}")
         self.socket.sendto(bytes(packet), ("<broadcast>", self.UDP_PORT))
+
+    # # update
+    # def queue_update_packet(self,device_id:list,):
+    #     if entity._device_id not in
