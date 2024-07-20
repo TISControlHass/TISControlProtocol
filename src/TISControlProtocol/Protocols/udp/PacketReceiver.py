@@ -22,7 +22,7 @@ class PacketReceiver:
 
     def connection_made(self, transport):
         self.transport = transport
-        logging.error("connection made")
+        logging.info("connection made")
 
     def datagram_received(self, data, addr):
         # logging.error(f"datagram received {data} from {addr}")
