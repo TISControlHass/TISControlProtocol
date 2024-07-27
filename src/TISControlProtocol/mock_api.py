@@ -201,7 +201,7 @@ class ScanDevicesEndPoint(HomeAssistantView):
         # empty current discovered devices list
         self.api.hass.data[self.api.domain]["discovered_devices"] = []
         for i in range(prodcast_attempts):
-            await self.api.protocol.sender.brodcast_packet(self.discovery_packet)
+            await self.api.protocol.sender.broadcast_packet(self.discovery_packet)
             # sleep for 1 sec
             await asyncio.sleep(1)
 

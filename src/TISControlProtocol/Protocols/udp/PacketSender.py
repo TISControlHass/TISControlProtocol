@@ -2,9 +2,9 @@ from socket import socket, SOL_SOCKET, SO_BROADCAST
 
 from TISControlProtocol.Protocols.udp.AckCoordinator import AckCoordinator
 import asyncio
-from abc import ABC, abstractmethod
 from TISControlProtocol.shared import ack_events  # noqa: F401
 from collections import deque
+from ProtocolHandler import TISPacket
 import logging
 
 
@@ -21,24 +21,21 @@ class PacketSender:
         self.update_packet_queue = deque()  # holds update packets
         self.update_device_queue = set()  # holds update device ids
 
-    async def send_packet(self, packet: list, destination: str):
+    async def send_packet(self, packet: TISPacket):
         print(f"sending {packet}")
-        self.socket.sendto(bytes(packet), (destination, self.UDP_PORT))
+        self.socket.sendto(packet.__bytes__, (packet.destination_ip, self.UDP_PORT))
 
     async def send_packet_with_ack(
         self,
-        destination: str,
-        packet: list,
-        packet_dict: dict = None,
-        channel_number: int = None,
+        packet: TISPacket,
         attempts: int = 10,
         timeout: float = 0.5,
         debounce_time: float = 0.5,  # The debounce time in seconds
     ):
         unique_id = (
-            tuple(packet_dict["device_id"]),
-            tuple(packet_dict["operation_code"]),
-            channel_number,
+            tuple(packet.device_id),
+            tuple(packet.operation_code),
+            tuple(packet.additional_bytes),
         )
 
         # Add the command to the stack for this unique ID
@@ -63,7 +60,7 @@ class PacketSender:
         event = self.coordinator.create_ack_event(unique_id)
 
         for attempt in range(attempts):
-            await self.send_packet(packet, destination)
+            await self.send_packet(packet)
             try:
                 await asyncio.wait_for(event.wait(), timeout)
                 logging.error(f"ack received for {unique_id}")
@@ -80,10 +77,6 @@ class PacketSender:
         logging.error(f"ack not received after {attempts} attempts")
         return False
 
-    async def brodcast_packet(self, packet: list):
+    async def broadcast_packet(self, packet: TISPacket):
         print(f"broadcasting {packet}")
-        self.socket.sendto(bytes(packet), ("<broadcast>", self.UDP_PORT))
-
-    # # update
-    # def queue_update_packet(self,device_id:list,):
-    #     if entity._device_id not in
+        self.socket.sendto(packet.__bytes__, ("<broadcast>", self.UDP_PORT))

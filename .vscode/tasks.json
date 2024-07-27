@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Update Version",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/dev/pump_version.py",
+                "${workspaceFolder}/pyproject.toml"
+            ],
+            "problemMatcher": [],
+            "detail": "Interactively update the version in pyproject.toml."
+        },
+        {
+            "label": "Build Package",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "build"
+            ],
+            "problemMatcher": [],
+            "detail": "Build the latest version of the package."
+        },
+        {
+            "label": "Upload Package",
+            "type": "shell",
+            "command": "twine",
+            "args": [
+                "upload",
+                "dist/*"
+            ],
+            "problemMatcher": [],
+            "detail": "Upload the latest version of the package to PyPI."
+        }
+    ]
+}

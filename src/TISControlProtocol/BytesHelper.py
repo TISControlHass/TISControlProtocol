@@ -23,7 +23,7 @@ def bytes2hex(data, rtype=[]):
 def build_packet(
     operation_code: list,
     ip_address: str,
-    destination_mac: str,
+    destination_mac: str = "AA:AA:AA:AA:AA:AA:AA:AA",
     source_mac: str = "CB:CB:CB:CB:CB:CB:CB:CB",
     device_id: list = [],
     source_device_id: list = [0x01, 0xFE],

@@ -27,7 +27,7 @@ async def handle_control_response(hass: HomeAssistant, info: dict):
             (
                 tuple(info["device_id"]),
                 (0x00, 0x31),
-                channel_number,
+                tuple(info["additional_bytes"]),
             )
         )
         if event is not None:
