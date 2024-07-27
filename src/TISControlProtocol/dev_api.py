@@ -17,12 +17,12 @@ class TISApi:
 
     def __init__(
         self,
+        host: str,
         port: int,
         hass: HomeAssistant,
         domain: str,
         devices_dict: dict,
-        host: str = "0.0.0.0",
-        display_logo: Optional[str] = None,
+        display_logo: Optional[str] = "./custom_components/tis_control/shakalpng.png",
     ):
         """Initialize the API class."""
         self.host = host
@@ -48,11 +48,11 @@ class TISApi:
                 self.port,
                 self.hass,
             )
+            logging.info(
+                f"Connected to TIS API successfully, ip_comport:{self.host},local:{self.local_ip}"
+            )
         except Exception as e:
             logging.error("Error connecting to TIS API %s", e)
-            raise ConnectionError
-
-        self.hass.data[self.domain]["discovered_devices"] = []
         self.hass.http.register_view(TISEndPoint(self))
         self.hass.http.register_view(ScanDevicesEndPoint(self))
 
@@ -68,11 +68,10 @@ class TISApi:
             return
 
     def set_display_image(self):
-        if self.display_logo:
-            img = Image.open(self.display_logo)
-            self.display.set_backlight(0)
-            # reset display
-            self.display.display(img)
+        img = Image.open(self.display_logo)
+        self.display.set_backlight(0)
+        # reset display
+        self.display.display(img)
 
     async def parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""

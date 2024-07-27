@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 [project]
 name = "TISControlProtocol"
-version = "0.1.2.1"
+version = "0.1.5"
 authors = [{ name = "Mostafa Ashraf", email = "mustafaashraf744@gmail.com" }]
 description = "A library for TIS Control Protocol"
 readme = "README.md"
