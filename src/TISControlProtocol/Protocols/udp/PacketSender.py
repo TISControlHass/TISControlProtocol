@@ -4,7 +4,7 @@ from TISControlProtocol.Protocols.udp.AckCoordinator import AckCoordinator
 import asyncio
 from TISControlProtocol.shared import ack_events  # noqa: F401
 from collections import deque
-from ProtocolHandler import TISPacket
+from TISControlProtocol.Protocols.udp.ProtocolHandler import TISPacket
 import logging
 
 
