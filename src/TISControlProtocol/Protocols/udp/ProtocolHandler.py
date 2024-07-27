@@ -47,7 +47,7 @@ class TISPacket:
         return bytes(self._packet)
 
 
-class ProtocolHandler:
+class TISProtocolHandler:
     OPERATION_CONTROL = [0x00, 0x31]
     OPERATION_CONTROL_UPDATE = [0x00, 0x33]
 
@@ -64,7 +64,7 @@ class ProtocolHandler:
         """
         return TISPacket(
             device_id=entity.device_id,
-            operation_code=ProtocolHandler.OPERATION_CONTROL,
+            operation_code=TISProtocolHandler.OPERATION_CONTROL,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
             additional_bytes=[entity.channel_number, 0x64, 0x00, 0x00],
@@ -79,7 +79,7 @@ class ProtocolHandler:
         """
         return TISPacket(
             device_id=entity.device_id,
-            operation_code=ProtocolHandler.OPERATION_CONTROL,
+            operation_code=TISProtocolHandler.OPERATION_CONTROL,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
             additional_bytes=[entity.channel_number, 0x00, 0x00, 0x00],
@@ -94,7 +94,7 @@ class ProtocolHandler:
         """
         return TISPacket(
             device_id=entity.device_id,
-            operation_code=ProtocolHandler.OPERATION_CONTROL_UPDATE,
+            operation_code=TISProtocolHandler.OPERATION_CONTROL_UPDATE,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
             additional_bytes=[],
