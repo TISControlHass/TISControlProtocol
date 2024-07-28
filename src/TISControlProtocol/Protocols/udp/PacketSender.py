@@ -35,7 +35,7 @@ class PacketSender:
         unique_id = (
             tuple(packet.device_id),
             tuple(packet.operation_code),
-            tuple(packet.additional_bytes),
+            int(packet.additional_bytes[0]),
         )
 
         # Add the command to the stack for this unique ID
