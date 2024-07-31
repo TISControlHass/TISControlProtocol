@@ -50,6 +50,8 @@ class TISPacket:
 class TISProtocolHandler:
     OPERATION_CONTROL = [0x00, 0x31]
     OPERATION_CONTROL_UPDATE = [0x00, 0x33]
+    OPERATION_GET_LUNA_TEMP = [0xE3, 0xE7]
+    OPERATION_DISCOVERY = [0x00, 0x0E]
 
     def __init__(self) -> None:
         """Initialize a ProtocolHandler instance."""
@@ -97,5 +99,34 @@ class TISProtocolHandler:
             operation_code=TISProtocolHandler.OPERATION_CONTROL_UPDATE,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
+            additional_bytes=[],
+        )
+
+    def generate_luna_temp_sensor_update_packet(self, entity) -> TISPacket:
+        """
+        Generate a packet to update the temperature sensor.
+
+        :param entity: The entity object containing device information.
+        :return: A Packet instance.
+        """
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=TISProtocolHandler.OPERATION_GET_LUNA_TEMP,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[0x00],
+        )
+
+    def generate_discovery_packet(self) -> TISPacket:
+        """
+        Generate a packet to discover devices on the network.
+
+        :return: A Packet instance.
+        """
+        return TISPacket(
+            device_id=[0xFF, 0xFF],
+            operation_code=TISProtocolHandler.OPERATION_DISCOVERY,
+            source_ip="0.0.0.0",
+            destination_ip="0.0.0.0",
             additional_bytes=[],
         )

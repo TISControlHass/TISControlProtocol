@@ -1,5 +1,9 @@
 from TISControlProtocol.Protocols import setup_udp_protocol
-from TISControlProtocol.BytesHelper import build_packet
+from TISControlProtocol.Protocols.udp.ProtocolHandler import (
+    TISProtocolHandler,
+    TISPacket,
+)
+
 from homeassistant.core import HomeAssistant  # type: ignore
 from homeassistant.components.http import HomeAssistantView  # type: ignore
 from typing import Optional
@@ -10,6 +14,8 @@ from collections import defaultdict
 import json
 import asyncio
 from PIL import Image, ImageDraw, ImageFont  # noqa: F401
+
+protocol_handler = TISProtocolHandler()
 
 
 class TISApi:
@@ -171,13 +177,7 @@ class ScanDevicesEndPoint(HomeAssistantView):
     def __init__(self, tis_api: TISApi):
         """Initialize the API endpoint."""
         self.api = tis_api
-        self.discovery_packet = build_packet(
-            operation_code=[0x00, 0x0E],
-            ip_address=self.api.host,
-            destination_mac="FF:FF:FF:FF:FF:FF",
-            device_id=[0xFF, 0xFF],
-            additional_packets=[],
-        )
+        self.discovery_packet: TISPacket = protocol_handler.generate_discovery_packet()
 
     async def get(self, request):
         # Discover network devices
