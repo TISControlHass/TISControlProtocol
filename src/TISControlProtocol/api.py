@@ -185,9 +185,11 @@ class ScanDevicesEndPoint(HomeAssistantView):
         devices = [
             {
                 "device_id": device["device_id"],
-                "device_type": self.api.devices_dict.get(
+                "device_type_code": device["device_type"],
+                "device_type_name": self.api.devices_dict.get(
                     tuple(device["device_type"]), tuple(device["device_type"])
                 ),
+                
                 "gateway": device["source_ip"],
             }
             for device in devices
