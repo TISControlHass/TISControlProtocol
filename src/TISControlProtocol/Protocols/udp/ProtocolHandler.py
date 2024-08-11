@@ -1,7 +1,7 @@
 """Class for handling the UDP protocol"""
 
 from ...BytesHelper import build_packet
-from typing import List
+from typing import List, Tuple
 
 
 class TISPacket:
@@ -129,4 +129,37 @@ class TISProtocolHandler:
             source_ip="0.0.0.0",
             destination_ip="0.0.0.0",
             additional_bytes=[],
+        )
+
+    def generate_rgb_light_control_packet(
+        self, entity, color: Tuple[int, int, int]
+    ) -> Tuple[TISPacket]:
+        """
+        Generate packets to control an RGB light.
+        :param entity: The entity object containing device information.
+        :param color: A tuple of integers representing the RGB color.
+        :return: A tuple of Packet instances.
+        """
+        return (
+            TISPacket(
+                device_id=entity.device_id,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                source_ip=entity.api.host,
+                destination_ip=entity.gateway,
+                additional_bytes=[entity.r_channel, color[0], 0x00, 0x00],
+            ),
+            TISPacket(
+                device_id=entity.device_id,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL_UPDATE,
+                source_ip=entity.api.host,
+                destination_ip=entity.gateway,
+                additional_bytes=[entity.g_channel, color[1], 0x00, 0x00],
+            ),
+            TISPacket(
+                device_id=entity.device_id,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL_UPDATE,
+                source_ip=entity.api.host,
+                destination_ip=entity.gateway,
+                additional_bytes=[entity.b_channel, color[2], 0x00, 0x00],
+            ),
         )
