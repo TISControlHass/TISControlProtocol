@@ -150,14 +150,14 @@ class TISProtocolHandler:
             ),
             TISPacket(
                 device_id=entity.device_id,
-                operation_code=TISProtocolHandler.OPERATION_CONTROL_UPDATE,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL,
                 source_ip=entity.api.host,
                 destination_ip=entity.gateway,
                 additional_bytes=[entity.g_channel, color[1], 0x00, 0x00],
             ),
             TISPacket(
                 device_id=entity.device_id,
-                operation_code=TISProtocolHandler.OPERATION_CONTROL_UPDATE,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL,
                 source_ip=entity.api.host,
                 destination_ip=entity.gateway,
                 additional_bytes=[entity.b_channel, color[2], 0x00, 0x00],
