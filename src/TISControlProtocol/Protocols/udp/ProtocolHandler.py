@@ -131,6 +131,21 @@ class TISProtocolHandler:
             additional_bytes=[],
         )
 
+    def generate_light_control_packet(self, entity, brightness: int) -> TISPacket:
+        """
+        Generate packets to control a light.
+        :param entity: The entity object containing device information.
+        :param brightness: An integer representing the brightness level.
+        :return: A Packet instance.
+        """
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=TISProtocolHandler.OPERATION_CONTROL,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.channel_number, brightness, 0x00, 0x00],
+        )
+
     def generate_rgb_light_control_packet(
         self, entity, color: Tuple[int, int, int]
     ) -> Tuple[TISPacket]:
