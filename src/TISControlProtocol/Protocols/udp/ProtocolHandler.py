@@ -206,14 +206,14 @@ class TISProtocolHandler:
                     operation_code=TISProtocolHandler.OPERATION_CONTROL,
                     source_ip=entity.api.host,
                     destination_ip=entity.gateway,
-                    additional_bytes=[entity.down_channel_number, 0x64, 0x00, 0x00],
+                    additional_bytes=[entity.up_channel_number, 0x00, 0x00, 0x00],
                 ),
                 TISPacket(
                     device_id=entity.device_id,
                     operation_code=TISProtocolHandler.OPERATION_CONTROL,
                     source_ip=entity.api.host,
                     destination_ip=entity.gateway,
-                    additional_bytes=[entity.up_channel_number, 0x00, 0x00, 0x00],
+                    additional_bytes=[entity.down_channel_number, 0x64, 0x00, 0x00],
                 ),
             )
 
