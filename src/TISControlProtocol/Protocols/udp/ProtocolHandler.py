@@ -1,7 +1,7 @@
 """Class for handling the UDP protocol"""
 
 from ...BytesHelper import build_packet
-from typing import List, Tuple
+from typing import List, Literal, Tuple
 
 
 class TISPacket:
@@ -178,3 +178,59 @@ class TISProtocolHandler:
                 additional_bytes=[entity.b_channel, color[2], 0x00, 0x00],
             ),
         )
+
+    def generate_no_pos_cover_packet(
+        self, entity, mode: Literal["open", "close", "stop"]
+    ) -> tuple[TISPacket, TISPacket]:
+        if mode == "open":
+            return (
+                TISPacket(
+                    device_id=entity.device_id,
+                    operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                    source_ip=entity.api.host,
+                    destination_ip=entity.gateway,
+                    additional_bytes=[entity.up_channel_number, 0x64, 0x00, 0x00],
+                ),
+                TISPacket(
+                    device_id=entity.device_id,
+                    operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                    source_ip=entity.api.host,
+                    destination_ip=entity.gateway,
+                    additional_bytes=[entity.down_channel_number, 0x00, 0x00, 0x00],
+                ),
+            )
+        elif mode == "close":
+            return (
+                TISPacket(
+                    device_id=entity.device_id,
+                    operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                    source_ip=entity.api.host,
+                    destination_ip=entity.gateway,
+                    additional_bytes=[entity.down_channel_number, 0x64, 0x00, 0x00],
+                ),
+                TISPacket(
+                    device_id=entity.device_id,
+                    operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                    source_ip=entity.api.host,
+                    destination_ip=entity.gateway,
+                    additional_bytes=[entity.up_channel_number, 0x00, 0x00, 0x00],
+                ),
+            )
+
+        elif mode == "stop":
+            return (
+                TISPacket(
+                    device_id=entity.device_id,
+                    operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                    source_ip=entity.api.host,
+                    destination_ip=entity.gateway,
+                    additional_bytes=[entity.up_channel_number, 0x00, 0x00, 0x00],
+                ),
+                TISPacket(
+                    device_id=entity.device_id,
+                    operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                    source_ip=entity.api.host,
+                    destination_ip=entity.gateway,
+                    additional_bytes=[entity.down_channel_number, 0x00, 0x00, 0x00],
+                ),
+            )
