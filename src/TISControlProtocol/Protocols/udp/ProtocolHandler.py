@@ -50,8 +50,10 @@ class TISPacket:
 class TISProtocolHandler:
     OPERATION_CONTROL = [0x00, 0x31]
     OPERATION_CONTROL_UPDATE = [0x00, 0x33]
-    OPERATION_GET_LUNA_TEMP = [0xE3, 0xE7]
+    OPERATION_GET_TEMP = [0xE3, 0xE7]
+    OPERATION_GET_HEALTH = [0x20, 0x24]
     OPERATION_DISCOVERY = [0x00, 0x0E]
+    OPERATION_CONTROL_SECURITY = [0x01, 0x04]
 
     def __init__(self) -> None:
         """Initialize a ProtocolHandler instance."""
@@ -102,7 +104,7 @@ class TISProtocolHandler:
             additional_bytes=[],
         )
 
-    def generate_luna_temp_sensor_update_packet(self, entity) -> TISPacket:
+    def generate_temp_sensor_update_packet(self, entity) -> TISPacket:
         """
         Generate a packet to update the temperature sensor.
 
@@ -111,10 +113,25 @@ class TISProtocolHandler:
         """
         return TISPacket(
             device_id=entity.device_id,
-            operation_code=TISProtocolHandler.OPERATION_GET_LUNA_TEMP,
+            operation_code=TISProtocolHandler.OPERATION_GET_TEMP,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
             additional_bytes=[0x00],
+        )
+    
+    def generate_health_sensor_update_packet(self, entity) -> TISPacket:
+        """
+        Generate a packet to update the health sensor.
+
+        :param entity: The entity object containing device information.
+        :return: A Packet instance.
+        """
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=TISProtocolHandler.OPERATION_GET_HEALTH,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[0x14, 0x00],
         )
 
     def generate_discovery_packet(self) -> TISPacket:
@@ -178,6 +195,46 @@ class TISProtocolHandler:
                 additional_bytes=[entity.b_channel, color[2], 0x00, 0x00],
             ),
         )
+    
+    def generate_rgbw_light_control_packet(
+        self, entity, color: Tuple[int, int, int, int]
+    ) -> Tuple[TISPacket]:
+        """
+        Generate packets to control an RGBW light.
+        :param entity: The entity object containing device information.
+        :param color: A tuple of integers representing the RGBW color.
+        :return: A tuple of Packet instances.
+        """
+        return (
+            TISPacket(
+                device_id=entity.device_id,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                source_ip=entity.api.host,
+                destination_ip=entity.gateway,
+                additional_bytes=[entity.r_channel, color[0], 0x00, 0x00],
+            ),
+            TISPacket(
+                device_id=entity.device_id,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                source_ip=entity.api.host,
+                destination_ip=entity.gateway,
+                additional_bytes=[entity.g_channel, color[1], 0x00, 0x00],
+            ),
+            TISPacket(
+                device_id=entity.device_id,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                source_ip=entity.api.host,
+                destination_ip=entity.gateway,
+                additional_bytes=[entity.b_channel, color[2], 0x00, 0x00],
+            ),
+            TISPacket(
+                device_id=entity.device_id,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                source_ip=entity.api.host,
+                destination_ip=entity.gateway,
+                additional_bytes=[entity.w_channel, color[3], 0x00, 0x00],
+            ),
+        )
 
     def generate_no_pos_cover_packet(
         self, entity, mode: Literal["open", "close", "stop"]
@@ -234,3 +291,20 @@ class TISProtocolHandler:
                     additional_bytes=[entity.down_channel_number, 0x00, 0x00, 0x00],
                 ),
             )
+        
+    def generate_control_security_packet(self, entity, mode) -> TISPacket:
+        """
+        Generate a packet to set the security mode.
+
+        vacation=1
+        Away=2
+        Night=3
+        Disarm=6
+        """
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=TISProtocolHandler.OPERATION_CONTROL_SECURITY,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.channel_number, mode],
+        )

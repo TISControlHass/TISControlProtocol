@@ -63,7 +63,7 @@ class PacketSender:
             await self.send_packet(packet)
             try:
                 await asyncio.wait_for(event.wait(), timeout)
-                logging.error(f"ack received for {unique_id}")
+                #logging.error(f"ack received for {unique_id}")
                 # Remove the command from the stack after it's processed
                 self.command_stacks[unique_id].remove(packet)
                 return True
