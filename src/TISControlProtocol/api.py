@@ -119,7 +119,7 @@ class TISApi:
         return self.config_entries
         # await self.update_entities()
 
-    async def get_entities(self, platform: str = None):
+    async def get_entities(self, platform: str = None) -> list:
         """Get the stored entities."""
         try:
             with open("appliance_data.json", "r") as f:
@@ -129,7 +129,8 @@ class TISApi:
             with open("appliance_data.json", "w") as f:
                 pass
         await self.parse_device_manager_request(data)
-        return self.config_entries[platform]
+        entities = self.config_entries.get(platform, [])
+        return entities
 
 
 class TISEndPoint(HomeAssistantView):
