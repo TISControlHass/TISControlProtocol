@@ -94,7 +94,6 @@ class TISApi:
                 "channels": [
                     {
                         "channel_number": int(detail["channel_number"]),
-                        "channel_type": detail["channel_type"],
                         "channel_name": detail["channel_name"],
                     }
                     for detail in details
@@ -189,7 +188,6 @@ class ScanDevicesEndPoint(HomeAssistantView):
                 "device_type_name": self.api.devices_dict.get(
                     tuple(device["device_type"]), tuple(device["device_type"])
                 ),
-                
                 "gateway": device["source_ip"],
             }
             for device in devices
