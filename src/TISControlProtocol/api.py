@@ -104,11 +104,7 @@ class TISApi:
 
         grouped = defaultdict(list)
         for appliance, details in converted.items():
-            if (
-                details["appliance_type"]
-                in self.hass.data[self.domain]["supported_platforms"]
-            ):
-                grouped[details["appliance_type"]].append({appliance: details})
+            grouped[details["appliance_type"]].append({appliance: details})
 
         self.config_entries = dict(grouped)
         # add a lock module config entry
