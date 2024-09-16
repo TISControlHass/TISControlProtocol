@@ -37,6 +37,17 @@
             ],
             "problemMatcher": [],
             "detail": "Upload the latest version of the package to PyPI."
+        },
+        {
+            "label": "Update, Build, and Upload",
+            "dependsOn": [
+                "Update Version",
+                "Build Package",
+                "Upload Package"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+            "detail": "Update the version, build the package, and upload it to PyPI."
         }
     ]
 }

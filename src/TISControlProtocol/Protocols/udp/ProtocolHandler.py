@@ -55,6 +55,7 @@ class TISProtocolHandler:
     OPERATION_DISCOVERY = [0x00, 0x0E]
     OPERATION_CONTROL_SECURITY = [0x01, 0x04]
     OPERATION_CONTROL_AC = [0xE0, 0xEE]
+    OPERATION_AC_UPDATE = [0xE0, 0xEC]
 
     def __init__(self) -> None:
         """Initialize a ProtocolHandler instance."""
@@ -359,4 +360,13 @@ class TISProtocolHandler:
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
             additional_bytes=additional_bytes,
+        )
+
+    def generate_ac_update_packet(self, entity) -> TISPacket:
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=self.OPERATION_AC_UPDATE,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.ac_number],
         )
