@@ -30,6 +30,7 @@ OPERATIONS_DICT = {
     (0xEF, 0xFF): handle_binary_feedback,
     (0xDC, 0x22): handle_auto_binary_feedback,
     (0xE0, 0xEF): handle_climate_control_feedback,
+    (0xE0, 0xED): handle_climate_control_feedback,
     (0xE3, 0xD9): handle_climate_binary_feedback,
     (0x00, 0x0F): handle_discovery_feedback,
     (0x00, 0x34): handle_update_response,

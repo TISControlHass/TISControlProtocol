@@ -54,6 +54,7 @@ class TISProtocolHandler:
     OPERATION_GET_HEALTH = [0x20, 0x24]
     OPERATION_DISCOVERY = [0x00, 0x0E]
     OPERATION_CONTROL_SECURITY = [0x01, 0x04]
+    OPERATION_CONTROL_AC = [0xE0, 0xEE]
 
     def __init__(self) -> None:
         """Initialize a ProtocolHandler instance."""
@@ -118,7 +119,7 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[0x00],
         )
-    
+
     def generate_health_sensor_update_packet(self, entity) -> TISPacket:
         """
         Generate a packet to update the health sensor.
@@ -195,7 +196,7 @@ class TISProtocolHandler:
                 additional_bytes=[entity.b_channel, color[2], 0x00, 0x00],
             ),
         )
-    
+
     def generate_rgbw_light_control_packet(
         self, entity, color: Tuple[int, int, int, int]
     ) -> Tuple[TISPacket]:
@@ -291,7 +292,7 @@ class TISProtocolHandler:
                     additional_bytes=[entity.down_channel_number, 0x00, 0x00, 0x00],
                 ),
             )
-        
+
     def generate_control_security_packet(self, entity, mode) -> TISPacket:
         """
         Generate a packet to set the security mode.
@@ -307,4 +308,55 @@ class TISProtocolHandler:
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
             additional_bytes=[entity.channel_number, mode],
+        )
+
+    def generate_ac_control_packet(
+        self,
+        entity,
+        temperature_ranges: dict,
+        fan_modes: dict,
+        target_state: bool | None = None,
+        target_temperature: float | None = None,
+        target_mode: HVACMode | None = None,  # noqa: F821 # type: ignore
+        target_fan_mode: str | None = None,
+    ) -> TISPacket:
+
+        # Determine the target values, falling back to class attributes if not provided
+        target_state = target_state if target_state is not None else entity._attr_state
+        target_temperature = (
+            target_temperature
+            if target_temperature is not None
+            else entity._attr_target_temperature
+        )
+        target_mode = target_mode if target_mode is not None else entity.hvac_mode
+        target_fan_mode = (
+            target_fan_mode if target_fan_mode is not None else entity._attr_fan_mode
+        )
+        # Convert target temperature to byte
+        target_temperature_byte = (
+            int(target_temperature) if target_temperature else 0x00
+        )
+        # Construct the additional bytes for the packet
+        additional_bytes = [
+            entity.ac_number,
+            int(target_state),
+            target_temperature_byte,
+            int(
+                (temperature_ranges[target_mode]["packet_mode_index"] << 4)
+                | fan_modes[target_fan_mode]
+            ),
+            0x01,
+            target_temperature_byte,
+            target_temperature_byte,
+            target_temperature_byte,
+            0x00,
+        ]
+
+        # Generate and return the packet
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=self.OPERATION_CONTROL_AC,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=additional_bytes,
         )

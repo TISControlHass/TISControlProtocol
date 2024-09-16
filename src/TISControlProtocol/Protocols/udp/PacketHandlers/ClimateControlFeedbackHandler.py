@@ -13,10 +13,10 @@ async def handle_climate_control_feedback(hass: HomeAssistant, info: dict):
     fan_speed = info["additional_bytes"][4] & 0x0F
     heat_temp = info["additional_bytes"][7]
     auto_temp = info["additional_bytes"][9]
-    dry_temp = info["additional_bytes"][10]
 
     event_data = {
         "device_id": info["device_id"],
+        "feedback_type": "update_feedback",
         "ac_number": ac_number,
         "state": state,
         "cool_temp": cool_temp,
@@ -24,9 +24,8 @@ async def handle_climate_control_feedback(hass: HomeAssistant, info: dict):
         "fan_speed": fan_speed,
         "heat_temp": heat_temp,
         "auto_temp": auto_temp,
-        "dry_temp": dry_temp,
     }
-    logging.error(f"climate control feedback: {event_data}")
+    logging.error(f"climate update feedback: {event_data}")
 
     try:
         hass.bus.async_fire(str(info["device_id"]), event_data)

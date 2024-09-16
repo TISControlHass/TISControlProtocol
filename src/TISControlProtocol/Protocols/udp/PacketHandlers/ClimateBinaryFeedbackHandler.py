@@ -17,7 +17,8 @@ async def handle_climate_binary_feedback(hass: HomeAssistant, info: dict):
 
     event_data = {
         "device_id": info["device_id"],
-        "ac-number": ac_number,
+        "feedback_type": "ac_feedback",
+        "ac_number": ac_number,
         "sub_operation": sub_operation,
         "operation_value": operation_value,
     }
