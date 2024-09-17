@@ -370,3 +370,23 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[entity.ac_number],
         )
+
+    def generate_floor_heating_packet(
+        self, entity, target_temperature: int
+    ) -> TISPacket:
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=[0xE3,0xD8],
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.channel_number, target_temperature, 0x00, 0x00],
+        )
+
+    def generate_floor_heating_update_packet(self, entity) -> TISPacket:
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[],
+        )
