@@ -318,7 +318,7 @@ class TISProtocolHandler:
         fan_modes: dict,
         target_state: bool | None = None,
         target_temperature: float | None = None,
-        target_mode: HVACMode | None = None,  # noqa: F821 # type: ignore
+        target_mode: str | None = None,  # noqa: F821 # type: ignore
         target_fan_mode: str | None = None,
     ) -> TISPacket:
 
