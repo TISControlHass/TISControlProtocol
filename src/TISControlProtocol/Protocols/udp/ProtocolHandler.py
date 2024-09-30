@@ -316,7 +316,7 @@ class TISProtocolHandler:
         entity,
         temperature_ranges: dict,
         fan_modes: dict,
-        target_state: bool | None = None,
+        target_state: str | None = None,
         target_temperature: float | None = None,
         target_mode: str | None = None,  # noqa: F821 # type: ignore
         target_fan_mode: str | None = None,
@@ -345,7 +345,7 @@ class TISProtocolHandler:
         # Construct the additional bytes for the packet
         additional_bytes = [
             entity.ac_number,
-            int(target_state),
+            int(target_state=="on"),
             target_temperature_byte,
             int(
                 (temperature_ranges[target_mode]["packet_mode_index"] << 4)
