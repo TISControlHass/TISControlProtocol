@@ -14,6 +14,7 @@ from collections import defaultdict
 import json
 import asyncio
 from PIL import Image, ImageDraw, ImageFont  # noqa: F401
+import uuid
 
 protocol_handler = TISProtocolHandler()
 
@@ -61,6 +62,7 @@ class TISApi:
         self.hass.data[self.domain]["discovered_devices"] = []
         self.hass.http.register_view(TISEndPoint(self))
         self.hass.http.register_view(ScanDevicesEndPoint(self))
+        self.hass.http.register_view(GetKeyEndpoint(self))
 
     def run_display(self, style="dots"):
         try:
@@ -201,6 +203,26 @@ class ScanDevicesEndPoint(HomeAssistantView):
             await asyncio.sleep(1)
 
         return self.api.hass.data[self.api.domain]["discovered_devices"]
+
+
+class GetKeyEndpoint(HomeAssistantView):
+    """Get Key API endpoint."""
+
+    url = "/api/get_key"
+    name = "api:get_key"
+    requires_auth = False
+
+    def __init__(self, tis_api: TISApi):
+        """Initialize the API endpoint."""
+        self.api = tis_api
+
+    async def get(self, request):
+        # Get the MAC address
+        mac = uuid.getnode()
+        mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+
+        # Return the MAC address
+        return web.json_response({"key": mac_address})
 
 
 class FakeDisplay:
