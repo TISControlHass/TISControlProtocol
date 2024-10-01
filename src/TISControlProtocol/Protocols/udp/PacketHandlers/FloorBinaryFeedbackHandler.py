@@ -12,7 +12,8 @@ async def handle_floor_binary_feedback(hass: HomeAssistant, info: dict):
 
     event_data = {
     "device_id": info["device_id"],
-    "number": number,
+    "feedback_type":"floor_update",
+    "heater_number": number,
     "state": state,
     "temp": temp,
     }
