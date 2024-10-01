@@ -347,7 +347,7 @@ class TISProtocolHandler:
         # Construct the additional bytes for the packet
         additional_bytes = [
             entity.ac_number,
-            int(target_state=="on"),
+            int(target_state == "on"),
             target_temperature_byte,
             int(
                 (temperature_ranges[target_mode]["packet_mode_index"] << 4)
@@ -377,27 +377,25 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[entity.ac_number],
         )
-    
+
     def generate_floor_update_packet(self, entity) -> TISPacket:
         return TISPacket(
             device_id=entity.device_id,
             operation_code=self.OPERATION_FLOOR_UPDATE,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[entity.ac_number],
+            additional_bytes=[entity.heater_number],
         )
 
-    def generate_floor_on_off_packet(
-        self, entity, state: int
-    ) -> TISPacket:
+    def generate_floor_on_off_packet(self, entity, state: int) -> TISPacket:
         return TISPacket(
             device_id=entity.device_id,
             operation_code=self.OPERATION_FLOOR_CONTROL,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[entity.channel_number, 0x14, state],
+            additional_bytes=[entity.heater_number, 0x14, state],
         )
-    
+
     def generate_floor_set_temp_packet(
         self, entity, target_temperature: int
     ) -> TISPacket:
@@ -406,6 +404,5 @@ class TISProtocolHandler:
             operation_code=self.OPERATION_FLOOR_CONTROL,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[entity.channel_number, 0x18, target_temperature],
+            additional_bytes=[entity.heater_number, 0x18, target_temperature],
         )
-
