@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "TISControlProtocol"
-version = "0.4.9"
+version = "0.4.11"
 description = "A library for TIS Control Protocol"
 readme = "README.md"
 requires-python = ">=3.11"

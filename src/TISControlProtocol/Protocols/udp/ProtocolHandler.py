@@ -56,6 +56,8 @@ class TISProtocolHandler:
     OPERATION_CONTROL_SECURITY = [0x01, 0x04]
     OPERATION_CONTROL_AC = [0xE0, 0xEE]
     OPERATION_AC_UPDATE = [0xE0, 0xEC]
+    OPERATION_FLOOR_UPDATE = [0x19, 0x44]
+    OPERATION_FLOOR_CONTROL = [0xE3, 0xD8]
 
     def __init__(self) -> None:
         """Initialize a ProtocolHandler instance."""
@@ -375,23 +377,35 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[entity.ac_number],
         )
+    
+    def generate_floor_update_packet(self, entity) -> TISPacket:
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=self.OPERATION_FLOOR_UPDATE,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.ac_number],
+        )
 
-    # def generate_floor_heating_packet(
-    #     self, entity, target_temperature: int
-    # ) -> TISPacket:
-    #     return TISPacket(
-    #         device_id=entity.device_id,
-    #         operation_code=[0xE3, 0xD8],
-    #         source_ip=entity.api.host,
-    #         destination_ip=entity.gateway,
-    #         additional_bytes=[entity.channel_number, target_temperature, 0x00, 0x00],
-    #     )
+    def generate_floor_on_off_packet(
+        self, entity, state: int
+    ) -> TISPacket:
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=self.OPERATION_FLOOR_CONTROL,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.channel_number, 0x14, state],
+        )
+    
+    def generate_floor_set_temp_packet(
+        self, entity, target_temperature: int
+    ) -> TISPacket:
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=self.OPERATION_FLOOR_CONTROL,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.channel_number, 0x18, target_temperature],
+        )
 
-    # def generate_floor_heating_update_packet(self, entity) -> TISPacket:
-    #     return TISPacket(
-    #         device_id=entity.device_id,
-    #         operation_code=,
-    #         source_ip=entity.api.host,
-    #         destination_ip=entity.gateway,
-    #         additional_bytes=[],
-    #     )
