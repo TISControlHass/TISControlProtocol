@@ -393,7 +393,7 @@ class TISProtocolHandler:
             operation_code=self.OPERATION_FLOOR_CONTROL,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[entity.heater_number, 0x14, state],
+            additional_bytes=[ (entity.heater_number + 0x22) , 0x14, state],
         )
 
     def generate_floor_set_temp_packet(
@@ -404,5 +404,5 @@ class TISProtocolHandler:
             operation_code=self.OPERATION_FLOOR_CONTROL,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[entity.heater_number, 0x18, target_temperature],
+            additional_bytes=[ (entity.heater_number + 0x22), 0x18, target_temperature],
         )
