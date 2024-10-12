@@ -12,7 +12,7 @@ async def handle_auto_binary_feedback(hass: HomeAssistant, info: dict):
         "feedback_type": "auto_binary_feedback",
         "channels_values": channels_values,
     }
-    try:
-        hass.bus.async_fire(str(info["device_id"]), event_data)
-    except Exception as e:
-        logging.error(f"error in firing event: {e}")
+    # try:
+    #     hass.bus.async_fire(str(info["device_id"]), event_data)
+    # except Exception as e:
+    #     logging.error(f"error in firing event: {e}")
