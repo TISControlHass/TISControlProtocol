@@ -22,6 +22,7 @@ from .PacketHandlers.RealTimeFeedbackHandler import handle_real_time_feedback
 from .PacketHandlers.LunaTempFeedbackHandler import handle_luna_temp_feedback
 from .PacketHandlers.HealthFeedbackHandler import handle_health_feedback
 from .PacketHandlers.SecurityFeedbackHandler import handle_security_feedback
+from .PacketHandlers.WeatherFeedbackHandler import handle_weather_feedback
 
 
 import socket as Socket
@@ -40,6 +41,7 @@ OPERATIONS_DICT = {
     (0xE3, 0xE8): handle_luna_temp_feedback,
     (0x20, 0x25): handle_health_feedback,
     (0x01, 0x05): handle_security_feedback,
+    (0x20, 0x25): handle_weather_feedback,
 }
 # 1C 01 30 1B BA DC 22 FF FF 08 02 02 02 02 02 02 02 02 00 01 01 01 01 01 01 01 57 62
 

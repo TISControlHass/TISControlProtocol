@@ -58,6 +58,7 @@ class TISProtocolHandler:
     OPERATION_AC_UPDATE = [0xE0, 0xEC]
     OPERATION_FLOOR_UPDATE = [0x19, 0x44]
     OPERATION_FLOOR_CONTROL = [0xE3, 0xD8]
+    OPERATION_GET_WEATHER = [0x20, 0x20]
 
     def __init__(self) -> None:
         """Initialize a ProtocolHandler instance."""
@@ -136,6 +137,21 @@ class TISProtocolHandler:
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
             additional_bytes=[0x14, 0x00],
+        )
+    
+    def generate_health_sensor_update_packet(self, entity) -> TISPacket:
+        """
+        Generate a packet to update the weather sensor.
+
+        :param entity: The entity object containing device information.
+        :return: A Packet instance.
+        """
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=TISProtocolHandler.OPERATION_GET_WEATHER,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[0x4, 0x00],
         )
 
     def generate_discovery_packet(self) -> TISPacket:
