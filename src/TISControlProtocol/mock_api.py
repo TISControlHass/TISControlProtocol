@@ -23,7 +23,6 @@ class TISApi:
         hass: HomeAssistant,
         domain: str,
         devices_dict: dict,
-        display_logo: Optional[str] = "./custom_components/tis_control/shakalpng.png",
     ):
         """Initialize the API class."""
         self.host = host
@@ -35,8 +34,6 @@ class TISApi:
         self.config_entries = {}
         self.domain = domain
         self.devices_dict = devices_dict
-        self.display_logo = display_logo
-        self.display = None
 
     async def connect(self):
         """Connect to the TIS API."""
@@ -58,23 +55,6 @@ class TISApi:
             logging.error("Error connecting to TIS API %s", e)
         self.hass.http.register_view(TISEndPoint(self))
         self.hass.http.register_view(ScanDevicesEndPoint(self))
-
-    def run_display(self, style="dots"):
-        try:
-            self.display = FakeDisplay()
-            # Initialize display.
-            self.display.begin()
-            self.set_display_image()
-
-        except Exception as e:
-            logging.error(f"error initializing display, {e}")
-            return
-
-    def set_display_image(self):
-        img = Image.open(self.display_logo)
-        self.display.set_backlight(0)
-        # reset display
-        self.display.display(img)
 
     async def parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""
@@ -206,17 +186,3 @@ class ScanDevicesEndPoint(HomeAssistantView):
             await asyncio.sleep(1)
 
         return self.api.hass.data[self.api.domain]["discovered_devices"]
-
-
-class FakeDisplay:
-    def __init__(self):
-        pass
-
-    def begin(self):
-        pass
-
-    def set_backlight(self, value):
-        pass
-
-    def display(self, img):
-        pass
