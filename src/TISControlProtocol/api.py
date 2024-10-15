@@ -102,7 +102,7 @@ class TISApi:
                 "device_type_name": self.devices_dict.get(
                     tuple(device["device_type"]), tuple(device["device_type"])
                 ),
-                "gateway": ",".join(device["source_ip"]),
+                "gateway": ",".join(map(str, device["gateway"])),
             }
             for device in self.hass.data[self.domain]["discovered_devices"]
         ]
