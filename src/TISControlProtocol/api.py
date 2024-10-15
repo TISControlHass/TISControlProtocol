@@ -134,7 +134,7 @@ class TISApi:
                     # check if platform exists if not create key with empty list
                     if platform not in appliances:
                         appliances[platform] = []
-                    for i in range(count):
+                    for i in range(1, count + 1):
                         appliance = {
                             "name": f"{str(device['device_id'])} {platform} channel{i}",
                             "device_id": device["device_id"],
