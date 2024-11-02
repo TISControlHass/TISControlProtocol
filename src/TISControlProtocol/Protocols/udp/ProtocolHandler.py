@@ -139,7 +139,7 @@ class TISProtocolHandler:
             additional_bytes=[0x14, 0x00],
         )
     
-    def generate_health_sensor_update_packet(self, entity) -> TISPacket:
+    def generate_weather_sensor_update_packet(self, entity) -> TISPacket:
         """
         Generate a packet to update the weather sensor.
 
