@@ -12,7 +12,8 @@ async def handle_luna_temp_feedback(hass: HomeAssistant, info: dict):
     event_data = {
         "device_id": device_id,
         "feedback_type": "temp_feedback",
-        "additional_bytes": [temperature],
+        "temp": [temperature],
+        "additional_bytes": info["additional_bytes"],
     }
 
     try:
