@@ -1,9 +1,12 @@
 from TISControlProtocol.Protocols import setup_udp_protocol
 from TISControlProtocol.Protocols.udp.ProtocolHandler import (
     TISProtocolHandler,
+    TISPacket,
 )
 
 from homeassistant.core import HomeAssistant  # type: ignore
+from homeassistant.components.http import HomeAssistantView  # type: ignore
+from aiohttp import web  # type: ignore
 
 # type: ignore
 import socket
@@ -11,10 +14,9 @@ import logging
 from collections import defaultdict
 import json
 import asyncio
-
+import uuid
 
 protocol_handler = TISProtocolHandler()
-
 
 class TISApi:
     """TIS API class."""
@@ -53,6 +55,10 @@ class TISApi:
             raise ConnectionError
 
         self.hass.data[self.domain]["discovered_devices"] = []
+        self.hass.http.register_view(TISEndPoint(self))
+        self.hass.http.register_view(ScanDevicesEndPoint(self))
+        self.hass.http.register_view(GetKeyEndpoint(self))
+
 
     async def parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""
@@ -101,3 +107,97 @@ class TISApi:
         await self.parse_device_manager_request(data)
         entities = self.config_entries.get(platform, [])
         return entities
+
+
+class TISEndPoint(HomeAssistantView):
+    """TIS API endpoint."""
+
+    url = "/api/tis"
+    name = "api:tis"
+    requires_auth = False
+
+    def __init__(self, tis_api: TISApi):
+        """Initialize the API endpoint."""
+        self.api = tis_api
+
+    async def post(self, request):
+        # Parse the JSON data from the request
+        data = await request.json()
+        # dump to file
+        with open("appliance_data.json", "w") as f:
+            json.dump(data, f, indent=4)
+
+        # Start reload operations in the background
+        asyncio.create_task(self.reload_platforms())
+
+        # Return the response immediately
+        return web.json_response({"message": "success"})
+
+    async def reload_platforms(self):
+        # Reload the platforms
+        for entry in self.api.hass.config_entries.async_entries(self.api.domain):
+            await self.api.hass.config_entries.async_reload(entry.entry_id)
+
+        # await self.api.hass.services.async_call(
+        #     self.api.domain, homeassistant.SERVICE_RELOAD_ALL
+        # )
+
+
+class ScanDevicesEndPoint(HomeAssistantView):
+    """Scan Devices API endpoint."""
+
+    url = "/api/scan_devices"
+    name = "api:scan_devices"
+    requires_auth = False
+
+    def __init__(self, tis_api: TISApi):
+        """Initialize the API endpoint."""
+        self.api = tis_api
+        self.discovery_packet: TISPacket = protocol_handler.generate_discovery_packet()
+
+    async def get(self, request):
+        # Discover network devices
+        devices = await self.discover_network_devices()
+        devices = [
+            {
+                "device_id": device["device_id"],
+                "device_type_code": device["device_type"],
+                "device_type_name": self.api.devices_dict.get(
+                    tuple(device["device_type"]), tuple(device["device_type"])
+                ),
+                "gateway": device["source_ip"],
+            }
+            for device in devices
+        ]
+        # TODO: some processing and formating
+        return web.json_response(devices)
+
+    async def discover_network_devices(self, prodcast_attempts=10) -> list:
+        # empty current discovered devices list
+        self.api.hass.data[self.api.domain]["discovered_devices"] = []
+        for i in range(prodcast_attempts):
+            await self.api.protocol.sender.broadcast_packet(self.discovery_packet)
+            # sleep for 1 sec
+            await asyncio.sleep(1)
+
+        return self.api.hass.data[self.api.domain]["discovered_devices"]
+
+
+class GetKeyEndpoint(HomeAssistantView):
+    """Get Key API endpoint."""
+
+    url = "/api/get_key"
+    name = "api:get_key"
+    requires_auth = False
+
+    def __init__(self, tis_api: TISApi):
+        """Initialize the API endpoint."""
+        self.api = tis_api
+
+    async def get(self, request):
+        # Get the MAC address
+        mac = uuid.getnode()
+        mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+
+        # Return the MAC address
+        return web.json_response({"key": mac_address})
