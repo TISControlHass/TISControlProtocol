@@ -1,10 +1,10 @@
 [build-system]
-requires = [ "hatchling" ]
+requires = [ "hatchling",]
 build-backend = "hatchling.build"
 
 [project]
 name = "TISControlProtocol"
-version = "0.6.9"
+version = "0.6.10"
 description = "A library for TIS Control Protocol"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -18,4 +18,4 @@ Homepage = "https://github.com/TISControlHass"
 Issues = "https://github.com/TISControlHass/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = [ "src/TISControlProtocol" ]
+packages = [ "src/TISControlProtocol",]

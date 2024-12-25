@@ -6,17 +6,18 @@ from TISControlProtocol.Protocols.udp.ProtocolHandler import (
 
 from homeassistant.core import HomeAssistant  # type: ignore
 from homeassistant.components.http import HomeAssistantView  # type: ignore
+from typing import Optional
 from aiohttp import web  # type: ignore
-
-# type: ignore
 import socket
 import logging
 from collections import defaultdict
 import json
 import asyncio
+from PIL import Image, ImageDraw, ImageFont  # noqa: F401
 import uuid
 
 protocol_handler = TISProtocolHandler()
+
 
 class TISApi:
     """TIS API class."""
@@ -28,6 +29,7 @@ class TISApi:
         domain: str,
         devices_dict: dict,
         host: str = "0.0.0.0",
+        display_logo: Optional[str] = None,
     ):
         """Initialize the API class."""
         self.host = host
@@ -37,6 +39,9 @@ class TISApi:
         self.hass = hass
         self.config_entries = {}
         self.domain = domain
+        self.devices_dict = devices_dict
+        self.display_logo = display_logo
+        self.display = None
 
     async def connect(self):
         """Connect to the TIS API."""
@@ -59,6 +64,23 @@ class TISApi:
         self.hass.http.register_view(ScanDevicesEndPoint(self))
         self.hass.http.register_view(GetKeyEndpoint(self))
 
+    def run_display(self, style="dots"):
+        try:
+            self.display = FakeDisplay()
+            # Initialize display.
+            self.display.begin()
+            self.set_display_image()
+
+        except Exception as e:
+            logging.error(f"error initializing display, {e}")
+            return
+
+    def set_display_image(self):
+        if self.display_logo:
+            img = Image.open(self.display_logo)
+            self.display.set_backlight(0)
+            # reset display
+            self.display.display(img)
 
     async def parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""
@@ -201,3 +223,17 @@ class GetKeyEndpoint(HomeAssistantView):
 
         # Return the MAC address
         return web.json_response({"key": mac_address})
+
+
+class FakeDisplay:
+    def __init__(self):
+        pass
+
+    def begin(self):
+        pass
+
+    def set_backlight(self, value):
+        pass
+
+    def display(self, img):
+        pass
