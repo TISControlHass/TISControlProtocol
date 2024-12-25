@@ -59,6 +59,8 @@ class TISProtocolHandler:
     OPERATION_FLOOR_UPDATE = [0x19, 0x44]
     OPERATION_FLOOR_CONTROL = [0xE3, 0xD8]
     OPERATION_GET_WEATHER = [0x20, 0x20]
+    OPERATION_SECURITY_UPDATE = [0x01, 0x1E]
+    
 
     def __init__(self) -> None:
         """Initialize a ProtocolHandler instance."""
@@ -328,6 +330,20 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[entity.channel_number, mode],
         )
+
+    def generate_update_security_packet(self, entity) -> TISPacket:
+        """
+        Generate a packet to set request security update.
+        
+        """
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=TISProtocolHandler.OPERATION_SECURITY_UPDATE,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.channel_number],
+        )
+
 
     def generate_ac_control_packet(
         self,

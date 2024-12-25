@@ -15,6 +15,6 @@ class PacketDispatcher:
             if packet_handler != "unknown operation":
                 await packet_handler(self.hass, info)
             else:
-                print(f"unknown operation code: {info['operation_code']}")
+                logging.error(f"unknown operation code: {info['operation_code']}")
         except Exception as e:
             logging.error(f"error in dispatching packet: {e} , {info}")
