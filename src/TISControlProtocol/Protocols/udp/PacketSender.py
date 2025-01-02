@@ -30,7 +30,7 @@ class PacketSender:
         packet: TISPacket,
         attempts: int = 10,
         timeout: float = 0.5,
-        debounce_time: float = 0.5,  # The debounce time in seconds
+        debounce_time: float = 0.1,  # The debounce time in seconds
     ):
         unique_id = (
             tuple(packet.device_id),
