@@ -237,16 +237,3 @@ class GetKeyEndpoint(HomeAssistantView):
         # Return the MAC address
         return web.json_response({"key": mac_address})
 
-
-class FakeDisplay:
-    def __init__(self):
-        pass
-
-    def begin(self):
-        pass
-
-    def set_backlight(self, value):
-        pass
-
-    def display(self, img):
-        pass
