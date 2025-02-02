@@ -13,6 +13,7 @@ import logging
 from collections import defaultdict
 import json
 import asyncio
+import ST7789
 from PIL import Image, ImageDraw, ImageFont  # noqa: F401
 import uuid
 
@@ -66,7 +67,19 @@ class TISApi:
 
     def run_display(self, style="dots"):
         try:
-            self.display = FakeDisplay()
+            self.display = ST7789.ST7789(
+                width=320,
+                height=240,
+                rotation=0,
+                port=0,
+                cs=0,
+                dc=23,
+                rst=25,
+                backlight=12,
+                spi_speed_hz=60 * 1000 * 1000,
+                offset_left=0,
+                offset_top=0,
+            )
             # Initialize display.
             self.display.begin()
             self.set_display_image()
@@ -224,16 +237,3 @@ class GetKeyEndpoint(HomeAssistantView):
         # Return the MAC address
         return web.json_response({"key": mac_address})
 
-
-class FakeDisplay:
-    def __init__(self):
-        pass
-
-    def begin(self):
-        pass
-
-    def set_backlight(self, value):
-        pass
-
-    def display(self, img):
-        pass

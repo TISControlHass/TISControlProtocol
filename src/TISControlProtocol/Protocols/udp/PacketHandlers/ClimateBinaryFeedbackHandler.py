@@ -6,7 +6,7 @@ FLOOR_NUMBER_MAP = {0x22: 0, 0x23: 1}
 
 async def handle_climate_binary_feedback(hass: HomeAssistant, info: dict):
     
-    
+    #NOTE: Sometimes the packet contains number of floorheater and sometimes no floorheater num is given
     #check sub_operation or number
     if info["additional_bytes"][0] <= 0x18:
         sub_operation = info["additional_bytes"][0]
