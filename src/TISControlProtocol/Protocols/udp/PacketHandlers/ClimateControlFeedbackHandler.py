@@ -25,12 +25,11 @@ async def handle_climate_control_feedback(hass: HomeAssistant, info: dict):
         "heat_temp": heat_temp,
         "auto_temp": auto_temp,
     }
-    logging.error(f"climate update feedback: {event_data}")
 
     try:
         hass.bus.async_fire(str(info["device_id"]), event_data)
     except Exception as e:
-        logging.error(f"error in firing even for feedbackt: {e}")
+        logging.error(f"error in firing event for feedback: {e}")
 
     try:
         event: asyncio.Event = ack_events.get(

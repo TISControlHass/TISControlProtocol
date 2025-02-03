@@ -28,7 +28,6 @@ class PacketReceiver:
         # logging.error(f"datagram received {data} from {addr}")
         try:
             hex = bytes2hex(data, [])  # noqa: F405
-            logging.warning(f"recieved packet {hex}")
             info = PacketExtractor.extract_info(hex)
             # dispatch the packet to the appropriate method according to the info
             self._hass.async_create_task(self.dispatcher.dispatch_packet(info))
