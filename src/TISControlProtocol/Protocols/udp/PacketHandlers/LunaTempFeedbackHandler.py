@@ -12,7 +12,7 @@ async def handle_luna_temp_feedback(hass: HomeAssistant, info: dict):
     event_data = {
         "device_id": device_id,
         "feedback_type": "temp_feedback",
-        "temp": [temperature],
+        "temp": temperature,
         "additional_bytes": info["additional_bytes"],
     }
 
@@ -22,4 +22,4 @@ async def handle_luna_temp_feedback(hass: HomeAssistant, info: dict):
         #     f"control response event fired for {info['device_id']}, additional bytes: {info['additional_bytes']}"
         # )
     except Exception as e:
-        logging.error(f"error in firing even for feedbackt: {e}")
+        logging.error(f"error in firing even for feedback: {e}")
