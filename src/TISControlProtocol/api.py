@@ -66,7 +66,7 @@ class TISApi:
         self.hass.http.register_view(GetKeyEndpoint(self))
 
     def run_display(self, style="dots"):
-        try:
+        # try:
             self.display = ST7789.ST7789(
                 width=320,
                 height=240,
@@ -84,9 +84,9 @@ class TISApi:
             self.display.begin()
             self.set_display_image()
 
-        except Exception as e:
-            logging.error(f"error initializing display, {e}")
-            return
+        # except Exception as e:
+        #     logging.error(f"error initializing display, {e}")
+        #     return
 
     def set_display_image(self):
         if self.display_logo:
