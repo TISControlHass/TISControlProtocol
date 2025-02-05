@@ -67,10 +67,10 @@ class PacketSender:
                 self.command_stacks[unique_id].remove(packet)
                 return True
             except asyncio.TimeoutError:
-                logging.error(f"ack not received within {timeout} seconds")
+                logging.warning(f"ack not received within {timeout} seconds")
 
         self.coordinator.remove_ack_event(unique_id)
-        logging.warning(f"ack not received after {attempts} attempts")
+        logging.error(f"ack not received after {attempts} attempts")
         return False
 
     async def broadcast_packet(self, packet: TISPacket):
