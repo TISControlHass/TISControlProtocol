@@ -3,7 +3,7 @@ import logging
 
 
 async def handle_auto_binary_feedback(hass: HomeAssistant, info: dict):
-    logging.error(f"Auto Binary Feedback: {info}")
+    logging.info(f"Auto Binary Feedback: {info}")
     channels_number: int = info["additional_bytes"][0]
     channels_values: list = info["additional_bytes"][channels_number :]
 

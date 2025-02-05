@@ -17,11 +17,8 @@ async def handle_real_time_feedback(hass: HomeAssistant, info: dict):
         }
         try:
             hass.bus.async_fire(str(info["device_id"]), event_data)
-            # logging.error(
-            #     f"real time control response event fired for {info['device_id']}, additional bytes: {info['additional_bytes']}"
-            # )
         except Exception as e:
-            logging.error(f"error in firing even for feedbackt: {e}")
+            logging.error(f"error in firing event for feedback: {e}")
 
     # try:
     #     event: asyncio.Event = ack_events.get(

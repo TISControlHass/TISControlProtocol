@@ -13,6 +13,5 @@ async def handle_update_response(hass: HomeAssistant, info: dict):
     }
     try:
         hass.bus.async_fire(str(info["device_id"]), event_data)
-        #logging.error(f"update response event fired for {info['device_id']}")
     except Exception as e:
         logging.error(f"error in firing event: {e}")

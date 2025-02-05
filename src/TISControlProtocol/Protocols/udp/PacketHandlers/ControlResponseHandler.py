@@ -16,11 +16,8 @@ async def handle_control_response(hass: HomeAssistant, info: dict):
     }
     try:
         hass.bus.async_fire(str(info["device_id"]), event_data)
-        # logging.error(
-        #     f"control response event fired for {info['device_id']}, additional bytes: {info['additional_bytes']}"
-        # )
     except Exception as e:
-        logging.error(f"error in firing even for feedbackt: {e}")
+        logging.error(f"error in firing event for feedback: {e}")
 
     try:
         event: asyncio.Event = ack_events.get(
@@ -31,7 +28,7 @@ async def handle_control_response(hass: HomeAssistant, info: dict):
             )
         )
         if event is not None:
-            print("setting event")
+            logging.info(f"setting event for control response {info["device_id"]}")
             event.set()
     except Exception as e:
-        print(e)
+        logging.error(f"error in setting event for feedback: {e}")

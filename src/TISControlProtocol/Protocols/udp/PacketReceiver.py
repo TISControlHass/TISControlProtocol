@@ -25,7 +25,6 @@ class PacketReceiver:
         logging.info("connection made")
 
     def datagram_received(self, data, addr):
-        # logging.error(f"datagram received {data} from {addr}")
         try:
             hex = bytes2hex(data, [])  # noqa: F405
             info = PacketExtractor.extract_info(hex)

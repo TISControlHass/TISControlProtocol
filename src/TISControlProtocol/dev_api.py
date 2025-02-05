@@ -9,7 +9,7 @@ import logging
 from collections import defaultdict
 import json
 import asyncio
-from PIL import Image, ImageDraw, ImageFont  # noqa: F401
+from PIL import Image  # noqa: F401
 
 
 class TISApi:
