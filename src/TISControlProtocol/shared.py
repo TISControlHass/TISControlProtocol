@@ -1,8 +1,9 @@
+import logging
+
 appliances_dict = {}
 mqtt_appliances_dict = {}
 ack_events = {}
 loggers = {}
-
 
 def get_appliance(device_id: tuple, channel: tuple, appliances_dict: dict):
     # appliance key form is ((device_id),(channels))
@@ -14,8 +15,8 @@ def get_appliance(device_id: tuple, channel: tuple, appliances_dict: dict):
         ]
         return tuple(device_appliances)[0]
     except IndexError:
-        print(f"No appliances found for key {(device_id,channel)}")
+        logging.error(f"No appliances found for key {(device_id,channel)}")
         return None
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.error(f"An error occurred: {e}")
         return None

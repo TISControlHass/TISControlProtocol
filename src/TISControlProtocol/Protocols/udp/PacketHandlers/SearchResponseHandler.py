@@ -1,6 +1,8 @@
+import logging
+
 # deprecated
 async def handle_search_response(self, info: dict):
-    print(f"got search response packet from {info['device_id']}")
+    logging.info(f"got search response packet from {info['device_id']}")
     self.discovered_devices.append(
         {
             "device_id": info["device_id"],

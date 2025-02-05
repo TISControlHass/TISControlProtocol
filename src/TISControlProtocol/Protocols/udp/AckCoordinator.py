@@ -8,7 +8,7 @@ class AckCoordinator:
         self.ack_events = ack_events
 
     def create_ack_event(self, unique_id: Union[str, tuple]) -> asyncio.Event:
-        print(f"creating ack event for {unique_id}")
+        logging.info(f"creating ack event for {unique_id}")
         event = asyncio.Event()
         self.ack_events[unique_id] = event
         return event

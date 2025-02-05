@@ -1,5 +1,5 @@
 from collections import defaultdict
-
+import logging
 
 def _parse_device_manager_request(data: dict) -> None:
     """Parse the device manager request."""
@@ -61,4 +61,4 @@ test_request = {
 }
 
 out = _parse_device_manager_request(test_request)
-print(out)
+logging.info(out)

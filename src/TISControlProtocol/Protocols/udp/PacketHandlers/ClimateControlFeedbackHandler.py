@@ -40,7 +40,7 @@ async def handle_climate_control_feedback(hass: HomeAssistant, info: dict):
             )
         )
         if event is not None:
-            print("setting event")
+            logging.info(f"setting event for climate control feedback, {info['device_id']}")
             event.set()
     except Exception as e:
-        print(e)
+        logging.error(f"error in setting event for feedback: {e}")

@@ -22,7 +22,7 @@ class PacketSender:
         self.update_device_queue = set()  # holds update device ids
 
     async def send_packet(self, packet: TISPacket):
-        print(f"sending {packet}")
+        logging.info(f"sending {packet}")
         self.socket.sendto(packet.__bytes__(), (packet.destination_ip, self.UDP_PORT))
 
     async def send_packet_with_ack(
@@ -74,5 +74,5 @@ class PacketSender:
         return False
 
     async def broadcast_packet(self, packet: TISPacket):
-        print(f"broadcasting {packet}")
+        logging.info(f"broadcasting {packet}")
         self.socket.sendto(packet.__bytes__(), ("<broadcast>", self.UDP_PORT))
