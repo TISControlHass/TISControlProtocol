@@ -4,19 +4,20 @@ from TISControlProtocol.Protocols.udp.ProtocolHandler import (
     TISPacket,
 )
 
+import base64
 from cryptography.fernet import Fernet
 import os
 from homeassistant.core import HomeAssistant  # type: ignore
 from homeassistant.components.http import HomeAssistantView  # type: ignore
 from typing import Optional
-from aiohttp import web  # type: ignore
+from aiohttp import web
 import socket
 import logging
 from collections import defaultdict
 import json
 import asyncio
 import ST7789
-from PIL import Image, ImageDraw, ImageFont  # noqa: F401
+from PIL import Image
 import uuid
 from dotenv import load_dotenv
 
@@ -157,8 +158,8 @@ class TISApi:
         try:
             with open(output_file, "r") as f:
                 data = json.load(f)
-                decrypted = Fernet(key).decrypt(data.encode())
-                await self.parse_device_manager_request(decrypted)
+                decrypted = Fernet(key).decrypt(base64.b64decode(data)).decode()
+                await self.parse_device_manager_request(json.loads(decrypted))
         except FileNotFoundError:
             with open(output_file, "w") as f:
                 json.dump('', f)
@@ -180,13 +181,13 @@ class TISEndPoint(HomeAssistantView):
         self.api = tis_api
 
     async def post(self, request):
-        directroy = "/conf/data"
-        os.makedirs(directroy, exist_ok=True)
+        directory = "/conf/data"
+        os.makedirs(directory, exist_ok=True)
         file_name = 'app.json'
-        output_file = os.path.join(directroy, file_name)
+        output_file = os.path.join(directory, file_name)
 
         env_filename = '.env'
-        env_file_path = os.path.join(directroy, env_filename)
+        env_file_path = os.path.join(directory, env_filename)
 
         key = None
         load_dotenv(env_file_path)
@@ -205,9 +206,12 @@ class TISEndPoint(HomeAssistantView):
 
         encrypted = Fernet(key).encrypt(json.dumps(data).encode())
 
-        # dump to file
+        # Convert to base64 string
+        encrypted_str = base64.b64encode(encrypted).decode()
+
+        # Dump to file
         with open(output_file, "w") as f:
-            json.dump(encrypted, f, indent=4)
+            json.dump(encrypted_str, f, indent=4)
 
         # Start reload operations in the background
         asyncio.create_task(self.reload_platforms())
