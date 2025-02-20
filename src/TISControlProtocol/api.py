@@ -154,12 +154,12 @@ class TISApi:
                     file.write(f'ENCRYPTION_KEY="{key}"\n')
             except Exception as e:
                 logging.error(f"Error writing .env file: {e}")
-
         try:
             with open(output_file, "r") as f:
-                data = json.load(f)
-                decrypted = Fernet(key).decrypt(base64.b64decode(data)).decode()
-                await self.parse_device_manager_request(json.loads(decrypted))
+                encrypted_str = json.load(f)
+                decrypted_str = Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
+                data = json.loads(decrypted_str)
+                await self.parse_device_manager_request(data)
         except FileNotFoundError:
             with open(output_file, "w") as f:
                 json.dump('', f)
