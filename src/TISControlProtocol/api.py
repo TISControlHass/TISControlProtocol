@@ -4,6 +4,8 @@ from TISControlProtocol.Protocols.udp.ProtocolHandler import (
     TISPacket,
 )
 
+from cryptography.fernet import Fernet
+import os
 from homeassistant.core import HomeAssistant  # type: ignore
 from homeassistant.components.http import HomeAssistantView  # type: ignore
 from typing import Optional
@@ -16,6 +18,8 @@ import asyncio
 import ST7789
 from PIL import Image, ImageDraw, ImageFont  # noqa: F401
 import uuid
+from dotenv import load_dotenv
+
 
 protocol_handler = TISProtocolHandler()
 
@@ -120,25 +124,45 @@ class TISApi:
         grouped = defaultdict(list)
         for appliance, details in converted.items():
             grouped[details["appliance_type"]].append({appliance: details})
-
         self.config_entries = dict(grouped)
+
         # add a lock module config entry
         self.config_entries["lock_module"] = {
             "password": data["configs"]["lock_module_password"]
         }
-        # return response
         return self.config_entries
-        # await self.update_entities()
 
     async def get_entities(self, platform: str = None) -> list:
         """Get the stored entities."""
+        directroy = "/conf/data"
+        os.makedirs(directroy, exist_ok=True)
+        file_name = 'app.json'
+        output_file = os.path.join(directroy, file_name)
+
+        env_filename = '.env'
+        env_file_path = os.path.join(directroy, env_filename)
+
+        key = None
+        load_dotenv(env_file_path)
+        key = os.getenv("ENCRYPTION_KEY")
+
+        if key is None:
+            key = Fernet.generate_key().decode()
+            try:
+                with open(env_file_path, "w") as file:
+                    file.write(f'ENCRYPTION_KEY="{key}"\n')
+            except Exception as e:
+                logging.error(f"Error writing .env file: {e}")
+
         try:
-            with open("appliance_data.json", "r") as f:
+            with open(output_file, "r") as f:
                 data = json.load(f)
-                await self.parse_device_manager_request(data)
+                decrypted = Fernet(key).decrypt(data.encode())
+                await self.parse_device_manager_request(decrypted)
         except FileNotFoundError:
-            with open("appliance_data.json", "w") as f:
-                pass
+            with open(output_file, "w") as f:
+                json.dump('', f)
+                data = {}
         await self.parse_device_manager_request(data)
         entities = self.config_entries.get(platform, [])
         return entities
@@ -156,11 +180,34 @@ class TISEndPoint(HomeAssistantView):
         self.api = tis_api
 
     async def post(self, request):
+        directroy = "/conf/data"
+        os.makedirs(directroy, exist_ok=True)
+        file_name = 'app.json'
+        output_file = os.path.join(directroy, file_name)
+
+        env_filename = '.env'
+        env_file_path = os.path.join(directroy, env_filename)
+
+        key = None
+        load_dotenv(env_file_path)
+        key = os.getenv("ENCRYPTION_KEY")
+
+        if key is None:
+            key = Fernet.generate_key().decode()
+            try:
+                with open(env_file_path, "w") as file:
+                    file.write(f'ENCRYPTION_KEY="{key}"\n')
+            except Exception as e:
+                logging.error(f"Error writing .env file: {e}")
+
         # Parse the JSON data from the request
         data = await request.json()
+
+        encrypted = Fernet(key).encrypt(json.dumps(data).encode())
+
         # dump to file
-        with open("appliance_data.json", "w") as f:
-            json.dump(data, f, indent=4)
+        with open(output_file, "w") as f:
+            json.dump(encrypted, f, indent=4)
 
         # Start reload operations in the background
         asyncio.create_task(self.reload_platforms())
@@ -172,11 +219,6 @@ class TISEndPoint(HomeAssistantView):
         # Reload the platforms
         for entry in self.api.hass.config_entries.async_entries(self.api.domain):
             await self.api.hass.config_entries.async_reload(entry.entry_id)
-
-        # await self.api.hass.services.async_call(
-        #     self.api.domain, homeassistant.SERVICE_RELOAD_ALL
-        # )
-
 
 class ScanDevicesEndPoint(HomeAssistantView):
     """Scan Devices API endpoint."""
