@@ -253,7 +253,7 @@ class ScanDevicesEndPoint(HomeAssistantView):
         # TODO: some processing and formating
         return web.json_response(devices)
 
-    async def discover_network_devices(self, prodcast_attempts=10) -> list:
+    async def discover_network_devices(self, prodcast_attempts=30) -> list:
         # empty current discovered devices list
         self.api.hass.data[self.api.domain]["discovered_devices"] = []
         for i in range(prodcast_attempts):
