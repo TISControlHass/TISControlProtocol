@@ -1,2 +1,4 @@
 .env
 dist
+mykey.pub
+mykey.asc
