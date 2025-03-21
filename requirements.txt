@@ -122,13 +122,5 @@ voluptuous==0.13.1
 voluptuous-serialize==2.6.0
 watchdog==4.0.0
 wheel==0.41.2
-winrt-runtime==2.0.0b1
-winrt-Windows.Devices.Bluetooth==2.0.0b1
-winrt-Windows.Devices.Bluetooth.Advertisement==2.0.0b1
-winrt-Windows.Devices.Bluetooth.GenericAttributeProfile==2.0.0b1
-winrt-Windows.Devices.Enumeration==2.0.0b1
-winrt-Windows.Foundation==2.0.0b1
-winrt-Windows.Foundation.Collections==2.0.0b1
-winrt-Windows.Storage.Streams==2.0.0b1
 yarl==1.9.4
 zipp==3.19.2
