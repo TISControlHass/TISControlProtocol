@@ -23,15 +23,6 @@ You can install TISControlProtocol by adding it to your Manifest file or by usin
 pip install TISControlProtocol
 ```
 
-## Building
-
-To build the package, you can use the following commands:
-
-```bash
-python -m build
-twine upload dist/*
-```
-
 ## License
 
 TISControlProtocol is licensed under the MIT license. See the [LICENSE](https://your-license-link) file for details.
