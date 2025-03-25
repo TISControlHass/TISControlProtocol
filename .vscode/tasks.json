@@ -15,7 +15,7 @@
     {
       "label": "Build Package",
       "type": "shell",
-      "command": "py",
+      "command": "python",
       "args": ["-m", "build"],
       "problemMatcher": [],
       "detail": "Build the latest version of the package.",
@@ -27,7 +27,7 @@
     {
       "label": "Upload Package",
       "type": "shell",
-      "command": "py",
+      "command": "python",
       "args": ["-m", "twine", "upload", "dist/*"],
       "problemMatcher": [],
       "detail": "Upload the latest version of the package to PyPI."
