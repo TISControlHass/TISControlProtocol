@@ -17,4 +17,4 @@ class PacketDispatcher:
             else:
                 logging.info(f"unknown operation code: {info['operation_code']}")
         except Exception as e:
-            logging.warning(f"error in dispatching packet: {e} , {info}")
+            logging.info(f"error in dispatching packet: {e} , {info}")
