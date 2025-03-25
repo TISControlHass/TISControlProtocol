@@ -24,6 +24,7 @@ from .PacketHandlers.HealthFeedbackHandler import handle_health_feedback
 from .PacketHandlers.SecurityFeedbackHandler import handle_security_feedback
 from .PacketHandlers.WeatherFeedbackHandler import handle_weather_feedback
 from .PacketHandlers.UpdateSecurityHandler import handle_security_update_feedback
+from .PacketHandlers.AnalogFeedbackHandler import handle_analog_feedback
 
 
 import socket as Socket
@@ -44,6 +45,7 @@ OPERATIONS_DICT = {
     (0x01, 0x05): handle_security_feedback,
     (0x20, 0x21): handle_weather_feedback,
     (0x01, 0x1F): handle_security_update_feedback,
+    (0xEF, 0x01): handle_analog_feedback
 
 }
 # 1C 01 30 1B BA DC 22 FF FF 08 02 02 02 02 02 02 02 02 00 01 01 01 01 01 01 01 57 62
