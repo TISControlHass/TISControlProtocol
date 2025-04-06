@@ -118,6 +118,8 @@ class TISApi:
                     }
                     for detail in details
                 ],
+                "min": details[0]["min"],
+                "max": details[0]["max"],
             }
             for appliance, details in data["appliances"].items()
         }
