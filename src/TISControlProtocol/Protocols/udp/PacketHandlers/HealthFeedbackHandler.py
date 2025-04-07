@@ -16,7 +16,7 @@ async def handle_health_feedback(hass: HomeAssistant, info: dict):
     try:
         co = int((info["additional_bytes"][27]<<8)|(info["additional_bytes"][28]))
     except:
-        logging.error("No co sensor for this packet")
+        pass
 
     event_data = {
         "device_id": device_id,
