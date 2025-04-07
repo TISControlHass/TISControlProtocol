@@ -102,6 +102,7 @@ class TISApi:
 
     async def parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""
+        logging.error(f"data type: {type(data)}")
         logging.error(f"data: {data}")
         converted = {
             appliance: {
