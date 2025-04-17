@@ -102,8 +102,6 @@ class TISApi:
 
     async def parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""
-        logging.error(f"data type: {type(data)}")
-        logging.error(f"data: {str(data)}")
         converted = {
             appliance: {
                 "device_id": [int(n) for n in details[0]["device_id"].split(",")],
@@ -162,7 +160,8 @@ class TISApi:
             with open(output_file, "r") as f:
                 encrypted_str = json.load(f)
                 decrypted_str = Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
-                await self.parse_device_manager_request(decrypted_str)
+                data = json.loads(decrypted_str)
+                await self.parse_device_manager_request(data)
         except FileNotFoundError:
             with open(output_file, "w") as f:
                 json.dump('', f)
