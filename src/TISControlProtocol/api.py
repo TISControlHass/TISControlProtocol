@@ -139,32 +139,30 @@ class TISApi:
 
     async def get_entities(self, platform: str = None) -> list:
         """Get the stored entities."""
-        # directroy = "/conf/data"
-        directroy = "/config"
-        # os.makedirs(directroy, exist_ok=True)
+        directroy = "/conf/data"
+        os.makedirs(directroy, exist_ok=True)
         file_name = 'app.json'
         output_file = os.path.join(directroy, file_name)
 
-        # env_filename = '.env'
-        # env_file_path = os.path.join(directroy, env_filename)
+        env_filename = '.env'
+        env_file_path = os.path.join(directroy, env_filename)
 
-        # key = None
-        # load_dotenv(env_file_path)
-        # key = os.getenv("ENCRYPTION_KEY")
+        key = None
+        load_dotenv(env_file_path)
+        key = os.getenv("ENCRYPTION_KEY")
 
-        # if key is None:
-        #     key = Fernet.generate_key().decode()
-        #     try:
-        #         with open(env_file_path, "w") as file:
-        #             file.write(f'ENCRYPTION_KEY="{key}"\n')
-        #     except Exception as e:
-        #         logging.error(f"Error writing .env file: {e}")
+        if key is None:
+            key = Fernet.generate_key().decode()
+            try:
+                with open(env_file_path, "w") as file:
+                    file.write(f'ENCRYPTION_KEY="{key}"\n')
+            except Exception as e:
+                logging.error(f"Error writing .env file: {e}")
         try:
             with open(output_file, "r") as f:
-                # encrypted_str = json.load(f)
-                # decrypted_str = Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
-                data = json.load(f)
-                await self.parse_device_manager_request(data)
+                encrypted_str = json.load(f)
+                decrypted_str = Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
+                await self.parse_device_manager_request(decrypted_str)
         except FileNotFoundError:
             with open(output_file, "w") as f:
                 json.dump('', f)
@@ -186,38 +184,37 @@ class TISEndPoint(HomeAssistantView):
         self.api = tis_api
 
     async def post(self, request):
-        # directory = "/conf/data"
-        directory = "/config"
-        # os.makedirs(directory, exist_ok=True)
+        directory = "/conf/data"
+        os.makedirs(directory, exist_ok=True)
         file_name = 'app.json'
         output_file = os.path.join(directory, file_name)
 
-        # env_filename = '.env'
-        # env_file_path = os.path.join(directory, env_filename)
+        env_filename = '.env'
+        env_file_path = os.path.join(directory, env_filename)
 
-        # key = None
-        # load_dotenv(env_file_path)
-        # key = os.getenv("ENCRYPTION_KEY")
+        key = None
+        load_dotenv(env_file_path)
+        key = os.getenv("ENCRYPTION_KEY")
 
-        # if key is None:
-        #     key = Fernet.generate_key().decode()
-        #     try:
-        #         with open(env_file_path, "w") as file:
-        #             file.write(f'ENCRYPTION_KEY="{key}"\n')
-        #     except Exception as e:
-        #         logging.error(f"Error writing .env file: {e}")
+        if key is None:
+            key = Fernet.generate_key().decode()
+            try:
+                with open(env_file_path, "w") as file:
+                    file.write(f'ENCRYPTION_KEY="{key}"\n')
+            except Exception as e:
+                logging.error(f"Error writing .env file: {e}")
 
         # Parse the JSON data from the request
         data = await request.json()
 
-        # encrypted = Fernet(key).encrypt(json.dumps(data).encode())
+        encrypted = Fernet(key).encrypt(json.dumps(data).encode())
 
         # Convert to base64 string
-        # encrypted_str = base64.b64encode(encrypted).decode()
+        encrypted_str = base64.b64encode(encrypted).decode()
 
         # Dump to file
         with open(output_file, "w") as f:
-            json.dump(data, f, indent=4)
+            json.dump(encrypted_str, f, indent=4)
 
         # Start reload operations in the background
         asyncio.create_task(self.reload_platforms())
