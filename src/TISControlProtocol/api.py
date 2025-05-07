@@ -209,11 +209,11 @@ class TISEndPoint(HomeAssistantView):
 
     async def post(self, request):
         directory = "/conf/data"
-        key = self.api.get_encryption_key(directory)
+        key = await self.api.get_encryption_key(directory)
 
         # Parse the JSON data from the request
         data = await request.json()
-        self.api.encrypt_and_save_data(data, directory, key)
+        await self.api.encrypt_and_save_data(data, directory, key)
 
         # Start reload operations in the background
         asyncio.create_task(self.reload_platforms())
