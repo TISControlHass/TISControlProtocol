@@ -163,7 +163,6 @@ class TISApi:
                     file.write(f'ENCRYPTION_KEY="{key}"\n')
             except Exception as e:
                 logging.error(f"Error writing .env file: {e}")
-
         return key
 
     def _read_and_decrypt_data(self, directory: str, key: str) -> dict:
@@ -183,6 +182,17 @@ class TISApi:
                 json.dump("", f)
                 data = {}
         return data
+
+    def _encrypt_and_save_data(self, data: dict, directory: str, key: str) -> None:
+        """Encrypt and save the data."""
+        file_name = "app.json"
+        output_file = os.path.join(directory, file_name)
+
+        encrypted = Fernet(key).encrypt(json.dumps(data).encode())
+        encrypted_str = base64.b64encode(encrypted).decode()
+
+        with open(output_file, "w") as f:
+            json.dump(encrypted_str, f, indent=4)
 
 
 class TISEndPoint(HomeAssistantView):
@@ -345,4 +355,3 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                     "error": "Old password is incorrect, please try again",
                 }
             )
-
