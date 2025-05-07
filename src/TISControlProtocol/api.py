@@ -65,7 +65,7 @@ class TISApi:
         except Exception as e:
             logging.error("Error connecting to TIS API %s", e)
             raise ConnectionError
-        
+
         try:
             self.hass.data[self.domain]["discovered_devices"] = []
             self.hass.http.register_view(TISEndPoint(self))
@@ -76,7 +76,6 @@ class TISApi:
         except ConnectionError as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
-
 
     def run_display(self, style="dots"):
         try:
@@ -315,13 +314,18 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                 status=400,
             )
 
-        if new_pass != confirm_pass:
+        logging.warning(f"Old pass: {old_pass}, New pass: {new_pass}")
+        logging.warning(
+            f"Correct pass: {self.tis_api.config_entries['lock_module']['password']}"
+        )
+
+        if old_pass != self.tis_api.config_entries["lock_module"]["password"]:
             return web.json_response(
                 {
                     "message": "error",
-                    "error": "New password and confirmation do not match",
+                    "error": "Old password is incorrect, please try again",
                 },
-                status=400,
+                status=403,
             )
 
         if len(new_pass) < 4:
@@ -333,13 +337,13 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                 status=400,
             )
 
-        if old_pass != self.tis_api.config_entries["lock_module"]["password"]:
+        if new_pass != confirm_pass:
             return web.json_response(
                 {
                     "message": "error",
-                    "error": "Old password is incorrect, please try again",
+                    "error": "New password and confirmation do not match",
                 },
-                status=403,
+                status=400,
             )
 
         directory = "/conf/data"
@@ -358,5 +362,7 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
         )
 
     async def reload_platforms(self):
-        for entry in self.tis_api.hass.config_entries.async_entries(self.tis_api.domain):
+        for entry in self.tis_api.hass.config_entries.async_entries(
+            self.tis_api.domain
+        ):
             await self.tis_api.hass.config_entries.async_reload(entry.entry_id)
