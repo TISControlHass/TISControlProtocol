@@ -173,7 +173,7 @@ class TISApi:
 
         try:
             async with aiofiles.open(output_file, "r") as f:
-                encrypted_str = json.load(f)
+                encrypted_str = json.loads(await f.read)
                 decrypted_str = (
                     Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
                 )
