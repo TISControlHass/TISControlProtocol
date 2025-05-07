@@ -65,11 +65,18 @@ class TISApi:
         except Exception as e:
             logging.error("Error connecting to TIS API %s", e)
             raise ConnectionError
+        
+        try:
+            self.hass.data[self.domain]["discovered_devices"] = []
+            self.hass.http.register_view(TISEndPoint(self))
+            self.hass.http.register_view(ScanDevicesEndPoint(self))
+            self.hass.http.register_view(GetKeyEndpoint(self))
+            self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
+            self.hass.async_add_executor_job(self.run_display)
+        except ConnectionError as e:
+            logging.error("Error registering views %s", e)
+            raise ConnectionError
 
-        self.hass.data[self.domain]["discovered_devices"] = []
-        self.hass.http.register_view(TISEndPoint(self))
-        self.hass.http.register_view(ScanDevicesEndPoint(self))
-        self.hass.http.register_view(GetKeyEndpoint(self))
 
     def run_display(self, style="dots"):
         try:
