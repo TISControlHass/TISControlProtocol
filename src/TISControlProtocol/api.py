@@ -138,6 +138,7 @@ class TISApi:
         self.config_entries = dict(grouped)
 
         # add a lock module config entry
+        logging.warning(f"lock_module_password {data['configs']['lock_module_password']}")
         self.config_entries["lock_module"] = {
             "password": data["configs"]["lock_module_password"]
         }
