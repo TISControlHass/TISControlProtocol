@@ -138,7 +138,6 @@ class TISApi:
         self.config_entries = dict(grouped)
 
         # add a lock module config entry
-        logging.warning(f"lock_module_password {data['configs']['lock_module_password']}")
         self.config_entries["lock_module"] = {
             "password": data["configs"]["lock_module_password"]
         }
@@ -153,7 +152,8 @@ class TISApi:
         key = await self.get_encryption_key(directory)
         data = await self.read_and_decrypt_data(directory, key)
 
-        await self.parse_device_manager_request(data)
+        config_entries = await self.parse_device_manager_request(data)
+        logging.warning(f"config_entries: {config_entries}")
         entities = self.config_entries.get(platform, [])
         return entities
 
