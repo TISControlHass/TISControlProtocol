@@ -164,7 +164,6 @@ class TISApi:
                     Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
                 )
                 data = json.loads(decrypted_str)
-                await self.parse_device_manager_request(data)
         except FileNotFoundError:
             with open(output_file, "w") as f:
                 json.dump("", f)
@@ -301,16 +300,37 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
         self.tis_api = tis_api
 
     async def post(self, request):
-        old_pass = request.query.get("old_pass")
-        new_pass = request.query.get("new_pass")
-        confirm_pass = request.query.get("confirm_pass")
-        return web.json_response(
-            {
-                "message": "success",
-                "data": {
-                    "old_pass": old_pass,
-                    "new_pass": new_pass,
-                    "confirm_pass": confirm_pass,
-                },
-            }
-        )
+        try:
+            old_pass = request.query.get("old_pass")
+            new_pass = request.query.get("new_pass")
+            confirm_pass = request.query.get("confirm_pass")
+        except Exception as e:
+            logging.error(f"Error parsing request: {e}")
+            return web.json_response(
+                {"message": "error", "error": "Invalid request parameters"}
+            )
+
+        if new_pass != confirm_pass:
+            return web.json_response(
+                {
+                    "message": "error",
+                    "error": "New password and confirmation do not match",
+                }
+            )
+
+        if len(new_pass) < 4:
+            return web.json_response(
+                {
+                    "message": "error",
+                    "error": "Password must be at least 4 characters long",
+                }
+            )
+
+        if old_pass != self.tis_api.config_entries["lock_module"]["password"]:
+            return web.json_response(
+                {
+                    "message": "error",
+                    "error": "Old password is incorrect, please try again",
+                }
+            )
+
