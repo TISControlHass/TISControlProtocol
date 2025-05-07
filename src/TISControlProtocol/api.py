@@ -338,10 +338,18 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
         directory = "/conf/data"
         key = await self.tis_api.get_encryption_key(directory)
         data = await self.tis_api.read_and_decrypt_data(directory=directory, key=key)
+        data["configs"]["lock_module_password"] = new_pass
+        await self.tis_api.encrypt_and_save_data(data, directory, key)
+        self.tis_api.config_entries["lock_module"]["password"] = new_pass
+
+        asyncio.create_task(self.reload_platforms())
 
         return web.json_response(
             {
                 "message": "success",
-                "data": data,
             }
         )
+
+    async def reload_platforms(self):
+        for entry in self.tis_api.hass.config_entries.async_entries(self.tis_api.domain):
+            await self.tis_api.hass.config_entries.async_reload(entry.entry_id)
