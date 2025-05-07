@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant  # type: ignore
 from homeassistant.components.http import HomeAssistantView  # type: ignore
 from typing import Optional
 from aiohttp import web
+import aiofiles
 import socket
 import logging
 from collections import defaultdict
@@ -141,14 +142,14 @@ class TISApi:
         directory = "/conf/data"
         os.makedirs(directory, exist_ok=True)
 
-        key = self.get_encryption_key(directory)
+        key = await self.get_encryption_key(directory)
         data = self.read_and_decrypt_data(directory, key)
 
         await self.parse_device_manager_request(data)
         entities = self.config_entries.get(platform, [])
         return entities
 
-    def get_encryption_key(self, directory: str) -> str:
+    async def get_encryption_key(self, directory: str) -> str:
         """Retrieve or generate the encryption key."""
         env_filename = ".env"
         env_file_path = os.path.join(directory, env_filename)
@@ -159,31 +160,31 @@ class TISApi:
         if key is None:
             key = Fernet.generate_key().decode()
             try:
-                with open(env_file_path, "w") as file:
-                    file.write(f'ENCRYPTION_KEY="{key}"\n')
+                async with aiofiles.open(env_file_path, "w") as file:
+                    await file.write(f'ENCRYPTION_KEY="{key}"\n')
             except Exception as e:
                 logging.error(f"Error writing .env file: {e}")
         return key
 
-    def read_and_decrypt_data(self, directory: str, key: str) -> dict:
+    async def read_and_decrypt_data(self, directory: str, key: str) -> dict:
         """Read and decrypt the stored data."""
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
 
         try:
-            with open(output_file, "r") as f:
+            async with aiofiles.open(output_file, "r") as f:
                 encrypted_str = json.load(f)
                 decrypted_str = (
                     Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
                 )
                 data = json.loads(decrypted_str)
         except FileNotFoundError:
-            with open(output_file, "w") as f:
-                json.dump("", f)
+            async with aiofiles.open(output_file, "w") as f:
+                await f.write(json.dumps(""))
                 data = {}
         return data
 
-    def encrypt_and_save_data(self, data: dict, directory: str, key: str) -> None:
+    async def encrypt_and_save_data(self, data: dict, directory: str, key: str) -> None:
         """Encrypt and save the data."""
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
@@ -191,8 +192,8 @@ class TISApi:
         encrypted = Fernet(key).encrypt(json.dumps(data).encode())
         encrypted_str = base64.b64encode(encrypted).decode()
 
-        with open(output_file, "w") as f:
-            json.dump(encrypted_str, f, indent=4)
+        async with aiofiles.open(output_file, "w") as f:
+            await f.write(json.dumps(encrypted_str, indent=4))
 
 
 class TISEndPoint(HomeAssistantView):
