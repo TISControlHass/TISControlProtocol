@@ -142,6 +142,7 @@ class TISApi:
         self.config_entries["lock_module"] = {
             "password": data["configs"]["lock_module_password"]
         }
+        logging.warning(f"self.config_entries: {self.config_entries}")
         return self.config_entries
 
     async def get_entities(self, platform: str = None) -> list:
@@ -359,6 +360,7 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
         return web.json_response(
             {
                 "message": "success",
+                'data': self.tis_api.config_entries,
             }
         )
 
