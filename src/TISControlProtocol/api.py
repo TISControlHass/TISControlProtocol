@@ -252,7 +252,6 @@ class ScanDevicesEndPoint(HomeAssistantView):
             }
             for device in devices
         ]
-        # TODO: some processing and formating
         return web.json_response(devices)
 
     async def discover_network_devices(self, prodcast_attempts=30) -> list:
@@ -330,3 +329,14 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                     "error": "Old password is incorrect, please try again",
                 }
             )
+        
+        directory = "/conf/data"
+        key = self.tis_api.get_encryption_key(directory)
+        data = self.tis_api.read_and_decrypt_data(directory=directory, key=key)
+        
+        return web.json_response(
+            {
+                "message": "success",
+                "data": data,
+            }
+        )
