@@ -138,15 +138,21 @@ class TISApi:
 
     async def get_entities(self, platform: str = None) -> list:
         """Get the stored entities."""
-        directroy = "/conf/data"
-        os.makedirs(directroy, exist_ok=True)
-        file_name = "app.json"
-        output_file = os.path.join(directroy, file_name)
+        directory = "/conf/data"
+        os.makedirs(directory, exist_ok=True)
 
+        key = self._get_encryption_key(directory)
+        data = self._read_and_decrypt_data(directory, key)
+
+        await self.parse_device_manager_request(data)
+        entities = self.config_entries.get(platform, [])
+        return entities
+
+    def _get_encryption_key(self, directory: str) -> str:
+        """Retrieve or generate the encryption key."""
         env_filename = ".env"
-        env_file_path = os.path.join(directroy, env_filename)
+        env_file_path = os.path.join(directory, env_filename)
 
-        key = None
         load_dotenv(env_file_path)
         key = os.getenv("ENCRYPTION_KEY")
 
@@ -157,6 +163,14 @@ class TISApi:
                     file.write(f'ENCRYPTION_KEY="{key}"\n')
             except Exception as e:
                 logging.error(f"Error writing .env file: {e}")
+
+        return key
+
+    def _read_and_decrypt_data(self, directory: str, key: str) -> dict:
+        """Read and decrypt the stored data."""
+        file_name = "app.json"
+        output_file = os.path.join(directory, file_name)
+
         try:
             with open(output_file, "r") as f:
                 encrypted_str = json.load(f)
@@ -168,9 +182,7 @@ class TISApi:
             with open(output_file, "w") as f:
                 json.dump("", f)
                 data = {}
-        await self.parse_device_manager_request(data)
-        entities = self.config_entries.get(platform, [])
-        return entities
+        return data
 
 
 class TISEndPoint(HomeAssistantView):
