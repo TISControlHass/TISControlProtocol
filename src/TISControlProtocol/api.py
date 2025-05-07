@@ -330,6 +330,15 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                 status=403,
             )
 
+        if new_pass == old_pass:
+            return web.json_response(
+                {
+                    "message": "error",
+                    "error": "New password must be different from the old password",
+                },
+                status=400,
+            )
+
         if len(new_pass) < 4:
             return web.json_response(
                 {
@@ -360,7 +369,7 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
         return web.json_response(
             {
                 "message": "success",
-                'data': self.tis_api.config_entries,
+                "data": self.tis_api.config_entries,
             }
         )
 
