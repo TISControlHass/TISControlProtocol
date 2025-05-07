@@ -141,14 +141,14 @@ class TISApi:
         directory = "/conf/data"
         os.makedirs(directory, exist_ok=True)
 
-        key = self._get_encryption_key(directory)
-        data = self._read_and_decrypt_data(directory, key)
+        key = self.get_encryption_key(directory)
+        data = self.read_and_decrypt_data(directory, key)
 
         await self.parse_device_manager_request(data)
         entities = self.config_entries.get(platform, [])
         return entities
 
-    def _get_encryption_key(self, directory: str) -> str:
+    def get_encryption_key(self, directory: str) -> str:
         """Retrieve or generate the encryption key."""
         env_filename = ".env"
         env_file_path = os.path.join(directory, env_filename)
@@ -165,7 +165,7 @@ class TISApi:
                 logging.error(f"Error writing .env file: {e}")
         return key
 
-    def _read_and_decrypt_data(self, directory: str, key: str) -> dict:
+    def read_and_decrypt_data(self, directory: str, key: str) -> dict:
         """Read and decrypt the stored data."""
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
@@ -183,7 +183,7 @@ class TISApi:
                 data = {}
         return data
 
-    def _encrypt_and_save_data(self, data: dict, directory: str, key: str) -> None:
+    def encrypt_and_save_data(self, data: dict, directory: str, key: str) -> None:
         """Encrypt and save the data."""
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
@@ -208,36 +208,11 @@ class TISEndPoint(HomeAssistantView):
 
     async def post(self, request):
         directory = "/conf/data"
-        os.makedirs(directory, exist_ok=True)
-        file_name = "app.json"
-        output_file = os.path.join(directory, file_name)
-
-        env_filename = ".env"
-        env_file_path = os.path.join(directory, env_filename)
-
-        key = None
-        load_dotenv(env_file_path)
-        key = os.getenv("ENCRYPTION_KEY")
-
-        if key is None:
-            key = Fernet.generate_key().decode()
-            try:
-                with open(env_file_path, "w") as file:
-                    file.write(f'ENCRYPTION_KEY="{key}"\n')
-            except Exception as e:
-                logging.error(f"Error writing .env file: {e}")
+        key = self.api.get_encryption_key(directory)
 
         # Parse the JSON data from the request
         data = await request.json()
-
-        encrypted = Fernet(key).encrypt(json.dumps(data).encode())
-
-        # Convert to base64 string
-        encrypted_str = base64.b64encode(encrypted).decode()
-
-        # Dump to file
-        with open(output_file, "w") as f:
-            json.dump(encrypted_str, f, indent=4)
+        self.api.encrypt_and_save_data(data, directory, key)
 
         # Start reload operations in the background
         asyncio.create_task(self.reload_platforms())
