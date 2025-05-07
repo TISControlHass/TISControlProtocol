@@ -330,11 +330,11 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                     "error": "Old password is incorrect, please try again",
                 }
             )
-        
+
         directory = "/conf/data"
         key = await self.tis_api.get_encryption_key(directory)
         data = await self.tis_api.read_and_decrypt_data(directory=directory, key=key)
-        
+
         return web.json_response(
             {
                 "message": "success",
