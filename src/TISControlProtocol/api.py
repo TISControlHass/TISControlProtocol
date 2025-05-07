@@ -301,5 +301,5 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
         self.tis_api = tis_api
 
     async def post(self, request):
-        data = request.json()
+        data = await request.json()
         return web.json_response({"message": "success", "data": data})
