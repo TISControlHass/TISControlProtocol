@@ -304,7 +304,8 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
         except Exception as e:
             logging.error(f"Error parsing request: {e}")
             return web.json_response(
-                {"message": "error", "error": "Invalid request parameters"}
+                {"message": "error", "error": "Invalid request parameters"},
+                status=400,
             )
 
         if new_pass != confirm_pass:
@@ -312,7 +313,8 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                 {
                     "message": "error",
                     "error": "New password and confirmation do not match",
-                }
+                },
+                status=400,
             )
 
         if len(new_pass) < 4:
@@ -320,7 +322,8 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                 {
                     "message": "error",
                     "error": "Password must be at least 4 characters long",
-                }
+                },
+                status=400,
             )
 
         if old_pass != self.tis_api.config_entries["lock_module"]["password"]:
@@ -328,7 +331,8 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                 {
                     "message": "error",
                     "error": "Old password is incorrect, please try again",
-                }
+                },
+                status=403,
             )
 
         directory = "/conf/data"
