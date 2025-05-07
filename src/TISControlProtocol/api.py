@@ -143,7 +143,7 @@ class TISApi:
         os.makedirs(directory, exist_ok=True)
 
         key = await self.get_encryption_key(directory)
-        data = self.read_and_decrypt_data(directory, key)
+        data = await self.read_and_decrypt_data(directory, key)
 
         await self.parse_device_manager_request(data)
         entities = self.config_entries.get(platform, [])
@@ -332,8 +332,8 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
             )
         
         directory = "/conf/data"
-        key = self.tis_api.get_encryption_key(directory)
-        data = self.tis_api.read_and_decrypt_data(directory=directory, key=key)
+        key = await self.tis_api.get_encryption_key(directory)
+        data = await self.tis_api.read_and_decrypt_data(directory=directory, key=key)
         
         return web.json_response(
             {
