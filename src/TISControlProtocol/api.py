@@ -140,10 +140,10 @@ class TISApi:
         """Get the stored entities."""
         directroy = "/conf/data"
         os.makedirs(directroy, exist_ok=True)
-        file_name = 'app.json'
+        file_name = "app.json"
         output_file = os.path.join(directroy, file_name)
 
-        env_filename = '.env'
+        env_filename = ".env"
         env_file_path = os.path.join(directroy, env_filename)
 
         key = None
@@ -160,12 +160,14 @@ class TISApi:
         try:
             with open(output_file, "r") as f:
                 encrypted_str = json.load(f)
-                decrypted_str = Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
+                decrypted_str = (
+                    Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
+                )
                 data = json.loads(decrypted_str)
                 await self.parse_device_manager_request(data)
         except FileNotFoundError:
             with open(output_file, "w") as f:
-                json.dump('', f)
+                json.dump("", f)
                 data = {}
         await self.parse_device_manager_request(data)
         entities = self.config_entries.get(platform, [])
@@ -186,10 +188,10 @@ class TISEndPoint(HomeAssistantView):
     async def post(self, request):
         directory = "/conf/data"
         os.makedirs(directory, exist_ok=True)
-        file_name = 'app.json'
+        file_name = "app.json"
         output_file = os.path.join(directory, file_name)
 
-        env_filename = '.env'
+        env_filename = ".env"
         env_file_path = os.path.join(directory, env_filename)
 
         key = None
@@ -226,6 +228,7 @@ class TISEndPoint(HomeAssistantView):
         # Reload the platforms
         for entry in self.api.hass.config_entries.async_entries(self.api.domain):
             await self.api.hass.config_entries.async_reload(entry.entry_id)
+
 
 class ScanDevicesEndPoint(HomeAssistantView):
     """Scan Devices API endpoint."""
@@ -286,3 +289,17 @@ class GetKeyEndpoint(HomeAssistantView):
         # Return the MAC address
         return web.json_response({"key": mac_address})
 
+
+class ChangeSecurityPassEndpoint(HomeAssistantView):
+    """Change Security Password API Endpoint."""
+
+    url = "/api/change_pass"
+    name = "api:change_pass"
+    requires_auth = False
+
+    def __init__(self, tis_api: TISApi):
+        self.tis_api = tis_api
+
+    async def post(self, request):
+        data = request.json()
+        return web.json_response({"message": "success", "data": data})
