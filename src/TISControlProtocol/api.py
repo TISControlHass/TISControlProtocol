@@ -141,7 +141,6 @@ class TISApi:
         self.config_entries["lock_module"] = {
             "password": data["configs"]["lock_module_password"]
         }
-        logging.warning(f"self.config_entries: {self.config_entries}")
         return self.config_entries
 
     async def get_entities(self, platform: str = None) -> list:
@@ -152,8 +151,7 @@ class TISApi:
         key = await self.get_encryption_key(directory)
         data = await self.read_and_decrypt_data(directory, key)
 
-        config_entries = await self.parse_device_manager_request(data)
-        logging.warning(f"config_entries: {config_entries}")
+        await self.parse_device_manager_request(data)
         entities = self.config_entries.get(platform, [])
         return entities
 
@@ -306,20 +304,16 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
 
     async def post(self, request):
         try:
-            data = await request.json()
-            old_pass = data.get("old_pass")
-            new_pass = data.get("new_pass")
-            confirm_pass = data.get("confirm_pass")
+            old_pass = request.query.get("old_pass")
+            new_pass = request.query.get("new_pass")
+            confirm_pass = request.query.get("confirm_pass")
 
-            if old_pass is None:
-                logging.warning("old_pass is None, trying to get it from query")
-                old_pass = request.query.get("old_pass")
-            if new_pass is None:
-                logging.warning("new_pass is None, trying to get it from query")
-                new_pass = request.query.get("new_pass")
-            if confirm_pass is None:
-                logging.warning("confirm_pass is None, trying to get it from query")
-                confirm_pass = request.query.get("confirm_pass")
+            if old_pass is None or new_pass is None or confirm_pass is None:
+                logging.info("Required parameters not found in query, parsing request body")
+                data = await request.json()
+                old_pass = old_pass or data.get("old_pass")
+                new_pass = new_pass or data.get("new_pass")
+                confirm_pass = confirm_pass or data.get("confirm_pass")
 
             if old_pass is None or new_pass is None or confirm_pass is None:
                 logging.error("Missing required parameters")
@@ -337,11 +331,6 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                 {"message": "error", "error": "Invalid request parameters"},
                 status=400,
             )
-
-        logging.warning(f"Old pass: {old_pass}, New pass: {new_pass}")
-        logging.warning(
-            f"Correct pass: {self.tis_api.config_entries['lock_module']['password']}"
-        )
 
         if old_pass != self.tis_api.config_entries["lock_module"]["password"]:
             return web.json_response(
