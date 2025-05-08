@@ -380,7 +380,6 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
         return web.json_response(
             {
                 "message": "success",
-                "data": self.tis_api.config_entries,
             }
         )
 
