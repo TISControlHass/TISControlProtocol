@@ -306,9 +306,18 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
 
     async def post(self, request):
         try:
-            old_pass = request.query.get("old_pass")
-            new_pass = request.query.get("new_pass")
-            confirm_pass = request.query.get("confirm_pass")
+            data = await request.json()
+            old_pass = data.get("old_pass")
+            new_pass = data.get("new_pass")
+            confirm_pass = data.get("confirm_pass")
+
+            if old_pass is None:
+                old_pass = request.query.get("old_pass")
+            if new_pass is None:
+                new_pass = request.query.get("new_pass")
+            if confirm_pass is None:
+                confirm_pass = request.query.get("confirm_pass")
+
         except Exception as e:
             logging.error(f"Error parsing request: {e}")
             return web.json_response(
