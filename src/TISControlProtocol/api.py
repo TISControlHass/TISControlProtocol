@@ -312,13 +312,17 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
             confirm_pass = data.get("confirm_pass")
 
             if old_pass is None:
+                logging.warning("old_pass is None, trying to get it from query")
                 old_pass = request.query.get("old_pass")
             if new_pass is None:
+                logging.warning("new_pass is None, trying to get it from query")
                 new_pass = request.query.get("new_pass")
             if confirm_pass is None:
+                logging.warning("confirm_pass is None, trying to get it from query")
                 confirm_pass = request.query.get("confirm_pass")
-                
+
             if old_pass is None or new_pass is None or confirm_pass is None:
+                logging.error("Missing required parameters")
                 return web.json_response(
                     {
                         "message": "error",
