@@ -16,6 +16,7 @@ import socket
 import logging
 from collections import defaultdict
 import json
+import psutil
 import asyncio
 import ST7789
 from PIL import Image
@@ -309,7 +310,9 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
             confirm_pass = request.query.get("confirm_pass")
 
             if old_pass is None or new_pass is None or confirm_pass is None:
-                logging.info("Required parameters not found in query, parsing request body")
+                logging.info(
+                    "Required parameters not found in query, parsing request body"
+                )
                 data = await request.json()
                 old_pass = old_pass or data.get("old_pass")
                 new_pass = new_pass or data.get("new_pass")
@@ -388,3 +391,75 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
             self.tis_api.domain
         ):
             await self.tis_api.hass.config_entries.async_reload(entry.entry_id)
+
+
+class CMSEndpoint(HomeAssistantView):
+    """Send data to CMS for monitoring."""
+
+    url = "/api/cms"
+    name = "api:cms"
+    requires_auth = False
+
+    def __init__(self, api: TISApi) -> None:
+        """Initialize the endpoint."""
+        self.api = api
+
+    async def get(self, request):
+        try:
+            # Mac Address Stuff
+            mac = uuid.getnode()
+            mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+
+            # CPU Stuff
+            cpu_usage = await self.api.hass.async_add_executor_job(
+                psutil.cpu_percent, 1
+            )
+
+            cpu_temp = await self.api.hass.async_add_executor_job(
+                psutil.sensors_temperatures
+            )
+            cpu_temp = cpu_temp.get("cpu_thermal", None)
+            if cpu_temp is not None:
+                cpu_temp = cpu_temp[0].current
+            else:
+                cpu_temp = 0
+
+            cpu = {
+                "cpu_usage": cpu_usage,
+                "cpu_temp": cpu_temp,
+            }
+
+            # Disk Stuff
+            total, used, free, percent = await self.api.hass.async_add_executor_job(
+                psutil.disk_usage, "/"
+            )
+            disk = {
+                "total": total,
+                "used": used,
+                "free": free,
+                "percent": percent,
+            }
+
+            # Memory Stuff
+            mem = await self.api.hass.async_add_executor_job(psutil.virtual_memory)
+            memory = {
+                "total": mem.total,
+                "available": mem.available,
+                "used": mem.used,
+                "percent": mem.percent,
+                "free": mem.free,
+            }
+
+            return web.json_response(
+                {
+                    "mac_address": mac_address,
+                    "cpu": cpu,
+                    "disk": disk,
+                    "memory": memory,
+                }
+            )
+        except Exception as e:
+            logging.error(f"Error in CMSEndpoint: {e}")
+            return web.json_response(
+                {"error": "Error in CMSEndpoint", "message": str(e)}, status=500
+            )
