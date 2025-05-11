@@ -73,6 +73,7 @@ class TISApi:
             self.hass.http.register_view(ScanDevicesEndPoint(self))
             self.hass.http.register_view(GetKeyEndpoint(self))
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
+            self.hass.http.register_view(CMSEndpoint(self))
             self.hass.async_add_executor_job(self.run_display)
         except ConnectionError as e:
             logging.error("Error registering views %s", e)
