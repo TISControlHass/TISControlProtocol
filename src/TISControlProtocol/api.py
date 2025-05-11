@@ -162,7 +162,7 @@ class TISApi:
         env_filename = ".env"
         env_file_path = os.path.join(directory, env_filename)
 
-        load_dotenv(env_file_path)
+        await self.hass.async_add_executor_job(load_dotenv, env_file_path)
         key = os.getenv("ENCRYPTION_KEY")
 
         if key is None:
