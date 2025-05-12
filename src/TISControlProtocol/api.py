@@ -10,6 +10,7 @@ import os
 from homeassistant.core import HomeAssistant  # type: ignore
 from homeassistant.components.http import HomeAssistantView  # type: ignore
 from typing import Optional
+import aiohttp
 from aiohttp import web
 import aiofiles
 import socket
@@ -401,9 +402,23 @@ class CMSEndpoint(HomeAssistantView):
     name = "api:cms"
     requires_auth = False
 
-    def __init__(self, api: TISApi) -> None:
+    def __init__(self, external_url, api: TISApi) -> None:
         """Initialize the endpoint."""
         self.api = api
+        self.external_url = external_url
+        self._session = None
+
+    def get_session(self):
+        """Get the aiohttp session."""
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession()
+        return self._session
+
+    async def close_session(self):
+        """Close the aiohttp session."""
+        if self._session is not None and not self._session.closed:
+            await self._session.close()
+            self._session = None
 
     async def get(self, request):
         try:
@@ -451,14 +466,30 @@ class CMSEndpoint(HomeAssistantView):
                 "free": mem.free,
             }
 
-            return web.json_response(
-                {
-                    "mac_address": mac_address,
-                    "cpu": cpu,
-                    "disk": disk,
-                    "memory": memory,
-                }
-            )
+            data = {
+                "mac_address": mac_address,
+                "cpu": cpu,
+                "disk": disk,
+                "memory": memory,
+            }
+
+            session = self.get_session()
+            try:
+                async with session.post(self.external_url, json=data) as response:
+                    if response.status != 200:
+                        logging.error(f"Error sending data to CMS: {response.status}")
+                        return web.json_response(
+                            {"error": "Error sending data to CMS"}, status=500
+                        )
+                    else:
+                        return web.json_response(
+                            {"message": "Data sent to CMS successfully"}
+                        )
+            except aiohttp.ClientError as e:
+                logging.error(f"Error sending data to CMS: {e}")
+                return web.json_response(
+                    {"error": "Error sending data to CMS"}, status=500
+                )
         except Exception as e:
             logging.error(f"Error in CMSEndpoint: {e}")
             return web.json_response(
