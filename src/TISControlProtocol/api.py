@@ -51,6 +51,7 @@ class TISApi:
         self.devices_dict = devices_dict
         self.display_logo = display_logo
         self.display = None
+        self.cms_url = "192.168.1.23"
 
     async def connect(self):
         """Connect to the TIS API."""
@@ -74,7 +75,9 @@ class TISApi:
             self.hass.http.register_view(ScanDevicesEndPoint(self))
             self.hass.http.register_view(GetKeyEndpoint(self))
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
-            cms_api = CMSEndpoint(external_url=self.cms_url, api=self)
+            cms_api = CMSEndpoint(
+                external_url=f"{self.cms_url}/api/device-health", api=self
+            )
             self.hass.http.register_view(cms_api)
             self.hass.async_add_executor_job(self.run_display)
             async def close_endpoint_session(event):
