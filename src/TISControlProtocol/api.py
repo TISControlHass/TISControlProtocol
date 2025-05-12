@@ -74,8 +74,14 @@ class TISApi:
             self.hass.http.register_view(ScanDevicesEndPoint(self))
             self.hass.http.register_view(GetKeyEndpoint(self))
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
-            self.hass.http.register_view(CMSEndpoint(self))
+            cms_api = CMSEndpoint(external_url=self.cms_url, api=self)
+            self.hass.http.register_view(cms_api)
             self.hass.async_add_executor_job(self.run_display)
+            async def close_endpoint_session(event):
+                await cms_api.close_session()
+            
+            self.hass.bus.async_listen_once('homeassistant_stop', close_endpoint_session)
+
         except ConnectionError as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
