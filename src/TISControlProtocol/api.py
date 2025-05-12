@@ -434,31 +434,39 @@ class CMSEndpoint(HomeAssistantView):
 
     async def get(self, request):
         try:
+            logging.warning("Starting CMSEndpoint GET request processing")
+
             # Mac Address Stuff
             mac = uuid.getnode()
             mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+            logging.warning(f"MAC Address: {mac_address}")
 
             # CPU Stuff
             cpu_usage = await self.api.hass.async_add_executor_job(
                 psutil.cpu_percent, 1
             )
+            logging.warning(f"CPU Usage: {cpu_usage}%")
 
             cpu_temp = await self.api.hass.async_add_executor_job(
                 psutil.sensors_temperatures
             )
+            logging.warning(f"Raw CPU Temperature Data: {cpu_temp}")
             cpu_temp = cpu_temp.get("cpu_thermal", None)
             if cpu_temp is not None:
                 cpu_temp = cpu_temp[0].current
             else:
                 cpu_temp = 0
+            logging.warning(f"CPU Temperature: {cpu_temp}°C")
 
             # Disk Stuff
             total, used, free, percent = await self.api.hass.async_add_executor_job(
                 psutil.disk_usage, "/"
             )
+            logging.warning(f"Disk Usage - Total: {total}, Used: {used}, Free: {free}, Percent: {percent}%")
 
             # Memory Stuff
             mem = await self.api.hass.async_add_executor_job(psutil.virtual_memory)
+            logging.warning(f"Memory Usage - Total: {mem.total}, Free: {mem.free}, Percent: {mem.percent}%")
 
             data = {
                 "mac_address": mac_address,
@@ -471,26 +479,32 @@ class CMSEndpoint(HomeAssistantView):
                 "ram_free": mem.free,
                 "ram_percent": mem.percent,
             }
+            logging.warning(f"Data to be sent to CMS: {data}")
 
             session = self.get_session()
+            logging.warning(f"Session object: {session}")
             try:
                 async with session.post(self.external_url, json=data) as response:
+                    logging.warning(f"CMS Response Status: {response.status}")
                     if response.status != 200:
+                        error_text = await response.text()
                         logging.error(f"Error sending data to CMS: {response.status}")
+                        logging.error(f"Error response: {error_text}")
                         return web.json_response(
                             {"error": "Error sending data to CMS"}, status=500
                         )
                     else:
+                        logging.info("Data sent to CMS successfully")
                         return web.json_response(
                             {"message": "Data sent to CMS successfully"}
                         )
             except aiohttp.ClientError as e:
-                logging.error(f"Error sending data to CMS: {e}")
+                logging.error(f"ClientError while sending data to CMS: {e}")
                 return web.json_response(
                     {"error": "Error sending data to CMS"}, status=500
                 )
         except Exception as e:
-            logging.error(f"Error in CMSEndpoint: {e}")
+            logging.error(f"Unexpected error in CMSEndpoint: {e}", exc_info=True)
             return web.json_response(
                 {"error": "Error in CMSEndpoint", "message": str(e)}, status=500
             )
