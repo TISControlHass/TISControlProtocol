@@ -482,7 +482,7 @@ class CMSEndpoint(HomeAssistantView):
             logging.warning(f"Data to be sent to CMS: {data}")
 
             session = self.get_session()
-            logging.warning(f"Session object: {session}")
+            logging.warning(f"external url {self.external_url}")
             try:
                 async with session.post(self.external_url, json=data) as response:
                     logging.warning(f"CMS Response Status: {response.status}")
