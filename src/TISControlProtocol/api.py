@@ -80,10 +80,13 @@ class TISApi:
             )
             self.hass.http.register_view(cms_api)
             self.hass.async_add_executor_job(self.run_display)
+
             async def close_endpoint_session(event):
                 await cms_api.close_session()
-            
-            self.hass.bus.async_listen_once('homeassistant_stop', close_endpoint_session)
+
+            self.hass.bus.async_listen_once(
+                "homeassistant_stop", close_endpoint_session
+            )
 
         except ConnectionError as e:
             logging.error("Error registering views %s", e)
@@ -449,37 +452,24 @@ class CMSEndpoint(HomeAssistantView):
             else:
                 cpu_temp = 0
 
-            cpu = {
-                "cpu_usage": cpu_usage,
-                "cpu_temp": cpu_temp,
-            }
-
             # Disk Stuff
             total, used, free, percent = await self.api.hass.async_add_executor_job(
                 psutil.disk_usage, "/"
             )
-            disk = {
-                "total": total,
-                "used": used,
-                "free": free,
-                "percent": percent,
-            }
 
             # Memory Stuff
             mem = await self.api.hass.async_add_executor_job(psutil.virtual_memory)
-            memory = {
-                "total": mem.total,
-                "available": mem.available,
-                "used": mem.used,
-                "percent": mem.percent,
-                "free": mem.free,
-            }
 
             data = {
                 "mac_address": mac_address,
-                "cpu": cpu,
-                "disk": disk,
-                "memory": memory,
+                "cpu_usage": cpu_usage,
+                "cpu_temperature": cpu_temp,
+                "disk_total": total,
+                "disk_free": free,
+                "disk_percent": percent,
+                "ram_total": mem.total,
+                "ram_free": mem.free,
+                "ram_percent": mem.percent,
             }
 
             session = self.get_session()
