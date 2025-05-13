@@ -115,7 +115,7 @@ class TISApi:
             cms_sender = CMSDataSender(
                 external_url=f"{self.cms_url}/api/device-health", hass=self.hass
             )
-            cms_sender.send_data(data)
+            await cms_sender.send_data(data)
 
         self.hass.services.async_register(
             self.domain,
