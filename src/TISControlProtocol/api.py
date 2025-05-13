@@ -51,7 +51,7 @@ class TISApi:
         self.devices_dict = devices_dict
         self.display_logo = display_logo
         self.display = None
-        self.cms_url = "192.168.1.23"
+        self.cms_url = "http://192.168.1.23"
 
     async def connect(self):
         """Connect to the TIS API."""
