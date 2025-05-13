@@ -80,6 +80,18 @@ class TISApi:
             )
             self.hass.async_add_executor_job(self.run_display)
 
+            async def handle_cms_data(call):
+                logging.warning(f"Starting CMS data sender \n call: {call}")
+                cms_sender = CMSDataSender(
+                    external_url=f"{self.cms_url}/api/device-health", hass=self.hass
+                )
+                cms_sender.send_data()
+
+            self.hass.services.async_register(
+                self.domain,
+                "send_cms_data",
+                handle_cms_data,
+            )
         except ConnectionError as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
