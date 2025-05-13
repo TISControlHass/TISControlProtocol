@@ -7,6 +7,8 @@ from TISControlProtocol.Protocols.udp.ProtocolHandler import (
 import base64
 from cryptography.fernet import Fernet
 import os
+from datetime import timedelta
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.core import HomeAssistant  # type: ignore
 from homeassistant.components.http import HomeAssistantView  # type: ignore
 from typing import Optional
@@ -98,16 +100,20 @@ class TISApi:
                 "send_cms_data",
                 handle_cms_data,
             )
-            
+
             async def scheduled_task(now=None):
                 try:
                     # Mac Address Stuff
                     mac = uuid.getnode()
-                    mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+                    mac_address = ":".join(
+                        ("%012X" % mac)[i : i + 2] for i in range(0, 12, 2)
+                    )
                     logging.warning(f"MAC Address: {mac_address}")
 
                     # CPU Stuff
-                    cpu_usage = await self.hass.async_add_executor_job(psutil.cpu_percent, 1)
+                    cpu_usage = await self.hass.async_add_executor_job(
+                        psutil.cpu_percent, 1
+                    )
                     logging.warning(f"CPU Usage: {cpu_usage}%")
 
                     cpu_temp = await self.hass.async_add_executor_job(
@@ -147,7 +153,7 @@ class TISApi:
                         "ram_percent": mem.percent,
                     }
                     logging.warning(f"Data to be sent to CMS: {data}")
-                    
+
                     await self.hass.services.async_call(
                         self.domain,
                         "send_cms_data",
@@ -157,6 +163,10 @@ class TISApi:
                 except Exception as e:
                     logging.error(f"Error getting data for CMS: {e}")
                     return
+
+            interval = timedelta(minutes=3)
+            async_track_time_interval(self.hass, scheduled_task, interval)
+
         except ConnectionError as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
