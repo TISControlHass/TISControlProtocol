@@ -104,8 +104,8 @@ class TISApi:
 
     def _register_services(self):
         """Register Home Assistant services."""
+
         async def handle_cms_data(call):
-            logging.warning(f"Starting CMS data sender \n call: {call}")
             data = call.data.get("data", None)
 
             if data is None:
@@ -125,10 +125,10 @@ class TISApi:
 
     def _schedule_cms_data_task(self):
         """Schedule periodic CMS data task."""
+
         async def scheduled_task(now=None):
             try:
                 data = await self._collect_system_data()
-                logging.warning(f"Data to be sent to CMS: {data}")
 
                 await self.hass.services.async_call(
                     self.domain,
@@ -146,32 +146,22 @@ class TISApi:
         # Mac Address
         mac = uuid.getnode()
         mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
-        logging.warning(f"MAC Address: {mac_address}")
 
         # CPU Usage
         cpu_usage = await self.hass.async_add_executor_job(psutil.cpu_percent, 1)
-        logging.warning(f"CPU Usage: {cpu_usage}%")
 
         # CPU Temperature
         cpu_temp = await self.hass.async_add_executor_job(psutil.sensors_temperatures)
-        logging.warning(f"Raw CPU Temperature Data: {cpu_temp}")
         cpu_temp = cpu_temp.get("cpu_thermal", None)
         cpu_temp = cpu_temp[0].current if cpu_temp else 0
-        logging.warning(f"CPU Temperature: {cpu_temp}°C")
 
         # Disk Usage
-        total, used, free, percent = await self.hass.async_add_executor_job(
+        total, _, free, percent = await self.hass.async_add_executor_job(
             psutil.disk_usage, "/"
-        )
-        logging.warning(
-            f"Disk Usage - Total: {total}, Used: {used}, Free: {free}, Percent: {percent}%"
         )
 
         # Memory Usage
         mem = await self.hass.async_add_executor_job(psutil.virtual_memory)
-        logging.warning(
-            f"Memory Usage - Total: {mem.total}, Free: {mem.free}, Percent: {mem.percent}%"
-        )
 
         return {
             "mac_address": mac_address,
