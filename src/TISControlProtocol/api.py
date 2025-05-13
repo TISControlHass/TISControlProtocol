@@ -60,6 +60,19 @@ class TISApi:
         self.loop = self.hass.loop
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
+            await self._setup_udp_protocol()
+            await self._initialize_hass_data()
+            await self._register_http_views()
+            self.hass.async_add_executor_job(self.run_display)
+            self._register_services()
+            self._schedule_cms_data_task()
+        except Exception as e:
+            logging.error("Error during connection setup: %s", e)
+            raise ConnectionError
+
+    async def _setup_udp_protocol(self):
+        """Setup the UDP protocol."""
+        try:
             self.transport, self.protocol = await setup_udp_protocol(
                 self.sock,
                 self.loop,
@@ -71,8 +84,13 @@ class TISApi:
             logging.error("Error connecting to TIS API %s", e)
             raise ConnectionError
 
+    async def _initialize_hass_data(self):
+        """Initialize Home Assistant data."""
+        self.hass.data[self.domain]["discovered_devices"] = []
+
+    async def _register_http_views(self):
+        """Register HTTP views."""
         try:
-            self.hass.data[self.domain]["discovered_devices"] = []
             self.hass.http.register_view(TISEndPoint(self))
             self.hass.http.register_view(ScanDevicesEndPoint(self))
             self.hass.http.register_view(GetKeyEndpoint(self))
@@ -80,96 +98,92 @@ class TISApi:
             self.hass.http.register_view(
                 CMSEndpoint(external_url=f"{self.cms_url}/api/device-health", api=self)
             )
-            self.hass.async_add_executor_job(self.run_display)
-
-            async def handle_cms_data(call):
-                logging.warning(f"Starting CMS data sender \n call: {call}")
-                data = call.data.get("data", None)
-
-                if data is None:
-                    logging.error("No data provided to send to CMS")
-                    return
-
-                cms_sender = CMSDataSender(
-                    external_url=f"{self.cms_url}/api/device-health", hass=self.hass
-                )
-                cms_sender.send_data(data)
-
-            self.hass.services.async_register(
-                self.domain,
-                "send_cms_data",
-                handle_cms_data,
-            )
-
-            async def scheduled_task(now=None):
-                try:
-                    # Mac Address Stuff
-                    mac = uuid.getnode()
-                    mac_address = ":".join(
-                        ("%012X" % mac)[i : i + 2] for i in range(0, 12, 2)
-                    )
-                    logging.warning(f"MAC Address: {mac_address}")
-
-                    # CPU Stuff
-                    cpu_usage = await self.hass.async_add_executor_job(
-                        psutil.cpu_percent, 1
-                    )
-                    logging.warning(f"CPU Usage: {cpu_usage}%")
-
-                    cpu_temp = await self.hass.async_add_executor_job(
-                        psutil.sensors_temperatures
-                    )
-                    logging.warning(f"Raw CPU Temperature Data: {cpu_temp}")
-                    cpu_temp = cpu_temp.get("cpu_thermal", None)
-                    if cpu_temp is not None:
-                        cpu_temp = cpu_temp[0].current
-                    else:
-                        cpu_temp = 0
-                    logging.warning(f"CPU Temperature: {cpu_temp}°C")
-
-                    # Disk Stuff
-                    total, used, free, percent = await self.hass.async_add_executor_job(
-                        psutil.disk_usage, "/"
-                    )
-                    logging.warning(
-                        f"Disk Usage - Total: {total}, Used: {used}, Free: {free}, Percent: {percent}%"
-                    )
-
-                    # Memory Stuff
-                    mem = await self.hass.async_add_executor_job(psutil.virtual_memory)
-                    logging.warning(
-                        f"Memory Usage - Total: {mem.total}, Free: {mem.free}, Percent: {mem.percent}%"
-                    )
-
-                    data = {
-                        "mac_address": mac_address,
-                        "cpu_usage": cpu_usage,
-                        "cpu_temperature": cpu_temp,
-                        "disk_total": total,
-                        "disk_free": free,
-                        "disk_percent": percent,
-                        "ram_total": mem.total,
-                        "ram_free": mem.free,
-                        "ram_percent": mem.percent,
-                    }
-                    logging.warning(f"Data to be sent to CMS: {data}")
-
-                    await self.hass.services.async_call(
-                        self.domain,
-                        "send_cms_data",
-                        {"data": data},
-                    )
-
-                except Exception as e:
-                    logging.error(f"Error getting data for CMS: {e}")
-                    return
-
-            interval = timedelta(minutes=3)
-            async_track_time_interval(self.hass, scheduled_task, interval)
-
-        except ConnectionError as e:
+        except Exception as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
+
+    def _register_services(self):
+        """Register Home Assistant services."""
+        async def handle_cms_data(call):
+            logging.warning(f"Starting CMS data sender \n call: {call}")
+            data = call.data.get("data", None)
+
+            if data is None:
+                logging.error("No data provided to send to CMS")
+                return
+
+            cms_sender = CMSDataSender(
+                external_url=f"{self.cms_url}/api/device-health", hass=self.hass
+            )
+            cms_sender.send_data(data)
+
+        self.hass.services.async_register(
+            self.domain,
+            "send_cms_data",
+            handle_cms_data,
+        )
+
+    def _schedule_cms_data_task(self):
+        """Schedule periodic CMS data task."""
+        async def scheduled_task(now=None):
+            try:
+                data = await self._collect_system_data()
+                logging.warning(f"Data to be sent to CMS: {data}")
+
+                await self.hass.services.async_call(
+                    self.domain,
+                    "send_cms_data",
+                    {"data": data},
+                )
+            except Exception as e:
+                logging.error(f"Error getting data for CMS: {e}")
+
+        interval = timedelta(minutes=3)
+        async_track_time_interval(self.hass, scheduled_task, interval)
+
+    async def _collect_system_data(self):
+        """Collect system data for CMS."""
+        # Mac Address
+        mac = uuid.getnode()
+        mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+        logging.warning(f"MAC Address: {mac_address}")
+
+        # CPU Usage
+        cpu_usage = await self.hass.async_add_executor_job(psutil.cpu_percent, 1)
+        logging.warning(f"CPU Usage: {cpu_usage}%")
+
+        # CPU Temperature
+        cpu_temp = await self.hass.async_add_executor_job(psutil.sensors_temperatures)
+        logging.warning(f"Raw CPU Temperature Data: {cpu_temp}")
+        cpu_temp = cpu_temp.get("cpu_thermal", None)
+        cpu_temp = cpu_temp[0].current if cpu_temp else 0
+        logging.warning(f"CPU Temperature: {cpu_temp}°C")
+
+        # Disk Usage
+        total, used, free, percent = await self.hass.async_add_executor_job(
+            psutil.disk_usage, "/"
+        )
+        logging.warning(
+            f"Disk Usage - Total: {total}, Used: {used}, Free: {free}, Percent: {percent}%"
+        )
+
+        # Memory Usage
+        mem = await self.hass.async_add_executor_job(psutil.virtual_memory)
+        logging.warning(
+            f"Memory Usage - Total: {mem.total}, Free: {mem.free}, Percent: {mem.percent}%"
+        )
+
+        return {
+            "mac_address": mac_address,
+            "cpu_usage": cpu_usage,
+            "cpu_temperature": cpu_temp,
+            "disk_total": total,
+            "disk_free": free,
+            "disk_percent": percent,
+            "ram_total": mem.total,
+            "ram_free": mem.free,
+            "ram_percent": mem.percent,
+        }
 
     def run_display(self, style="dots"):
         try:
