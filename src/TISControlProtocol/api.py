@@ -82,16 +82,81 @@ class TISApi:
 
             async def handle_cms_data(call):
                 logging.warning(f"Starting CMS data sender \n call: {call}")
+                data = call.data.get("data", None)
+
+                if data is None:
+                    logging.error("No data provided to send to CMS")
+                    return
+
                 cms_sender = CMSDataSender(
                     external_url=f"{self.cms_url}/api/device-health", hass=self.hass
                 )
-                cms_sender.send_data()
+                cms_sender.send_data(data)
 
             self.hass.services.async_register(
                 self.domain,
                 "send_cms_data",
                 handle_cms_data,
             )
+            
+            async def scheduled_task(now=None):
+                try:
+                    # Mac Address Stuff
+                    mac = uuid.getnode()
+                    mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+                    logging.warning(f"MAC Address: {mac_address}")
+
+                    # CPU Stuff
+                    cpu_usage = await self.hass.async_add_executor_job(psutil.cpu_percent, 1)
+                    logging.warning(f"CPU Usage: {cpu_usage}%")
+
+                    cpu_temp = await self.hass.async_add_executor_job(
+                        psutil.sensors_temperatures
+                    )
+                    logging.warning(f"Raw CPU Temperature Data: {cpu_temp}")
+                    cpu_temp = cpu_temp.get("cpu_thermal", None)
+                    if cpu_temp is not None:
+                        cpu_temp = cpu_temp[0].current
+                    else:
+                        cpu_temp = 0
+                    logging.warning(f"CPU Temperature: {cpu_temp}°C")
+
+                    # Disk Stuff
+                    total, used, free, percent = await self.hass.async_add_executor_job(
+                        psutil.disk_usage, "/"
+                    )
+                    logging.warning(
+                        f"Disk Usage - Total: {total}, Used: {used}, Free: {free}, Percent: {percent}%"
+                    )
+
+                    # Memory Stuff
+                    mem = await self.hass.async_add_executor_job(psutil.virtual_memory)
+                    logging.warning(
+                        f"Memory Usage - Total: {mem.total}, Free: {mem.free}, Percent: {mem.percent}%"
+                    )
+
+                    data = {
+                        "mac_address": mac_address,
+                        "cpu_usage": cpu_usage,
+                        "cpu_temperature": cpu_temp,
+                        "disk_total": total,
+                        "disk_free": free,
+                        "disk_percent": percent,
+                        "ram_total": mem.total,
+                        "ram_free": mem.free,
+                        "ram_percent": mem.percent,
+                    }
+                    logging.warning(f"Data to be sent to CMS: {data}")
+                    
+                    await self.hass.services.async_call(
+                        self.domain,
+                        "send_cms_data",
+                        {"data": data},
+                    )
+
+                except Exception as e:
+                    logging.error(f"Error getting data for CMS: {e}")
+                    return
         except ConnectionError as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
@@ -418,63 +483,7 @@ class CMSDataSender:
         self.external_url = external_url
         self.hass = hass
 
-    async def get_data(self):
-        try:
-            # Mac Address Stuff
-            mac = uuid.getnode()
-            mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
-            logging.warning(f"MAC Address: {mac_address}")
-
-            # CPU Stuff
-            cpu_usage = await self.hass.async_add_executor_job(psutil.cpu_percent, 1)
-            logging.warning(f"CPU Usage: {cpu_usage}%")
-
-            cpu_temp = await self.hass.async_add_executor_job(
-                psutil.sensors_temperatures
-            )
-            logging.warning(f"Raw CPU Temperature Data: {cpu_temp}")
-            cpu_temp = cpu_temp.get("cpu_thermal", None)
-            if cpu_temp is not None:
-                cpu_temp = cpu_temp[0].current
-            else:
-                cpu_temp = 0
-            logging.warning(f"CPU Temperature: {cpu_temp}°C")
-
-            # Disk Stuff
-            total, used, free, percent = await self.hass.async_add_executor_job(
-                psutil.disk_usage, "/"
-            )
-            logging.warning(
-                f"Disk Usage - Total: {total}, Used: {used}, Free: {free}, Percent: {percent}%"
-            )
-
-            # Memory Stuff
-            mem = await self.hass.async_add_executor_job(psutil.virtual_memory)
-            logging.warning(
-                f"Memory Usage - Total: {mem.total}, Free: {mem.free}, Percent: {mem.percent}%"
-            )
-
-            data = {
-                "mac_address": mac_address,
-                "cpu_usage": cpu_usage,
-                "cpu_temperature": cpu_temp,
-                "disk_total": total,
-                "disk_free": free,
-                "disk_percent": percent,
-                "ram_total": mem.total,
-                "ram_free": mem.free,
-                "ram_percent": mem.percent,
-            }
-            logging.warning(f"Data to be sent to CMS: {data}")
-
-            return data
-
-        except Exception as e:
-            logging.error(f"Error getting data for CMS: {e}")
-            return None
-
-    async def send_data(self):
-        data = self.get_data()
+    async def send_data(self, data):
         if data is not None:
             try:
                 session = self.hass.helpers.aiohttp_client.async_get_clientsession()
