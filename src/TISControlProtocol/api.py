@@ -75,18 +75,10 @@ class TISApi:
             self.hass.http.register_view(ScanDevicesEndPoint(self))
             self.hass.http.register_view(GetKeyEndpoint(self))
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
-            cms_api = CMSEndpoint(
-                external_url=f"{self.cms_url}/api/device-health", api=self
+            self.hass.http.register_view(
+                CMSEndpoint(external_url=f"{self.cms_url}/api/device-health", api=self)
             )
-            self.hass.http.register_view(cms_api)
             self.hass.async_add_executor_job(self.run_display)
-
-            async def close_endpoint_session(event):
-                await cms_api.close_session()
-
-            self.hass.bus.async_listen_once(
-                "homeassistant_stop", close_endpoint_session
-            )
 
         except ConnectionError as e:
             logging.error("Error registering views %s", e)
@@ -418,19 +410,6 @@ class CMSEndpoint(HomeAssistantView):
         """Initialize the endpoint."""
         self.api = api
         self.external_url = external_url
-        self._session = None
-
-    def get_session(self):
-        """Get the aiohttp session."""
-        if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession()
-        return self._session
-
-    async def close_session(self):
-        """Close the aiohttp session."""
-        if self._session is not None and not self._session.closed:
-            await self._session.close()
-            self._session = None
 
     async def get(self, request):
         try:
@@ -462,11 +441,15 @@ class CMSEndpoint(HomeAssistantView):
             total, used, free, percent = await self.api.hass.async_add_executor_job(
                 psutil.disk_usage, "/"
             )
-            logging.warning(f"Disk Usage - Total: {total}, Used: {used}, Free: {free}, Percent: {percent}%")
+            logging.warning(
+                f"Disk Usage - Total: {total}, Used: {used}, Free: {free}, Percent: {percent}%"
+            )
 
             # Memory Stuff
             mem = await self.api.hass.async_add_executor_job(psutil.virtual_memory)
-            logging.warning(f"Memory Usage - Total: {mem.total}, Free: {mem.free}, Percent: {mem.percent}%")
+            logging.warning(
+                f"Memory Usage - Total: {mem.total}, Free: {mem.free}, Percent: {mem.percent}%"
+            )
 
             data = {
                 "mac_address": mac_address,
@@ -481,8 +464,9 @@ class CMSEndpoint(HomeAssistantView):
             }
             logging.warning(f"Data to be sent to CMS: {data}")
 
-            session = self.get_session()
+            session = self.api.hass.helpers.aiohttp_client.async_get_clientsession()
             logging.warning(f"external url {self.external_url}")
+            logging.warning(f"session: {session}")
             try:
                 async with session.post(self.external_url, json=data) as response:
                     logging.warning(f"CMS Response Status: {response.status}")
