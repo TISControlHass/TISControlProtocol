@@ -501,10 +501,7 @@ class CMSDataSender:
         if data is not None:
             try:
                 session = self.hass.helpers.aiohttp_client.async_get_clientsession()
-                logging.warning(f"external url {self.external_url}")
-                logging.warning(f"session: {session}")
                 async with session.post(self.external_url, json=data) as response:
-                    logging.warning(f"CMS Response Status: {response.status}")
                     if response.status != 200:
                         error_text = await response.text()
                         logging.error(f"Error sending data to CMS: {response.status}")
