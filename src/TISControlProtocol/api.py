@@ -9,8 +9,8 @@ from cryptography.fernet import Fernet
 import os
 from datetime import timedelta
 from homeassistant.helpers.event import async_track_time_interval
-from homeassistant.core import HomeAssistant  # type: ignore
-from homeassistant.components.http import HomeAssistantView  # type: ignore
+from homeassistant.core import HomeAssistant
+from homeassistant.components.http import HomeAssistantView
 from typing import Optional
 import aiohttp
 from aiohttp import web
@@ -95,9 +95,6 @@ class TISApi:
             self.hass.http.register_view(ScanDevicesEndPoint(self))
             self.hass.http.register_view(GetKeyEndpoint(self))
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
-            self.hass.http.register_view(
-                CMSEndpoint(external_url=f"{self.cms_url}/api/device-health", api=self)
-            )
         except Exception as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
@@ -515,98 +512,3 @@ class CMSDataSender:
                 return False
 
         return False
-
-
-class CMSEndpoint(HomeAssistantView):
-    """Send data to CMS for monitoring."""
-
-    url = "/api/cms"
-    name = "api:cms"
-    requires_auth = False
-
-    def __init__(self, external_url, api: TISApi) -> None:
-        """Initialize the endpoint."""
-        self.api = api
-        self.external_url = external_url
-
-    async def get(self, request):
-        try:
-            logging.warning("Starting CMSEndpoint GET request processing")
-
-            # Mac Address Stuff
-            mac = uuid.getnode()
-            mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
-            logging.warning(f"MAC Address: {mac_address}")
-
-            # CPU Stuff
-            cpu_usage = await self.api.hass.async_add_executor_job(
-                psutil.cpu_percent, 1
-            )
-            logging.warning(f"CPU Usage: {cpu_usage}%")
-
-            cpu_temp = await self.api.hass.async_add_executor_job(
-                psutil.sensors_temperatures
-            )
-            logging.warning(f"Raw CPU Temperature Data: {cpu_temp}")
-            cpu_temp = cpu_temp.get("cpu_thermal", None)
-            if cpu_temp is not None:
-                cpu_temp = cpu_temp[0].current
-            else:
-                cpu_temp = 0
-            logging.warning(f"CPU Temperature: {cpu_temp}°C")
-
-            # Disk Stuff
-            total, used, free, percent = await self.api.hass.async_add_executor_job(
-                psutil.disk_usage, "/"
-            )
-            logging.warning(
-                f"Disk Usage - Total: {total}, Used: {used}, Free: {free}, Percent: {percent}%"
-            )
-
-            # Memory Stuff
-            mem = await self.api.hass.async_add_executor_job(psutil.virtual_memory)
-            logging.warning(
-                f"Memory Usage - Total: {mem.total}, Free: {mem.free}, Percent: {mem.percent}%"
-            )
-
-            data = {
-                "mac_address": mac_address,
-                "cpu_usage": cpu_usage,
-                "cpu_temperature": cpu_temp,
-                "disk_total": total,
-                "disk_free": free,
-                "disk_percent": percent,
-                "ram_total": mem.total,
-                "ram_free": mem.free,
-                "ram_percent": mem.percent,
-            }
-            logging.warning(f"Data to be sent to CMS: {data}")
-
-            session = self.api.hass.helpers.aiohttp_client.async_get_clientsession()
-            logging.warning(f"external url {self.external_url}")
-            logging.warning(f"session: {session}")
-            try:
-                async with session.post(self.external_url, json=data) as response:
-                    logging.warning(f"CMS Response Status: {response.status}")
-                    if response.status != 200:
-                        error_text = await response.text()
-                        logging.error(f"Error sending data to CMS: {response.status}")
-                        logging.error(f"Error response: {error_text}")
-                        return web.json_response(
-                            {"error": "Error sending data to CMS"}, status=500
-                        )
-                    else:
-                        logging.info("Data sent to CMS successfully")
-                        return web.json_response(
-                            {"message": "Data sent to CMS successfully"}
-                        )
-            except aiohttp.ClientError as e:
-                logging.error(f"ClientError while sending data to CMS: {e}")
-                return web.json_response(
-                    {"error": "Error sending data to CMS"}, status=500
-                )
-        except Exception as e:
-            logging.error(f"Unexpected error in CMSEndpoint: {e}", exc_info=True)
-            return web.json_response(
-                {"error": "Error in CMSEndpoint", "message": str(e)}, status=500
-            )
