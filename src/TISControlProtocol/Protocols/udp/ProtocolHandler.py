@@ -61,6 +61,7 @@ class TISProtocolHandler:
     OPERATION_GET_WEATHER = [0x20, 0x20]
     OPERATION_SECURITY_UPDATE = [0x01, 0x1E]
     OPERATION_ANALOG_UPDATE = [0xEF, 0x00]
+    OPERATION_ENERGY_UPDATE = [0x20, 0x10]
     
 
     def __init__(self) -> None:
@@ -441,7 +442,7 @@ class TISProtocolHandler:
         )
     def generate_update_analog_packet(self, entity) -> TISPacket:
         """
-        Generate a packet to set request security update.
+        Generate a packet to set request analog update.
         
         """
         return TISPacket(
@@ -451,3 +452,17 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[],
         )
+    
+    def generate_update_energy_packet(self, entity) -> TISPacket:
+        """
+        Generate a packet to set request energy meter update.
+        
+        """
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=TISProtocolHandler.OPERATION_ENERGY_UPDATE,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.channel_number -1, 0xDA, 0x64],
+        )
+
