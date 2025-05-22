@@ -12,7 +12,7 @@ async def handle_energy_feedback(hass: HomeAssistant, info: dict):
 
     if sub_operation == 0xDA:
 
-        energy = info["additional_bytes"][7]
+        energy = int((info["additional_bytes"][12]<<8)|(info["additional_bytes"][13]))
 
         event_data = {
             "device_id": device_id,

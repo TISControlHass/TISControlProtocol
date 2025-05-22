@@ -47,7 +47,7 @@ OPERATIONS_DICT = {
     (0x20, 0x21): handle_weather_feedback,
     (0x01, 0x1F): handle_security_update_feedback,
     (0xEF, 0x01): handle_analog_feedback,
-    (0xEF, 0x01): handle_energy_feedback
+    (0x20, 0x11): handle_energy_feedback
 
 }
 # 1C 01 30 1B BA DC 22 FF FF 08 02 02 02 02 02 02 02 02 00 01 01 01 01 01 01 01 57 62
