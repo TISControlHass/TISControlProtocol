@@ -7,7 +7,7 @@ async def handle_energy_feedback(hass: HomeAssistant, info: dict):
     Handle the feedback from an energy sensor.
     """
     device_id = info["device_id"]
-    channel_num = int(info["additional_bytes"][0])
+    channel_num = int(info["additional_bytes"][0]) + 1
     sub_operation = int(info["additional_bytes"][1])
 
     if sub_operation == 0xDA:
