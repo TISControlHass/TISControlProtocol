@@ -13,10 +13,10 @@ async def handle_energy_feedback(hass: HomeAssistant, info: dict):
     if sub_operation == 0xDA:
         #[energy, mounthly power, phase1, phase2, phase3]
         energy = [int((info["additional_bytes"][12]<<8)|(info["additional_bytes"][13])),
+                  int((info["additional_bytes"][16]<<8)|(info["additional_bytes"][17])),
                   int((info["additional_bytes"][6]<<8)|(info["additional_bytes"][7])),
-                  int((info["additional_bytes"][6]<<8)|(info["additional_bytes"][7])),
-                  int((info["additional_bytes"][6]<<8)|(info["additional_bytes"][7])),
-                  int((info["additional_bytes"][6]<<8)|(info["additional_bytes"][7]))]
+                  int((info["additional_bytes"][8]<<8)|(info["additional_bytes"][9])),
+                  int((info["additional_bytes"][10]<<8)|(info["additional_bytes"][11]))]
 
         event_data = {
             "device_id": device_id,
