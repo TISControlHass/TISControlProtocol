@@ -11,6 +11,7 @@ from datetime import timedelta
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.core import HomeAssistant
 from homeassistant.components.http import HomeAssistantView
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from typing import Optional
 import aiohttp
 from aiohttp import web
@@ -497,7 +498,7 @@ class CMSDataSender:
     async def send_data(self, data):
         if data is not None:
             try:
-                session = self.hass.helpers.aiohttp_client.async_get_clientsession()
+                session = async_get_clientsession(self.hass)
                 async with session.post(self.external_url, json=data) as response:
                     if response.status != 200:
                         error_text = await response.text()
