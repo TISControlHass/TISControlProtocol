@@ -81,5 +81,6 @@ async def handle_energy_feedback(hass: HomeAssistant, info: dict):
 
         try:
             hass.bus.async_fire(str(info["device_id"]), event_data)
+            logging.error(f"event got fired {info["additional_bytes"]}")
         except Exception as e:
             logging.error(f"error in firing event for feedback: {e}")
