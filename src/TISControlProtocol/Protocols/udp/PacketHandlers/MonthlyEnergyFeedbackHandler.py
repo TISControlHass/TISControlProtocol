@@ -1,7 +1,8 @@
 from homeassistant.core import HomeAssistant
 import logging
 
-#TODO get a way to set 4 sensors together
+
+# TODO get a way to set 4 sensors together
 async def handle_monthly_energy_feedback(hass: HomeAssistant, info: dict):
     """
     Handle the feedback from an energy sensor.
@@ -11,9 +12,11 @@ async def handle_monthly_energy_feedback(hass: HomeAssistant, info: dict):
     sub_operation = int(info["additional_bytes"][1])
 
     if sub_operation == 0xDA:
-        #[energy, monthly power, phase1, phase2, phase3]
-        energy = int((info["additional_bytes"][16]<<8)|(info["additional_bytes"][17]))
-                 
+        # [energy, monthly power, phase1, phase2, phase3]
+        energy = int(
+            (info["additional_bytes"][16] << 8) | (info["additional_bytes"][17])
+        )
+
         event_data = {
             "device_id": device_id,
             "channel_num": channel_num,

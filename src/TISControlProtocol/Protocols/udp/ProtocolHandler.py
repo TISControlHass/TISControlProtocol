@@ -63,8 +63,6 @@ class TISProtocolHandler:
     OPERATION_ANALOG_UPDATE = [0xEF, 0x00]
     OPERATION_ENERGY_UPDATE = [0x20, 0x10]
 
-    
-
     def __init__(self) -> None:
         """Initialize a ProtocolHandler instance."""
         pass
@@ -143,7 +141,7 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[0x14, 0x00],
         )
-    
+
     def generate_weather_sensor_update_packet(self, entity) -> TISPacket:
         """
         Generate a packet to update the weather sensor.
@@ -337,7 +335,6 @@ class TISProtocolHandler:
     def generate_update_security_packet(self, entity) -> TISPacket:
         """
         Generate a packet to set request security update.
-        
         """
         return TISPacket(
             device_id=entity.device_id,
@@ -346,7 +343,6 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[entity.channel_number],
         )
-
 
     def generate_ac_control_packet(
         self,
@@ -358,7 +354,6 @@ class TISProtocolHandler:
         target_mode: str | None = None,  # noqa: F821 # type: ignore
         target_fan_mode: str | None = None,
     ) -> TISPacket:
-
         # Determine the target values, falling back to class attributes if not provided
         if not target_state:
             if entity._attr_state == "unknown":
@@ -428,7 +423,7 @@ class TISProtocolHandler:
             operation_code=self.OPERATION_FLOOR_CONTROL,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[ (entity.heater_number + 0x22) , 0x14, state],
+            additional_bytes=[(entity.heater_number + 0x22), 0x14, state],
         )
 
     def generate_floor_set_temp_packet(
@@ -439,12 +434,12 @@ class TISProtocolHandler:
             operation_code=self.OPERATION_FLOOR_CONTROL,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[ (entity.heater_number + 0x22), 0x18, target_temperature],
+            additional_bytes=[(entity.heater_number + 0x22), 0x18, target_temperature],
         )
+
     def generate_update_analog_packet(self, entity) -> TISPacket:
         """
         Generate a packet to set request analog update.
-        
         """
         return TISPacket(
             device_id=entity.device_id,
@@ -453,30 +448,27 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[],
         )
-    
+
     def generate_update_monthly_energy_packet(self, entity) -> TISPacket:
         """
         Generate a packet to set request energy meter update.
-        
         """
         return TISPacket(
             device_id=entity.device_id,
             operation_code=TISProtocolHandler.OPERATION_ENERGY_UPDATE,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[entity.channel_number -1, 0xDA, 0x64],
+            additional_bytes=[entity.channel_number - 1, 0xDA, 0x64],
         )
-    
+
     def generate_update_energy_packet(self, entity) -> TISPacket:
         """
         Generate a packet to set request energy meter update.
-        
         """
         return TISPacket(
             device_id=entity.device_id,
             operation_code=TISProtocolHandler.OPERATION_ENERGY_UPDATE,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[entity.channel_number -1, 0x65],
+            additional_bytes=[entity.channel_number - 1, 0x65],
         )
-
