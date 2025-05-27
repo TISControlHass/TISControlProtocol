@@ -16,6 +16,7 @@ async def handle_energy_feedback(hass: HomeAssistant, info: dict):
     device_id = info["device_id"]
     channel_num = int(info["additional_bytes"][0]) + 1
     sub_operation = int(info["additional_bytes"][1])
+    logging.warning(f"info {info} ,, sub_operation {sub_operation}")
 
     if sub_operation == 0xDA:
         # [energy, monthly power, phase1, phase2, phase3]
@@ -36,6 +37,7 @@ async def handle_energy_feedback(hass: HomeAssistant, info: dict):
         except Exception as e:
             logging.error(f"error in firing event for feedback: {e}")
     elif sub_operation == 0x65:
+        logging.error(f"energy 0x65 packet: {info['additional_bytes']}")
         energy = {
             "v1": big_endian_to_num(info["additional_bytes"][3:7]),
             "v2": big_endian_to_num(info["additional_bytes"][7:11]),
