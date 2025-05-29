@@ -5,7 +5,7 @@ import logging
 
 def big_endian_to_num(str_list):
     logging.error(f"big endian to num ( {str_list} )")
-    big_endian = "".join(str(x) for x in str_list)
+    big_endian = "".join(str(hex(x)) for x in str_list)
     logging.error(f"big_endian: {big_endian}")
     value = struct.unpack(">f", bytes.fromhex(big_endian))[0]
     logging.error(f"value: {value}")
