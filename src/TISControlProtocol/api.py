@@ -54,7 +54,7 @@ class TISApi:
         self.devices_dict = devices_dict
         self.display_logo = display_logo
         self.display = None
-        self.cms_url = "http://barhoom.local"
+        self.cms_url = "https://tis-extracts.com"
 
     async def connect(self):
         """Connect to the TIS API."""
@@ -111,7 +111,8 @@ class TISApi:
                 return
 
             cms_sender = CMSDataSender(
-                external_url=f"{self.cms_url}/api/device-health", hass=self.hass
+                external_url=f"{self.cms_url}/api/device-health",
+                hass=self.hass,
             )
             await cms_sender.send_data(data)
 
