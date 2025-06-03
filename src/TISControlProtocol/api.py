@@ -503,14 +503,14 @@ class CMSDataSender:
                 async with session.post(self.external_url, json=data) as response:
                     if response.status != 200:
                         error_text = await response.text()
-                        logging.error(f"Error sending data to CMS: {response.status}")
-                        logging.error(f"Error response: {error_text}")
+                        logging.warning(f"Error sending data to CMS: {response.status}")
+                        logging.info(f"Error response: {error_text}")
                         return False
                     else:
                         logging.info("Data sent to CMS successfully")
                         return True
             except aiohttp.ClientError as e:
-                logging.error(f"ClientError while sending data to CMS: {e}")
+                logging.warning(f"ClientError while sending data to CMS: {e}")
                 return False
 
         return False
