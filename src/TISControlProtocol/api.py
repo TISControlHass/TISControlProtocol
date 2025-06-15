@@ -23,6 +23,7 @@ import json
 import psutil
 import asyncio
 import ST7789
+import time
 from PIL import Image
 import uuid
 from dotenv import load_dotenv
@@ -97,6 +98,7 @@ class TISApi:
             self.hass.http.register_view(GetKeyEndpoint(self))
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
             self.hass.http.register_view(RestartEndpoint(self))
+            self.hass.http.register_view(RestartStatusEndpoint(self))
         except Exception as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
@@ -518,17 +520,77 @@ class RestartEndpoint(HomeAssistantView):
         elif mac_address != mac:
             return web.json_response({"error": "Unauthorized"}, status=403)
 
+        # Store restart timestamp before restarting
+        restart_time = int(time.time())
+        await self.tis_api.hass.async_add_executor_job(
+            self._store_restart_time, restart_time
+        )
+
         logging.info("Restarting Server")
         try:
-            await self.tis_api.hass.services.async_call(
-                "homeassistant", 
-                "restart",
-                {}
+            # Schedule restart after a small delay to allow response to be sent
+            asyncio.create_task(self._delayed_restart())
+            return web.json_response(
+                {
+                    "message": "Server restart initiated",
+                    "restart_id": restart_time,
+                    "status_url": f"/api/restart/status/{restart_time}",
+                },
+                status=202,
             )
-            return web.json_response({"message": "Server is restarting"}, status=200)
         except Exception as e:
             logging.error(f"Error restarting server: {e}")
             return web.json_response({"error": "Failed to restart server"}, status=500)
+
+    async def _delayed_restart(self):
+        """Restart after a small delay"""
+        await asyncio.sleep(1)
+        await self.tis_api.hass.services.async_call("homeassistant", "restart", {})
+
+    def _store_restart_time(self, restart_time):
+        """Store restart time to persistent storage"""
+        # You'll need to implement this based on your storage mechanism
+        # Could use a file, database, or Home Assistant's data storage
+        with open("/config/.restart_status", "w") as f:
+            f.write(str(restart_time))
+
+
+class RestartStatusEndpoint(HomeAssistantView):
+    """Check restart status"""
+
+    url = "/api/restart/status/{restart_id}"
+    name = "api:restart:status"
+    requires_auth = False
+
+    def __init__(self, tis_api: TISApi):
+        self.tis_api = tis_api
+        self.boot_time = time.time()  # Store when this instance started
+
+    async def get(self, request):
+        restart_id = request.match_info.get("restart_id")
+
+        try:
+            restart_time = int(restart_id)
+        except (ValueError, TypeError):
+            return web.json_response({"error": "Invalid restart_id"}, status=400)
+
+        # Check if restart was completed
+        if self.boot_time > restart_time:
+            # This instance started after the restart request
+            return web.json_response(
+                {
+                    "message": "Server restarted successfully",
+                    "restart_completed": True,
+                    "boot_time": self.boot_time,
+                },
+                status=200,
+            )
+        else:
+            # Still the same instance or restart hasn't completed
+            return web.json_response(
+                {"message": "Server restart in progress", "restart_completed": False},
+                status=202,
+            )
 
 
 class CMSDataSender:
