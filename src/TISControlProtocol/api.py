@@ -96,6 +96,7 @@ class TISApi:
             self.hass.http.register_view(ScanDevicesEndPoint(self))
             self.hass.http.register_view(GetKeyEndpoint(self))
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
+            self.hass.http.register_view(RestartEndpoint(self))
         except Exception as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
@@ -487,6 +488,47 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
             self.tis_api.domain
         ):
             await self.tis_api.hass.config_entries.async_reload(entry.entry_id)
+
+
+class RestartEndpoint(HomeAssistantView):
+    """Restart the Server"""
+
+    url = "/api/restart"
+    name = "api:restart"
+    requires_auth = False
+
+    def __init__(self, tis_api: TISApi):
+        self.tis_api = tis_api
+
+    async def post(self, request):
+        mac_address = request.query.get("mac_address")
+
+        if mac_address is None:
+            logging.info("Required parameters not found in query, parsing request body")
+            data = await request.json()
+            mac_address = data.get("mac_address")
+
+        mac = uuid.getnode()
+        mac = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+
+        if mac_address is None:
+            return web.json_response(
+                {"error": "required parameters are missing"}, status=400
+            )
+        elif mac_address != mac:
+            return web.json_response({"error": "Unauthorized"}, status=403)
+
+        logging.info("Restarting Server")
+        try:
+            await self.tis_api.hass.services.async_call(
+                "homeassistant", 
+                "restart",
+                {}
+            )
+            return web.json_response({"message": "Server is restarting"}, status=200)
+        except Exception as e:
+            logging.error(f"Error restarting server: {e}")
+            return web.json_response({"error": "Failed to restart server"}, status=500)
 
 
 class CMSDataSender:
