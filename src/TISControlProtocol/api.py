@@ -248,58 +248,58 @@ class TISApi:
         directory = "/conf/data"
         os.makedirs(directory, exist_ok=True)
 
-        key = await self.get_encryption_key(directory)
-        data = await self.read_and_decrypt_data(directory, key)
+        # key = await self.get_encryption_key(directory)
+        data = await self.read_appliances(directory)
 
         await self.parse_device_manager_request(data)
         entities = self.config_entries.get(platform, [])
         return entities
 
-    async def get_encryption_key(self, directory: str) -> str:
-        """Retrieve or generate the encryption key."""
-        env_filename = ".env"
-        env_file_path = os.path.join(directory, env_filename)
+    # async def get_encryption_key(self, directory: str) -> str:
+    #     """Retrieve or generate the encryption key."""
+    #     env_filename = ".env"
+    #     env_file_path = os.path.join(directory, env_filename)
 
-        await self.hass.async_add_executor_job(load_dotenv, env_file_path)
-        key = os.getenv("ENCRYPTION_KEY")
+    #     await self.hass.async_add_executor_job(load_dotenv, env_file_path)
+    #     key = os.getenv("ENCRYPTION_KEY")
 
-        if key is None:
-            key = Fernet.generate_key().decode()
-            try:
-                async with aiofiles.open(env_file_path, "w") as file:
-                    await file.write(f'ENCRYPTION_KEY="{key}"\n')
-            except Exception as e:
-                logging.error(f"Error writing .env file: {e}")
-        return key
+    #     if key is None:
+    #         key = Fernet.generate_key().decode()
+    #         try:
+    #             async with aiofiles.open(env_file_path, "w") as file:
+    #                 await file.write(f'ENCRYPTION_KEY="{key}"\n')
+    #         except Exception as e:
+    #             logging.error(f"Error writing .env file: {e}")
+    #     return key
 
-    async def read_and_decrypt_data(self, directory: str, key: str) -> dict:
+    async def read_appliances(self, directory: str) -> dict:
         """Read and decrypt the stored data."""
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
 
         try:
             async with aiofiles.open(output_file, "r") as f:
-                encrypted_str = json.loads(await f.read())
-                decrypted_str = (
-                    Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
-                )
-                data = json.loads(decrypted_str)
+                # encrypted_str = json.loads(await f.read())
+                # decrypted_str = (
+                #     Fernet(key).decrypt(base64.b64decode(encrypted_str)).decode()
+                # )
+                data = json.loads(await f.read())
         except FileNotFoundError:
             async with aiofiles.open(output_file, "w") as f:
                 await f.write(json.dumps(""))
                 data = {}
         return data
 
-    async def encrypt_and_save_data(self, data: dict, directory: str, key: str) -> None:
+    async def save_appliances(self, data: dict, directory: str) -> None:
         """Encrypt and save the data."""
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
 
-        encrypted = Fernet(key).encrypt(json.dumps(data).encode())
-        encrypted_str = base64.b64encode(encrypted).decode()
+        # encrypted = Fernet(key).encrypt(json.dumps(data).encode())
+        # encrypted_str = base64.b64encode(encrypted).decode()
 
         async with aiofiles.open(output_file, "w") as f:
-            await f.write(json.dumps(encrypted_str, indent=4))
+            await f.write(json.dumps(data, indent=4))
 
 
 class TISEndPoint(HomeAssistantView):
@@ -315,11 +315,11 @@ class TISEndPoint(HomeAssistantView):
 
     async def post(self, request):
         directory = "/conf/data"
-        key = await self.api.get_encryption_key(directory)
+        # key = await self.api.get_encryption_key(directory)
 
         # Parse the JSON data from the request
         data = await request.json()
-        await self.api.encrypt_and_save_data(data, directory, key)
+        await self.api.save_appliances(data, directory)
 
         # Start reload operations in the background
         asyncio.create_task(self.reload_platforms())
@@ -471,10 +471,10 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
             )
 
         directory = "/conf/data"
-        key = await self.tis_api.get_encryption_key(directory)
-        data = await self.tis_api.read_and_decrypt_data(directory=directory, key=key)
+        # key = await self.tis_api.get_encryption_key(directory)
+        data = await self.tis_api.read_appliances(directory=directory)
         data["configs"]["lock_module_password"] = new_pass
-        await self.tis_api.encrypt_and_save_data(data, directory, key)
+        await self.tis_api.save_appliances(data, directory)
         self.tis_api.config_entries["lock_module"]["password"] = new_pass
 
         asyncio.create_task(self.reload_platforms())
