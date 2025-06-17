@@ -563,6 +563,57 @@ class RestartStatusEndpoint(HomeAssistantView):
             )
 
 
+class UpdateEndpoint(HomeAssistantView):
+    """Update the Server"""
+
+    url = "/api/update"
+    name = "api:update"
+    requires_auth = False
+
+    def __init__(self, tis_api: TISApi):
+        self.tis_api = tis_api
+
+    async def post(self, request):
+        mac_address = request.query.get("mac_address")
+
+        if mac_address is None:
+            logging.info("Required parameters not found in query, parsing request body")
+            data = await request.json()
+            mac_address = data.get("mac_address")
+
+        mac = uuid.getnode()
+        mac = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+
+        if mac_address is None:
+            return web.json_response(
+                {"error": "required parameters are missing"}, status=400
+            )
+        elif mac_address != mac:
+            return web.json_response({"error": "Unauthorized"}, status=403)
+
+        # # Store restart timestamp before restarting
+        # restart_time = int(time.time())
+        # await self.tis_api.hass.async_add_executor_job(
+        #     self._store_restart_time, restart_time
+        # )
+
+        # logging.info("Restarting Server")
+        # try:
+        #     # Schedule restart after a small delay to allow response to be sent
+        #     asyncio.create_task(self._delayed_restart())
+        #     return web.json_response(
+        #         {
+        #             "message": "Server restart initiated",
+        #             "restart_id": restart_time,
+        #             "status_url": f"/api/restart/status/{restart_time}",
+        #         },
+        #         status=202,
+        #     )
+        # except Exception as e:
+        #     logging.error(f"Error restarting server: {e}")
+        #     return web.json_response({"error": "Failed to restart server"}, status=500)
+
+
 class CMSDataSender:
     """CMS Data class."""
 
