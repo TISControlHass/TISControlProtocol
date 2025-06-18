@@ -593,10 +593,10 @@ class UpdateEndpoint(HomeAssistantView):
             return web.json_response({"error": "Unauthorized"}, status=403)
 
         try:
-            integration_dir = self.hass.config.path(
+            integration_dir = self.tis_api.hass.config.path(
                 "custom_components", "tis_integration"
             )
-            addon_dir = self.hass.config.path("addons", "home-assistant-addon")
+            addon_dir = self.tis_api.hass.config.path("addons", "home-assistant-addon")
 
             for target_dir in (integration_dir, addon_dir):
                 reset = os.system(f"git -C {target_dir} reset --hard HEAD")
