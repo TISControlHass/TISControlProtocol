@@ -492,7 +492,7 @@ class RestartEndpoint(HomeAssistantView):
         logging.info("Restarting Server")
         try:
             await self.tis_api.hass.services.async_call(
-                "homeassistant", "restart", {}, blocking=True
+                "homeassistant", "restart", {}, blocking=False
             )
             return web.json_response({"message": "Server is restarting"}, status=200)
         except Exception as e:
