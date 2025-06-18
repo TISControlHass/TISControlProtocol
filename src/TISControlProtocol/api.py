@@ -594,7 +594,7 @@ class UpdateEndpoint(HomeAssistantView):
 
         try:
             cwd = os.getcwd()
-            addon_dir = "/addons/home-assistant-addon"
+            addon_dir = "/addons/home-assistant-addon/"
             integration_dir = "/config/custom_components/tis_integration"
 
             os.chdir(integration_dir)
@@ -619,19 +619,19 @@ class UpdateEndpoint(HomeAssistantView):
             os.chdir(cwd)
 
             if pull == 0 and reset == 0:
-                logging.warning("Updated TIS Integrations")
+                logging.warning("Updated TIS Addon")
                 return web.json_response(
                     {"message": "TIS Integrations and addon updated successfully"}
                 )
             else:
                 logging.warning(
-                    f"Could Not Update TIS Integration: exit error {pull}, {reset}"
+                    f"Could Not Update TIS Addon: exit error {pull}, {reset}"
                 )
                 return web.json_response(
                     {"error": f"Failed to update addon exit error: {pull}, {reset}"}, status=500
                 )
         except Exception as e:
-            logging.error(f"Could Not Update TIS Integration: {e}")
+            logging.error(f"Could Not Update Server: {e}")
             return web.json_response({"error": "Failed to update server"}, status=500)
 
 
