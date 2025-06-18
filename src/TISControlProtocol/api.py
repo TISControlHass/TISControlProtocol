@@ -21,7 +21,6 @@ import json
 import psutil
 import asyncio
 import ST7789
-import time
 from PIL import Image
 import uuid
 
@@ -95,7 +94,6 @@ class TISApi:
             self.hass.http.register_view(GetKeyEndpoint(self))
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
             self.hass.http.register_view(RestartEndpoint(self))
-            self.hass.http.register_view(RestartStatusEndpoint(self))
             self.hass.http.register_view(UpdateEndpoint(self))
         except Exception as e:
             logging.error("Error registering views %s", e)
