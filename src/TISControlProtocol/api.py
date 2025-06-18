@@ -493,7 +493,7 @@ class RestartEndpoint(HomeAssistantView):
         try:
             result = os.system("ha core restart")
             if result != 0:
-                logging.error("Failed to restart server")
+                logging.error(f"Failed to restart server, {result}")
                 return web.json_response(
                     {"error": "Failed to restart server"}, status=500
                 )
