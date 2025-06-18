@@ -599,9 +599,10 @@ class UpdateEndpoint(HomeAssistantView):
             addon_dir = self.tis_api.hass.config.path("addons", "home-assistant-addon")
 
             for target_dir in (integration_dir, addon_dir):
+                result = os.system("apk add git-lfs") if target_dir == addon_dir else 0
                 reset = os.system(f"git -C {target_dir} reset --hard HEAD")
                 pull = os.system(f"git -C {target_dir} pull")
-                if reset or pull:
+                if reset or pull or result:
                     logging.warning(
                         f"Failed to update {target_dir}: reset={reset} pull={pull}"
                     )
