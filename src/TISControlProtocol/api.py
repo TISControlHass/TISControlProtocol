@@ -608,7 +608,7 @@ class UpdateEndpoint(HomeAssistantView):
                     )
                     return web.json_response(
                         {
-                            "error": f"Failed to update {target_dir}: reset={reset}, pull={pull}"
+                            "error": f"Failed to update {target_dir}: result={result}, reset={reset}, pull={pull}"
                         },
                         status=500,
                     )
