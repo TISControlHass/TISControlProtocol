@@ -593,43 +593,30 @@ class UpdateEndpoint(HomeAssistantView):
             return web.json_response({"error": "Unauthorized"}, status=403)
 
         try:
-            cwd = os.getcwd()
-            addon_dir = "/addons/home-assistant-addon/"
-            integration_dir = "/config/custom_components/tis_integration"
+            integration_dir = self.hass.config.path(
+                "custom_components", "tis_integration"
+            )
+            addon_dir = self.hass.config.path("addons", "home-assistant-addon")
 
-            os.chdir(integration_dir)
-            reset = os.system("git reset --hard HEAD")
-            pull = os.system("git pull")
+            for target_dir in (integration_dir, addon_dir):
+                reset = os.system(f"git -C {target_dir} reset --hard HEAD")
+                pull = os.system(f"git -C {target_dir} pull")
+                if reset or pull:
+                    logging.warning(
+                        f"Failed to update {target_dir}: reset={reset} pull={pull}"
+                    )
+                    return web.json_response(
+                        {
+                            "error": f"Failed to update {target_dir}: reset={reset}, pull={pull}"
+                        },
+                        status=500,
+                    )
 
-            if pull == 0 and reset == 0:
-                logging.warning("Updated TIS Integrations")
-            else:
-                os.chdir(cwd)
-                logging.warning(
-                    f"Could Not Update TIS Integration: exit error {pull}, {reset}"
-                )
-                return web.json_response(
-                    {"error": f"Failed to update integrations exit error: {pull}, {reset}"}, status=500
-                )
+            logging.info("Successfully updated integration and addon")
+            return web.json_response(
+                {"message": "TIS integrations and addon updated successfully"}
+            )
 
-            os.chdir(addon_dir)
-            reset = os.system("git reset --hard HEAD")
-            pull = os.system("git pull")
-
-            os.chdir(cwd)
-
-            if pull == 0 and reset == 0:
-                logging.warning("Updated TIS Addon")
-                return web.json_response(
-                    {"message": "TIS Integrations and addon updated successfully"}
-                )
-            else:
-                logging.warning(
-                    f"Could Not Update TIS Addon: exit error {pull}, {reset}"
-                )
-                return web.json_response(
-                    {"error": f"Failed to update addon exit error: {pull}, {reset}"}, status=500
-                )
         except Exception as e:
             logging.error(f"Could Not Update Server: {e}")
             return web.json_response({"error": "Failed to update server"}, status=500)
