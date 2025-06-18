@@ -537,24 +537,43 @@ class UpdateEndpoint(HomeAssistantView):
             )
             addon_dir = self.tis_api.hass.config.path("addons", "home-assistant-addon")
 
-            for target_dir in (integration_dir, addon_dir):
-                result = os.system("apk add git-lfs") if target_dir == addon_dir else 0
-                reset = os.system(f"git -C {target_dir} reset --hard HEAD")
-                pull = os.system(f"git -C {target_dir} pull")
-                if reset or pull or result:
-                    logging.warning(
-                        f"Failed to update {'addon' if target_dir == addon_dir else 'integrations'}: result={result} reset={reset} pull={pull}"
-                    )
+            async def run(cmd, cwd):
+                """Run a shell command in cwd, return (exit_code, stdout, stderr)."""
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    cwd=cwd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                out, err = await proc.communicate()
+                return proc.returncode, out.decode().strip(), err.decode().strip()
+
+            results = {}
+            for name, path in (("integration", integration_dir), ("addon", addon_dir)):
+                code, out, err = await run(["git", "reset", "--hard", "HEAD"], cwd=path)
+                results[f"{name}_reset"] = {"code": code, "stdout": out, "stderr": err}
+                if code != 0:
+                    logging.error("Reset %s failed: %s", name, err)
                     return web.json_response(
-                        {
-                            "error": f"Failed to update {'addon' if target_dir == addon_dir else 'integrations'}",
-                        },
+                        {"error": f"{name} reset failed", "details": results[name + "_reset"]},
                         status=500,
                     )
 
-            logging.info("Successfully updated integration and addon")
+                code, out, err = await run(["git", "pull"], cwd=path)
+                results[f"{name}_pull"] = {"code": code, "stdout": out, "stderr": err}
+                if code != 0:
+                    logging.error("Pull %s failed: %s", name, err)
+                    return web.json_response(
+                        {"error": f"{name} pull failed", "details": results[name + "_pull"]},
+                        status=500,
+                    )
+
+            logging.info("Successfully updated both integration and addon")
             return web.json_response(
-                {"message": "TIS integrations and addon updated successfully"}
+                {
+                    "message": "TIS integrations and addon updated successfully",
+                    "results": results,
+                }
             )
 
         except Exception as e:
