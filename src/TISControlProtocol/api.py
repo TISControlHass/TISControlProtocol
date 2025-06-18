@@ -604,11 +604,11 @@ class UpdateEndpoint(HomeAssistantView):
                 pull = os.system(f"git -C {target_dir} pull")
                 if reset or pull or result:
                     logging.warning(
-                        f"Failed to update {target_dir}: reset={reset} pull={pull}"
+                        f"Failed to update {"addon" if target_dir == addon_dir else "integrations"}: result={result} reset={reset} pull={pull}"
                     )
                     return web.json_response(
                         {
-                            "error": f"Failed to update {target_dir}: result={result}, reset={reset}, pull={pull}"
+                            "error": f"Failed to update {"addon" if target_dir == addon_dir else "integrations"}",
                         },
                         status=500,
                     )
