@@ -1,4 +1,6 @@
 import logging
+import aiofiles
+import os
 
 appliances_dict = {}
 mqtt_appliances_dict = {}
@@ -19,4 +21,15 @@ def get_appliance(device_id: tuple, channel: tuple, appliances_dict: dict):
         return None
     except Exception as e:
         logging.error(f"An error occurred: {e}")
+        return None
+
+async def get_real_mac(interface='end0') -> str | None:
+    path = f'/sys/class/net/{interface}/address'
+    if not os.path.exists(path):
+        return None
+    try:
+        async with aiofiles.open(path, mode='r') as f:
+            mac = await f.read()
+            return mac.strip()
+    except Exception:
         return None
