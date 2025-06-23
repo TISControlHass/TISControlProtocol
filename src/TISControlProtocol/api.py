@@ -23,7 +23,7 @@ import asyncio
 import ST7789
 from PIL import Image
 import uuid
-
+from shared import get_real_mac
 
 protocol_handler = TISProtocolHandler()
 
@@ -357,6 +357,12 @@ class GetKeyEndpoint(HomeAssistantView):
         # Get the MAC address
         mac = uuid.getnode()
         mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+
+        mac_address = get_real_mac("end0")
+        if mac_address is None:
+            return web.json_response(
+                {"error": "Could not retrieve MAC address"}, status=500
+            )
 
         # Return the MAC address
         return web.json_response({"key": mac_address})
