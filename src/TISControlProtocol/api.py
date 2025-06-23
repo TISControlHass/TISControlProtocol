@@ -358,7 +358,7 @@ class GetKeyEndpoint(HomeAssistantView):
         mac = uuid.getnode()
         mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
 
-        mac_address = get_real_mac("end0")
+        mac_address = await get_real_mac("end0")
         if mac_address is None:
             return web.json_response(
                 {"error": "Could not retrieve MAC address"}, status=500
