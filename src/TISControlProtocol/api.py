@@ -23,7 +23,7 @@ import asyncio
 import ST7789
 from PIL import Image
 import uuid
-from shared import get_real_mac
+from TISControlProtocol.shared import get_real_mac
 
 protocol_handler = TISProtocolHandler()
 
