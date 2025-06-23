@@ -22,7 +22,6 @@ import psutil
 import asyncio
 import ST7789
 from PIL import Image
-import uuid
 from TISControlProtocol.shared import get_real_mac
 
 protocol_handler = TISProtocolHandler()
@@ -142,8 +141,7 @@ class TISApi:
     async def _collect_system_data(self):
         """Collect system data for CMS."""
         # Mac Address
-        mac = uuid.getnode()
-        mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+        mac_address = await get_real_mac("end0")
 
         # CPU Usage
         cpu_usage = await self.hass.async_add_executor_job(psutil.cpu_percent, 1)
@@ -355,9 +353,6 @@ class GetKeyEndpoint(HomeAssistantView):
 
     async def get(self, request):
         # Get the MAC address
-        mac = uuid.getnode()
-        mac_address = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
-
         mac_address = await get_real_mac("end0")
         if mac_address is None:
             return web.json_response(
@@ -485,8 +480,7 @@ class RestartEndpoint(HomeAssistantView):
             data = await request.json()
             mac_address = data.get("mac_address")
 
-        mac = uuid.getnode()
-        mac = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+        mac = await get_real_mac("end0")
 
         if mac_address is None:
             return web.json_response(
@@ -524,8 +518,7 @@ class UpdateEndpoint(HomeAssistantView):
             data = await request.json()
             mac_address = data.get("mac_address")
 
-        mac = uuid.getnode()
-        mac = ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+        mac = await get_real_mac("end0")
 
         if mac_address is None:
             return web.json_response(
