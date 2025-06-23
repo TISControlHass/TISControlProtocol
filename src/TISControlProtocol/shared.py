@@ -30,6 +30,6 @@ async def get_real_mac(interface='end0') -> str | None:
     try:
         async with aiofiles.open(path, mode='r') as f:
             mac = await f.read()
-            return mac.strip()
+            return mac.strip().upper()
     except Exception:
         return None
