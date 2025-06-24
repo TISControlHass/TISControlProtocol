@@ -613,7 +613,7 @@ class BillConfigEndpoint(HomeAssistantView):
             asyncio.create_task(self.reload_platforms())
 
             # Return the response immediately
-            return web.json_response({"message": "success"})
+            return web.json_response({"message": "Bill config saved successfully"})
         except Exception as e:
             logging.error(f"Error saving bill config: {e}")
             return web.json_response(
