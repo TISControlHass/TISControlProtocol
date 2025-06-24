@@ -46,6 +46,7 @@ class TISApi:
         self.transport = None
         self.hass = hass
         self.config_entries = {}
+        self.bill_configs = {}
         self.domain = domain
         self.devices_dict = devices_dict
         self.display_logo = display_logo
@@ -269,6 +270,24 @@ class TISApi:
 
         async with aiofiles.open(output_file, "w") as f:
             await f.write(json.dumps(data, indent=4))
+            
+    async def get_bill_configs(self) -> dict:
+        """Get Bill Configurations"""
+        try:
+            directory = "/conf/data"
+            os.makedirs(directory, exist_ok=True)
+
+            file_name = "bill.json"
+            output_file = os.path.join(directory, file_name)
+
+            async with aiofiles.open(output_file, "r") as f:
+                data = json.loads(await f.read())
+        except FileNotFoundError:
+            async with aiofiles.open(output_file, "w") as f:
+                await f.write(json.dumps(""))
+                data = {}
+        self.bill_configs = data
+        return data
 
 
 class TISEndPoint(HomeAssistantView):
@@ -603,6 +622,8 @@ class BillConfigEndpoint(HomeAssistantView):
                 )
 
             directory = "/conf/data"
+            os.makedirs(directory, exist_ok=True)
+
             file_name = "bill.json"
             output_file = os.path.join(directory, file_name)
 
