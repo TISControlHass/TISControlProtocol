@@ -95,6 +95,7 @@ class TISApi:
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
             self.hass.http.register_view(RestartEndpoint(self))
             self.hass.http.register_view(UpdateEndpoint(self))
+            self.hass.http.register_view(BillConfigEndpoint(self))
         except Exception as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
