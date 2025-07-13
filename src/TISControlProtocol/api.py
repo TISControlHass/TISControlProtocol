@@ -271,7 +271,7 @@ class TISApi:
 
         async with aiofiles.open(output_file, "w") as f:
             await f.write(json.dumps(data, indent=4))
-            
+
     async def get_bill_configs(self) -> dict:
         """Get Bill Configurations"""
         try:
@@ -646,6 +646,31 @@ class BillConfigEndpoint(HomeAssistantView):
         # Reload the platforms
         for entry in self.api.hass.config_entries.async_entries(self.api.domain):
             await self.api.hass.config_entries.async_reload(entry.entry_id)
+
+
+class GetBillConfigEndpoint(HomeAssistantView):
+    """Get Bill Configurations"""
+
+    url = "/api/get-bill-config"
+    name = "api:get-bill-config"
+    requires_auth = False
+
+    def __init__(self, tis_api: TISApi):
+        self.tis_api = tis_api
+
+    async def post(self, request):
+        try:
+            if self.tis_api.bill_configs:
+                configs = self.tis_api.bill_configs
+            else:
+                configs = self.tis_api.get_bill_configs()
+
+            logging.warning(f'bill configs: {configs}')
+
+            return web.json_response({"config": configs})
+        except Exception as e:
+            logging.error(f"Error getting bill config: {e}")
+            return web.json_response({"error": "Failed to get bill config"}, status=500)
 
 
 class CMSDataSender:
