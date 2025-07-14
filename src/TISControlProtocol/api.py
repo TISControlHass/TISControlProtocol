@@ -632,6 +632,8 @@ class BillConfigEndpoint(HomeAssistantView):
             async with aiofiles.open(output_file, "w") as f:
                 await f.write(json.dumps(data, indent=4))
 
+            self.tis_api.bill_configs = data
+
             # Start reload operations in the background
             asyncio.create_task(self.reload_platforms())
 
@@ -664,9 +666,9 @@ class GetBillConfigEndpoint(HomeAssistantView):
             if self.tis_api.bill_configs:
                 configs = self.tis_api.bill_configs
             else:
-                configs = self.tis_api.get_bill_configs()
+                configs = await self.tis_api.get_bill_configs()
 
-            logging.warning(f'bill configs: {configs}')
+            logging.warning(f"bill configs: {configs}")
 
             return web.json_response({"config": configs})
         except Exception as e:
