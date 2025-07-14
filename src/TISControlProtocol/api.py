@@ -668,7 +668,7 @@ class GetBillConfigEndpoint(HomeAssistantView):
             else:
                 configs = await self.tis_api.get_bill_configs()
 
-            logging.warning(f"bill configs: {configs}")
+            logging.info(f"bill configs: {configs}")
 
             return web.json_response({"config": configs})
         except Exception as e:
