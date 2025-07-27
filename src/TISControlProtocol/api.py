@@ -251,7 +251,6 @@ class TISApi:
         entities = self.config_entries.get(platform, [])
         return entities
 
-    # TODO decrypt...
     async def read_appliances(self, directory: str) -> dict:
         """Read, decrypt, and return the stored data."""
         file_name = "app.json"
@@ -271,7 +270,6 @@ class TISApi:
             data = {}
         return data
 
-    # TODO encrypt...
     async def save_appliances(self, data: dict, directory: str) -> None:
         """Encrypt and save the data."""
         file_name = "app.json"
