@@ -318,13 +318,6 @@ class TISApi:
         return {self.decrypt(str(k), shift): self.decrypt(str(v), shift) for k, v in data.items()}
 
 
-    def encrypt_dict():
-        pass
-
-    def decrypt_dict():
-        pass
-
-
 class TISEndPoint(HomeAssistantView):
     """TIS API endpoint."""
 
