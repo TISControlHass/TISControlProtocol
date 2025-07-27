@@ -242,7 +242,7 @@ class TISApi:
 
     async def get_entities(self, platform: str = None) -> list:
         """Get the stored entities."""
-        directory = "/conf/data"
+        directory = "/config/custom_components/tis_integration/"
         os.makedirs(directory, exist_ok=True)
 
         data = await self.read_appliances(directory)
@@ -276,7 +276,7 @@ class TISApi:
     async def get_bill_configs(self) -> dict:
         """Get Bill Configurations"""
         try:
-            directory = "/conf/data"
+            directory = "/config/custom_components/tis_integration/"
             os.makedirs(directory, exist_ok=True)
 
             file_name = "bill.json"
@@ -304,7 +304,7 @@ class TISEndPoint(HomeAssistantView):
         self.api = tis_api
 
     async def post(self, request):
-        directory = "/conf/data"
+        directory = "/config/custom_components/tis_integration/"
 
         # Parse the JSON data from the request
         data = await request.json()
@@ -462,7 +462,7 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
                 status=400,
             )
 
-        directory = "/conf/data"
+        directory = "/config/custom_components/tis_integration/"
         data = await self.tis_api.read_appliances(directory=directory)
         data["configs"]["lock_module_password"] = new_pass
         await self.tis_api.save_appliances(data, directory)
@@ -623,7 +623,7 @@ class BillConfigEndpoint(HomeAssistantView):
                     {"error": "Required parameters are missing"}, status=400
                 )
 
-            directory = "/conf/data"
+            directory = "/config/custom_components/tis_integration/"
             os.makedirs(directory, exist_ok=True)
 
             file_name = "bill.json"
