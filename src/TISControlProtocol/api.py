@@ -261,7 +261,7 @@ class TISApi:
                 raw_data = await f.read()
                 if raw_data:
                     encrypted_data = json.loads(raw_data)
-                    data = self.decrypt_dict(encrypted_data)
+                    data = self.decrypt_data(encrypted_data)
                 else:
                     data = {}
         except FileNotFoundError:
@@ -275,7 +275,7 @@ class TISApi:
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
 
-        encrypted_data = self.encrypt_dict(data)
+        encrypted_data = self.encrypt_data(data)
 
         async with aiofiles.open(output_file, "w") as f:
             await f.write(json.dumps(encrypted_data, indent=4))
@@ -311,11 +311,31 @@ class TISApi:
     def decrypt(self, text: str, shift: int = 5) -> str:
         return self.encrypt(text, -shift)
 
-    def encrypt_dict(self, data: dict, shift: int = 5) -> dict:
-        return {self.encrypt(str(k), shift): self.encrypt(str(v), shift) for k, v in data.items()}
+    def encrypt_data(self, data, shift: int = 5):
+        if isinstance(data, dict):
+            return {
+                self.encrypt(str(k), shift): self.encrypt_data(v, shift)
+                for k, v in data.items()
+            }
+        elif isinstance(data, list):
+            return [self.encrypt_data(item, shift) for item in data]
+        elif isinstance(data, str):
+            return self.encrypt(data, shift)
+        else:
+            return data
 
-    def decrypt_dict(self, data: dict, shift: int = 5) -> dict:
-        return {self.decrypt(str(k), shift): self.decrypt(str(v), shift) for k, v in data.items()}
+    def decrypt_data(self, data, shift: int = 5) :
+        if isinstance(data, dict):
+            return {
+                self.decrypt(str(k), shift): self.decrypt_data(v, shift)
+                for k, v in data.items()
+            }
+        elif isinstance(data, list):
+            return [self.decrypt_data(item, shift) for item in data]
+        elif isinstance(data, str):
+            return self.decrypt(data, shift)
+        else:
+            return data
 
 
 class TISEndPoint(HomeAssistantView):
