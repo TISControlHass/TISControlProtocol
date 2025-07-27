@@ -251,27 +251,36 @@ class TISApi:
         entities = self.config_entries.get(platform, [])
         return entities
 
+    # TODO decrypt...
     async def read_appliances(self, directory: str) -> dict:
-        """Read and decrypt the stored data."""
+        """Read, decrypt, and return the stored data."""
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
 
         try:
             async with aiofiles.open(output_file, "r") as f:
-                data = json.loads(await f.read())
+                raw_data = await f.read()
+                if raw_data:
+                    encrypted_data = json.loads(raw_data)
+                    data = self.decrypt_dict(encrypted_data)
+                else:
+                    data = {}
         except FileNotFoundError:
             async with aiofiles.open(output_file, "w") as f:
-                await f.write(json.dumps(""))
-                data = {}
+                await f.write(json.dumps({}))
+            data = {}
         return data
 
+    # TODO encrypt...
     async def save_appliances(self, data: dict, directory: str) -> None:
         """Encrypt and save the data."""
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
 
+        encrypted_data = self.encrypt_dict(data)
+
         async with aiofiles.open(output_file, "w") as f:
-            await f.write(json.dumps(data, indent=4))
+            await f.write(json.dumps(encrypted_data, indent=4))
 
     async def get_bill_configs(self) -> dict:
         """Get Bill Configurations"""
@@ -290,6 +299,32 @@ class TISApi:
                 data = {}
         self.bill_configs = data
         return data
+
+    def encrypt(text: str, shift: int = 5) -> str:
+        result = ""
+        for char in text:
+            if char.isalpha():
+                base = ord('A') if char.isupper() else ord('a')
+                result += chr((ord(char) - base + shift) % 26 + base)
+            else:
+                result += char
+        return result
+
+    def decrypt(self, text: str, shift: int = 5) -> str:
+        return self.encrypt(text, -shift)
+
+    def encrypt_dict(self, data: dict, shift: int = 5) -> dict:
+        return {self.encrypt(str(k), shift): self.encrypt(str(v), shift) for k, v in data.items()}
+
+    def decrypt_dict(self, data: dict, shift: int = 5) -> dict:
+        return {self.decrypt(str(k), shift): self.decrypt(str(v), shift) for k, v in data.items()}
+
+
+    def encrypt_dict():
+        pass
+
+    def decrypt_dict():
+        pass
 
 
 class TISEndPoint(HomeAssistantView):
