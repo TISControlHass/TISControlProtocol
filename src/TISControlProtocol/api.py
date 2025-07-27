@@ -298,7 +298,7 @@ class TISApi:
         self.bill_configs = data
         return data
 
-    def encrypt(text: str, shift: int = 5) -> str:
+    def encrypt(self, text: str, shift: int = 5) -> str:
         result = ""
         for char in text:
             if char.isalpha():
