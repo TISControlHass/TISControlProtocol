@@ -679,6 +679,7 @@ class BillConfigEndpoint(HomeAssistantView):
                 await f.write(json.dumps(data, indent=4))
 
             self.tis_api.bill_configs = data
+            logging.warning(f"billing data: {data}")
 
             # Start reload operations in the background
             asyncio.create_task(self.reload_platforms())
