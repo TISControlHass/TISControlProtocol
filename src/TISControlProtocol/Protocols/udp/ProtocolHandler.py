@@ -62,6 +62,7 @@ class TISProtocolHandler:
     OPERATION_SECURITY_UPDATE = [0x01, 0x1E]
     OPERATION_ANALOG_UPDATE = [0xEF, 0x00]
     OPERATION_ENERGY_UPDATE = [0x20, 0x10]
+    OPERATION_UNIVERSAL_SWITCH = [0xE0, 0x1C]
 
     def __init__(self) -> None:
         """Initialize a ProtocolHandler instance."""
@@ -471,4 +472,16 @@ class TISProtocolHandler:
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
             additional_bytes=[entity.channel_number - 1, 0x65],
+        )
+
+    def generate_universal_switch_packet(self, entity) -> TISPacket:
+        """
+        Generate a packet to set request energy meter update.
+        """
+        return TISPacket(
+            device_id=entity.device_id,
+            operation_code=TISProtocolHandler.OPERATION_UNIVERSAL_SWITCH,
+            source_ip=entity.api.host,
+            destination_ip=entity.gateway,
+            additional_bytes=[entity.channel_number],
         )
