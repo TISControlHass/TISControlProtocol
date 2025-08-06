@@ -483,5 +483,5 @@ class TISProtocolHandler:
             operation_code=TISProtocolHandler.OPERATION_UNIVERSAL_SWITCH,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[entity.channel_number],
+            additional_bytes=[entity.channel_number, entity.universal_type],
         )
