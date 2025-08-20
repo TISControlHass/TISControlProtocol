@@ -21,7 +21,7 @@ import json
 import psutil
 import asyncio
 import ST7789
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from TISControlProtocol.shared import get_real_mac
 
 protocol_handler = TISProtocolHandler()
@@ -36,6 +36,7 @@ class TISApi:
         hass: HomeAssistant,
         domain: str,
         devices_dict: dict,
+        version: str,
         host: str = "0.0.0.0",
         display_logo: Optional[str] = None,
     ):
@@ -51,6 +52,7 @@ class TISApi:
         self.devices_dict = devices_dict
         self.display_logo = display_logo
         self.display = None
+        self.version = version
         self.cms_url = "https://cms-tis.com"
 
     async def connect(self):
@@ -199,9 +201,16 @@ class TISApi:
 
     def set_display_image(self):
         if self.display_logo:
-            img = Image.open(self.display_logo)
+            img = Image.open(self.display_logo).convert("RGB")
+            version_text = f"V {self.version}"
+
+            draw = ImageDraw.Draw(img)
+            font = ImageFont.load_default(size=28)
+            x, y = 78, 235
+            draw.text((x, y), version_text, font=font, fill=(255, 255, 255))
+            img = img.rotate(90, expand=True)
+
             self.display.set_backlight(0)
-            # reset display
             self.display.display(img)
 
     async def parse_device_manager_request(self, data: dict) -> None:
@@ -302,7 +311,7 @@ class TISApi:
         result = ""
         for char in text:
             if char.isalpha():
-                base = ord('A') if char.isupper() else ord('a')
+                base = ord("A") if char.isupper() else ord("a")
                 result += chr((ord(char) - base + shift) % 26 + base)
             else:
                 result += char
@@ -324,7 +333,7 @@ class TISApi:
         else:
             return data
 
-    def decrypt_data(self, data, shift: int = 5) :
+    def decrypt_data(self, data, shift: int = 5):
         if isinstance(data, dict):
             return {
                 self.decrypt(str(k), shift): self.decrypt_data(v, shift)
