@@ -208,7 +208,7 @@ class TISApi:
             font = ImageFont.load_default(size=28)
             x, y = 78, 235
             draw.text((x, y), version_text, font=font, fill=(255, 255, 255))
-            img = img.rotate(90, expand=True)
+            img = img.rotate(-90, expand=True)
 
             self.display.set_backlight(0)
             self.display.display(img)
