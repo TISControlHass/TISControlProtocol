@@ -261,7 +261,7 @@ class TISApi:
         return entities
 
     async def read_appliances(self, directory: str) -> dict:
-        """Read, and return the stored data."""
+        """Read, decrypt, and return the stored data."""
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
 
@@ -269,7 +269,8 @@ class TISApi:
             async with aiofiles.open(output_file, "r") as f:
                 raw_data = await f.read()
                 if raw_data:
-                    data = json.loads(raw_data)
+                    encrypted_data = json.loads(raw_data)
+                    data = self.decrypt_data(encrypted_data)
                 else:
                     data = {}
         except FileNotFoundError:
@@ -283,8 +284,10 @@ class TISApi:
         file_name = "app.json"
         output_file = os.path.join(directory, file_name)
 
+        encrypted_data = self.encrypt_data(data)
+
         async with aiofiles.open(output_file, "w") as f:
-            await f.write(json.dumps(data, indent=4))
+            await f.write(json.dumps(encrypted_data, indent=4))
 
     async def get_bill_configs(self) -> dict:
         """Get Bill Configurations"""
