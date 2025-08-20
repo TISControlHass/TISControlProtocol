@@ -10,6 +10,8 @@ async def handle_health_feedback(hass: HomeAssistant, info: dict):
     device_id = info["device_id"]
 
     # this try to know if this device is 10F or health sensor, for 10F it will make all readings 0 except LUX
+    # for eco2,tvoc,co states >>  0: Not Ready, 1: Excellent, 2: Normal, 3: Low Risk, 4: Med Risk, 5: High Rish
+
     try:
         lux = int((info["additional_bytes"][5] << 8) | (info["additional_bytes"][6]))
         noise = int((info["additional_bytes"][7] << 8) | (info["additional_bytes"][8]))
@@ -18,6 +20,10 @@ async def handle_health_feedback(hass: HomeAssistant, info: dict):
         temp = int(info["additional_bytes"][13])
         humidity = int(info["additional_bytes"][14])
         co = int((info["additional_bytes"][27] << 8) | (info["additional_bytes"][28]))
+        eco2_state = int(info["additional_bytes"][29])
+        tvoc_state = int(info["additional_bytes"][30])
+        co_state = int(info["additional_bytes"][31])
+
     except Exception as _:
         tvoc = 0
         noise = 0
@@ -25,6 +31,9 @@ async def handle_health_feedback(hass: HomeAssistant, info: dict):
         humidity = 0
         eco2 = 0
         co = 0
+        eco2_state = 0
+        tvoc_state = 0
+        co_state = 0
 
     event_data = {
         "device_id": device_id,
@@ -36,6 +45,9 @@ async def handle_health_feedback(hass: HomeAssistant, info: dict):
         "co": co,
         "temp": temp,
         "humidity": humidity,
+        "eco2_state": eco2_state,
+        "tvoc_state": tvoc_state,
+        "co_state": co_state,
         "additional_bytes": info["additional_bytes"],
     }
 
