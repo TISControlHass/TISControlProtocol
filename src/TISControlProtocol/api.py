@@ -268,14 +268,13 @@ class TISApi:
         try:
             async with aiofiles.open(output_file, "r") as f:
                 raw_data = await f.read()
+                logging.warning(f"file length: {len(raw_data)}")
                 if raw_data:
                     encrypted_data = json.loads(raw_data)
                     data = self.decrypt_data(encrypted_data)
                 else:
                     data = {}
         except FileNotFoundError:
-            async with aiofiles.open(output_file, "w") as f:
-                await f.write(json.dumps({}))
             data = {}
         return data
 
@@ -285,9 +284,13 @@ class TISApi:
         output_file = os.path.join(directory, file_name)
 
         encrypted_data = self.encrypt_data(data)
+        logging.warning(f"file (to be saved) length: {len(encrypted_data)}")
 
         async with aiofiles.open(output_file, "w") as f:
+            logging.warning("new appliances are getting saved in app.json")
             await f.write(json.dumps(encrypted_data, indent=4))
+
+        logging.warning("new applinaces saved successfully")
 
     async def get_bill_configs(self) -> dict:
         """Get Bill Configurations"""
