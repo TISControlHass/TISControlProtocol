@@ -20,9 +20,10 @@ async def handle_health_feedback(hass: HomeAssistant, info: dict):
         temp = int(info["additional_bytes"][13])
         humidity = int(info["additional_bytes"][14])
         co = int((info["additional_bytes"][27] << 8) | (info["additional_bytes"][28]))
-        eco2_state = int(info["additional_bytes"][29])
-        tvoc_state = int(info["additional_bytes"][30])
-        co_state = int(info["additional_bytes"][31])
+        # There are 2 additional bytes for flags not mentioned in the docs.
+        eco2_state = int(info["additional_bytes"][31])
+        tvoc_state = int(info["additional_bytes"][32])
+        co_state = int(info["additional_bytes"][33])
 
     except Exception as _:
         tvoc = 0
