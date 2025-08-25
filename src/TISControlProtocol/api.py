@@ -268,7 +268,7 @@ class TISApi:
         try:
             async with aiofiles.open(output_file, "r") as f:
                 raw_data = await f.read()
-                logging.warning(f"file length: {len(raw_data)}")
+                # logging.warning(f"file length: {len(raw_data)}")
                 if raw_data:
                     encrypted_data = json.loads(raw_data)
                     data = self.decrypt_data(encrypted_data)
