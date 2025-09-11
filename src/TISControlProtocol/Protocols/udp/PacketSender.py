@@ -2,7 +2,7 @@ from socket import socket, SOL_SOCKET, SO_BROADCAST
 
 from TISControlProtocol.Protocols.udp.AckCoordinator import AckCoordinator
 import asyncio
-from TISControlProtocol.shared import ack_events  # noqa: F401
+from TISControlProtocol.shared import ack_events
 from collections import deque
 from TISControlProtocol.Protocols.udp.ProtocolHandler import TISPacket
 import logging

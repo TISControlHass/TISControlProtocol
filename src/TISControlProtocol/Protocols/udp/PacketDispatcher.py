@@ -1,4 +1,4 @@
-from homeassistant.core import HomeAssistant  # type: ignore
+from homeassistant.core import HomeAssistant
 import logging
 
 
