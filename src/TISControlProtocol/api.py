@@ -1,12 +1,7 @@
 import asyncio
-import json
 import logging
-
-# type: ignore
 import socket
-from collections import defaultdict
 
-import aiofiles
 from homeassistant.core import HomeAssistant
 from TISControlProtocol.Protocols import setup_udp_protocol
 from TISControlProtocol.Protocols.udp.ProtocolHandler import (
@@ -60,25 +55,16 @@ class TISApi:
         # scan for devices
         await self.scan_devices()
 
-    async def save_devices(self, devices):
-        # Dump to local file
-        async with aiofiles.open("devices_data.json", "w") as f:
-            await f.write(json.dumps({"devices": devices}, indent=4))
-
-    async def load_devices(self) -> list[dict]:
-        # Load from local file
-        async with aiofiles.open("devices_data.json", "r") as f:
-            devices = json.loads(await f.read())
-        return devices
-
     async def scan_devices(self, prodcast_attempts=10):
         """Scan for devices."""
         # clear the previous discovered devices
         self.hass.data[self.domain]["discovered_devices"] = []
+
         # send dicover packet
         for _ in range(prodcast_attempts):
             await self.protocol.sender.broadcast_packet(self.discovery_packet)
             await asyncio.sleep(1)
+
         # fetch the devices
         devices = [
             {
@@ -91,17 +77,20 @@ class TISApi:
             }
             for device in self.hass.data[self.domain]["discovered_devices"]
         ]
-        # dump to local file
-        await self.save_devices(devices)
+
+        # save devices
+        self.hass.data[self.domain]["devices"] = devices
 
     async def get_entities(self, platform: str):
         # load devices
-        devices = await self.load_devices()
+        devices = self.hass.data[self.domain]["devices"]
+
         # parse devices
-        appliances = self.parse_saved_devices(devices["devices"])
-        logging.error(
-            "appliances for platform %s: %s", platform, appliances.get(platform, [])
+        appliances = self.parse_saved_devices(devices)
+        logging.warning(
+            f"appliances for platform {platform}: {appliances.get(platform, [])}"
         )
+
         # return appliances
         return appliances.get(platform, [])
 
