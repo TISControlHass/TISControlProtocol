@@ -7,8 +7,7 @@ import socket
 from collections import defaultdict
 
 import aiofiles
-from homeassistant.core import HomeAssistant  # type: ignore
-
+from homeassistant.core import HomeAssistant
 from TISControlProtocol.Protocols import setup_udp_protocol
 from TISControlProtocol.Protocols.udp.ProtocolHandler import (
     TISPacket,
@@ -58,22 +57,8 @@ class TISApi:
             logging.error("Error connecting to TIS API %s", e)
             raise ConnectionError
 
-        self.hass.data[self.domain]["discovered_devices"] = []
         # scan for devices
         await self.scan_devices()
-
-    # async def get_entities(self, platform: str = None) -> list:
-    #     """Get the stored entities."""
-    #     try:
-    #         with open("appliance_data.json", "r") as f:
-    #             data = json.load(f)
-    #             await self.parse_device_manager_request(data)
-    #     except FileNotFoundError:
-    #         with open("appliance_data.json", "w") as f:
-    #             pass
-    #     await self.parse_device_manager_request(data)
-    #     entities = self.config_entries.get(platform, [])
-    #     return entities
 
     async def save_devices(self, devices):
         # Dump to local file
