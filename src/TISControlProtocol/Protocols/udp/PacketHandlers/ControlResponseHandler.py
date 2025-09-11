@@ -7,7 +7,6 @@ from TISControlProtocol.shared import ack_events
 
 async def handle_control_response(hass: HomeAssistant, info: dict):
     channel_number = info["additional_bytes"][0]
-    # await target_appliance.handle_packet(info["additional_bytes"], "control")
     event_data = {
         "device_id": info["device_id"],
         "channel_number": channel_number,
@@ -16,9 +15,6 @@ async def handle_control_response(hass: HomeAssistant, info: dict):
     }
     try:
         hass.bus.async_fire(str(info["device_id"]), event_data)
-        # logging.error(
-        #     f"control response event fired for {info['device_id']}, additional bytes: {info['additional_bytes']}"
-        # )
     except Exception as e:
         logging.error(f"error in firing even for feedbackt: {e}")
 
@@ -31,7 +27,6 @@ async def handle_control_response(hass: HomeAssistant, info: dict):
             )
         )
         if event is not None:
-            print("setting event")
             event.set()
     except Exception as e:
-        print(e)
+        logging.error(f"error getting the acknowledge event e: {e}")
