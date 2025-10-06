@@ -28,8 +28,8 @@ class PacketSender:
     async def send_packet_with_ack(
         self,
         packet: TISPacket,
-        attempts: int = 10,
-        timeout: float = 0.5,
+        attempts: int = 15,
+        timeout: float = 1,
         debounce_time: float = 0.1,  # The debounce time in seconds
     ):
         unique_id = (
