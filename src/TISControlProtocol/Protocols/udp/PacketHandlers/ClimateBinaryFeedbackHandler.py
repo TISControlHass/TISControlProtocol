@@ -2,7 +2,7 @@ from homeassistant.core import HomeAssistant
 import logging
 
 AC_NUMBER_MAP = {0x19: 0, 0x1A: 1, 0x1B: 2, 0x1C: 3, 0x1D: 4, 0x1E: 5, 0x1F: 6, 0x20: 7}
-FLOOR_NUMBER_MAP = {0x22: 0, 0x23: 1}
+FLOOR_NUMBER_MAP = {0x22: 0, 0x23: 1, 0x24: 2, 0x25: 3}
 
 async def handle_climate_binary_feedback(hass: HomeAssistant, info: dict):
     
@@ -24,7 +24,7 @@ async def handle_climate_binary_feedback(hass: HomeAssistant, info: dict):
 
     else:
         ac_number = AC_NUMBER_MAP.get(info["additional_bytes"][0], None)
-        floor_number = AC_NUMBER_MAP.get(info["additional_bytes"][0], None)
+        floor_number = FLOOR_NUMBER_MAP.get(info["additional_bytes"][0], None)
         sub_operation = info["additional_bytes"][1]
         operation_value = info["additional_bytes"][2]
 
