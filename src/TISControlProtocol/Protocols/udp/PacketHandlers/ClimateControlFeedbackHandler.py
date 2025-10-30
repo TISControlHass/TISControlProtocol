@@ -32,7 +32,7 @@ async def handle_climate_control_feedback(hass: HomeAssistant, info: dict):
         logging.error(f"error in firing event for feedback: {e}")
 
     try:
-        event: asyncio.Event = ack_events.get(
+        event: asyncio.Event | None = ack_events.get(
             (
                 tuple(info["device_id"]),
                 (0xE0, 0xEE),
@@ -40,7 +40,9 @@ async def handle_climate_control_feedback(hass: HomeAssistant, info: dict):
             )
         )
         if event is not None:
-            logging.info(f"setting event for climate control feedback, {info['device_id']}")
+            logging.info(
+                f"setting event for climate control feedback, {info['device_id']}"
+            )
             event.set()
     except Exception as e:
         logging.error(f"error in setting event for feedback: {e}")
