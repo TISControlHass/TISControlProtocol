@@ -421,7 +421,7 @@ class TISProtocolHandler:
     def generate_floor_on_off_packet(self, entity, state: int) -> TISPacket:
 
         if entity.heater_number == 0:
-            add_bytes=[(entity.heater_number), 0x14, state]
+            add_bytes=[0x14, state]
 
         if entity.heater_number == 1:
             add_bytes=[(entity.heater_number + 0x22), 0x14, state]
@@ -443,7 +443,7 @@ class TISProtocolHandler:
     ) -> TISPacket:
         
         if entity.heater_number == 0:
-            add_bytes=[(entity.heater_number), 0x18, target_temperature]
+            add_bytes=[0x18, target_temperature]
 
         if entity.heater_number == 1:
             add_bytes=[(entity.heater_number + 0x22), 0x18, target_temperature]
