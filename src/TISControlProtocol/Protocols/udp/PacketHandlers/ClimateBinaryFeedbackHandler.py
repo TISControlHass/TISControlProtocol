@@ -21,6 +21,18 @@ async def handle_climate_binary_feedback(hass: HomeAssistant, info: dict):
             feedback_type = "floor_feedback"
             number = 0
                 
+    elif info["additional_bytes"][0] == 0x2E:
+        number = (info["additional_bytes"][1]) - 1
+        new_sub_operation = info["additional_bytes"][2] 
+        if new_sub_operation == 0x03:
+            sub_operation = 0x14
+
+        elif new_sub_operation == 0x04:
+            sub_operation = 0x18
+
+        operation_value = info["additional_bytes"][3]
+
+        
 
     else:
         ac_number = AC_NUMBER_MAP.get(info["additional_bytes"][0], None)
