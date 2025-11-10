@@ -443,13 +443,13 @@ class TISProtocolHandler:
     ) -> TISPacket:
         
         if entity.heater_number == 0:
-            add_bytes=[(entity.heater_number), 0x18, target_temperature],
+            add_bytes=[(entity.heater_number), 0x18, target_temperature]
 
         if entity.heater_number == 1:
-            add_bytes=[(entity.heater_number + 0x22), 0x18, target_temperature],
+            add_bytes=[(entity.heater_number + 0x22), 0x18, target_temperature]
         
         if entity.heater_number >= 2:
-            add_bytes=[0x2E, (entity.heater_number) + 1, 0x04, target_temperature],
+            add_bytes=[0x2E, (entity.heater_number) + 1, 0x04, target_temperature]
     
         return TISPacket(
             device_id=entity.device_id,
