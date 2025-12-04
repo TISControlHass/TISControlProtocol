@@ -3,9 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <title>Password Form</title>
   </head>
-  <body>
-    <h1>First view</h1>
+  <body
+    class="bg-slate-900 text-white flex items-center justify-center h-screen"
+  >
+    <div
+      class="bg-slate-800 p-8 rounded-lg shadow-xl border border-slate-700 max-w-lg w-full"
+    >
+      <form action="" class="flex flex-col space-y-5">
+        <h1 class="text-2xl text-center font-bold">Password Form</h1>
+
+        <input
+          type="password"
+          class="w-full border-2 border-slate-700 rounded-2xl min-h-12 px-5 outline-none focus:border-blue-600 transition-colors"
+          placeholder="Enter Password..."
+        />
+
+        <button
+          class="mx-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-xl transition duration-200 cursor-pointer"
+        >
+          Submit
+        </button>
+      </form>
+    </div>
   </body>
 </html>
