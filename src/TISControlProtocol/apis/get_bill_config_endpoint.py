@@ -1,6 +1,5 @@
 from homeassistant.components.http import HomeAssistantView
 from aiohttp import web
-from ..api import TISApi
 import logging
 
 
@@ -11,7 +10,7 @@ class GetBillConfigEndpoint(HomeAssistantView):
     name = "api:get-bill-config"
     requires_auth = False
 
-    def __init__(self, tis_api: TISApi):
+    def __init__(self, tis_api):
         self.tis_api = tis_api
 
     async def post(self, request):

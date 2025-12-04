@@ -1,6 +1,5 @@
 from homeassistant.components.http import HomeAssistantView
 from aiohttp import web
-from ..api import TISApi
 from TISControlProtocol.shared import get_real_mac
 
 
@@ -11,7 +10,7 @@ class GetKeyEndpoint(HomeAssistantView):
     name = "api:get_key"
     requires_auth = False
 
-    def __init__(self, tis_api: TISApi):
+    def __init__(self, tis_api):
         """Initialize the API endpoint."""
         self.api = tis_api
 

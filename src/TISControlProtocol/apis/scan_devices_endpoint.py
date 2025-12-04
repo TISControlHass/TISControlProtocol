@@ -1,7 +1,6 @@
 from homeassistant.components.http import HomeAssistantView
 from aiohttp import web
 import asyncio
-from ..api import TISApi
 from TISControlProtocol.Protocols.udp.ProtocolHandler import (
     TISProtocolHandler,
     TISPacket,
@@ -17,7 +16,7 @@ class ScanDevicesEndPoint(HomeAssistantView):
     name = "api:scan_devices"
     requires_auth = False
 
-    def __init__(self, tis_api: TISApi):
+    def __init__(self, tis_api):
         """Initialize the API endpoint."""
         self.api = tis_api
         self.discovery_packet: TISPacket = protocol_handler.generate_discovery_packet()

@@ -1,7 +1,6 @@
 from homeassistant.components.http import HomeAssistantView
 from aiohttp import web
 import asyncio
-from ..api import TISApi
 
 
 class TISEndPoint(HomeAssistantView):
@@ -11,7 +10,7 @@ class TISEndPoint(HomeAssistantView):
     name = "api:tis"
     requires_auth = False
 
-    def __init__(self, tis_api: TISApi):
+    def __init__(self, tis_api):
         """Initialize the API endpoint."""
         self.api = tis_api
 

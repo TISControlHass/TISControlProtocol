@@ -1,7 +1,6 @@
 from homeassistant.components.http import HomeAssistantView
 from aiohttp import web
 import asyncio
-from ..api import TISApi
 from TISControlProtocol.shared import get_real_mac
 import logging
 
@@ -13,7 +12,7 @@ class UpdateEndpoint(HomeAssistantView):
     name = "api:update"
     requires_auth = False
 
-    def __init__(self, tis_api: TISApi):
+    def __init__(self, tis_api):
         self.tis_api = tis_api
 
     async def post(self, request):

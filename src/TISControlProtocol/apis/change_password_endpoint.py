@@ -1,8 +1,8 @@
 from homeassistant.components.http import HomeAssistantView
 from aiohttp import web
 import asyncio
-from ..api import TISApi
 import logging
+
 
 class ChangeSecurityPassEndpoint(HomeAssistantView):
     """Change Security Password API Endpoint."""
@@ -11,7 +11,7 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
     name = "api:change_pass"
     requires_auth = False
 
-    def __init__(self, tis_api: TISApi):
+    def __init__(self, tis_api):
         self.tis_api = tis_api
 
     async def post(self, request):
