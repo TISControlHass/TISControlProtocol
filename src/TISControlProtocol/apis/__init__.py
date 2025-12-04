@@ -1,3 +1,6 @@
+import TISControlProtocol.views as views
+from .shared import STATIC_URL_PREFIX
+
 from .tis_endpoint import TISEndPoint
 from .scan_devices_endpoint import ScanDevicesEndPoint
 from .get_key_endpoint import GetKeyEndpoint
@@ -6,6 +9,7 @@ from .restart_endpoint import RestartEndpoint
 from .update_endpoint import UpdateEndpoint
 from .bill_config_endpoint import BillConfigEndpoint
 from .get_bill_config_endpoint import GetBillConfigEndpoint
+import importlib.resources
 
 __all__ = [
     "TISEndPoint",
@@ -17,3 +21,17 @@ __all__ = [
     "BillConfigEndpoint",
     "GetBillConfigEndpoint",
 ]
+
+
+def setup_views(hass):
+    """
+    1. Locate the absolute path of the 'views' folder.
+    2. Register it as a static path in Home Assistant.
+    """
+
+    # Get absolute path to 'src/TISControlProtocol/views'
+    views_path = str(importlib.resources.files(views))
+
+    # Register the ROOT views folder
+    # Now, anything inside 'views/' is accessible via HTTP
+    hass.http.register_static_path(STATIC_URL_PREFIX, views_path, cache_headers=False)
