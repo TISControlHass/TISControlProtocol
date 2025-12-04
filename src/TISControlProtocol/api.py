@@ -27,6 +27,7 @@ from .apis import (
     UpdateEndpoint,
     BillConfigEndpoint,
     GetBillConfigEndpoint,
+    setup_views,
 )
 
 
@@ -94,6 +95,7 @@ class TISApi:
     async def _register_http_views(self):
         """Register HTTP views."""
         try:
+            setup_views(self.hass)
             self.hass.http.register_view(TISEndPoint(self))
             self.hass.http.register_view(ScanDevicesEndPoint(self))
             self.hass.http.register_view(GetKeyEndpoint(self))
