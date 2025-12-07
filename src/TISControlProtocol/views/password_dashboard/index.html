@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style type="text/tailwindcss">
+      @theme {
+        --color-body-bg: var(--body-bg);
+        --color-card-bg: var(--card-bg);
+        --color-text-color: var(--text-color);
+        --color-input-bg: var(--input-bg);
+        --color-input-border: var(--input-border);
+
+        --color-btn-primary: var(--btn-primary);
+        --color-btn-primary-hover: var(--btn-primary-hover);
+        --color-btn-success: var(--btn-success);
+        --color-btn-success-hover: var(--btn-success-hover);
+        --color-btn-danger: var(--btn-danger);
+        --color-btn-danger-hover: var(--btn-danger-hover);
+
+        --shadow-theme: var(--box-shadow);
+      }
+
+      :root {
+        --body-bg: #f8f9fa;
+        --card-bg: #fff;
+        --text-color: #474d53;
+        --input-bg: #fff;
+        --input-border: #ced4da;
+        --btn-primary: #4e73df;
+        --btn-primary-hover: #3a5fc4;
+        --btn-success: #28a745;
+        --btn-success-hover: #218838;
+        --btn-danger: #dc3545;
+        --btn-danger-hover: #c82333;
+        --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      [data-theme="dark"] {
+        --body-bg: #1a1d21;
+        --card-bg: #2d343c;
+        --text-color: #e9ecef;
+        --input-bg: #343a40;
+        --input-border: #495057;
+        --btn-primary: #4e73df;
+        --btn-primary-hover: #5a7ae2;
+        --btn-success: #28a745;
+        --btn-success-hover: #34ce57;
+        --btn-danger: #dc3545;
+        --btn-danger-hover: #e4606d;
+        --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+    </style>
+  </head>
+
+  <body class="bg-body-bg text-text-color p-6 transition-colors duration-300">
+    <div
+      class="bg-card-bg text-text-color shadow-theme p-4 rounded border border-input-border"
+    >
+      <h1 class="text-xl font-bold mb-4">Hello Theme!</h1>
+
+      <button
+        class="bg-btn-primary hover:bg-btn-primary-hover text-white px-4 py-2 rounded"
+      >
+        Primary Button
+      </button>
+    </div>
+  </body>
+</html>
