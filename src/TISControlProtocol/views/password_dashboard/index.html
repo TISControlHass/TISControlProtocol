@@ -57,30 +57,36 @@
         --btn-danger-hover: #e4606d;
         --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
       }
+
+      .theme-btn.active {
+        background-color: var(--btn-primary) !important;
+        color: white !important;
+        border-color: var(--btn-primary) !important;
+      }
     </style>
   </head>
 
   <body class="bg-body text-text-color transition-all duration-300">
-    <!-- Header -->
-    <div class="bg-card py-5">
+    <div class="bg-card py-5 shadow-theme">
       <div class="container mx-auto">
-        <div class="flex flex-row items-center justify-between">
-          <div class="px-5 text-2xl font-bold">Passwords Dashboard</div>
-          <div class="flex flex-row space-x-4">
+        <div class="flex flex-row items-center justify-between px-5 md:px-0">
+          <div class="text-2xl font-bold">Passwords Dashboard</div>
+
+          <div id="theme-buttons" class="flex flex-row space-x-4">
             <button
-              class="outline-1 outline-input-border px-3 py-3 rounded bg-white cursor-pointer transition-all duration-300 active:bg-primary active:text-white hover:-translate-y-1 hover:drop-shadow-lg"
+              class="theme-btn outline-1 outline-input-border px-3 py-3 rounded bg-white text-[#474d53] cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-lg"
               data-theme="light"
             >
               <i class="fas fa-sun px-2"></i> Light
             </button>
             <button
-              class="outline-1 outline-input-border px-3 py-3 rounded text-white bg-gray-800 cursor-pointer transition-all duration-300 active:bg-primary active:text-white hover:-translate-y-1 hover:drop-shadow-lg"
+              class="theme-btn outline-1 outline-input-border px-3 py-3 rounded text-white bg-gray-800 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-lg"
               data-theme="dark"
             >
               <i class="fas fa-moon px-2"></i> Dark
             </button>
             <button
-              class="outline-1 outline-input-border px-3 py-3 rounded bg-card cursor-pointer transition-all duration-300 active:bg-primary active:text-white hover:-translate-y-1 hover:drop-shadow-lg"
+              class="theme-btn outline-1 outline-input-border px-3 py-3 rounded bg-card cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-lg"
               data-theme="system"
             >
               <i class="fas fa-laptop px-2"></i> System
@@ -90,20 +96,15 @@
       </div>
     </div>
 
-    <!-- Card -->
     <div
-      class="container mx-auto w-full h-screen flex items-center justify-center"
+      class="container mx-auto w-full h-[calc(100vh-100px)] flex items-center justify-center"
     >
-      <div
-        class="rounded-3xl bg-card w-2xl md:w-4xl lg:w-5xl drop-shadow-md drop-shadow-box-shadow"
-      >
-        <!-- Card Header -->
+      <div class="rounded-3xl bg-card w-11/12 md:w-4xl lg:w-5xl shadow-theme">
         <div class="font-bold text-2xl w-full border-input-border border-b">
           <p class="px-8 py-5">Your Passwords</p>
         </div>
 
-        <!-- Card Body -->
-        <div class="flex flex-col items-center px-8 py-5">
+        <div class="flex flex-col items-center px-8 py-10">
           <button
             class="bg-primary text-white rounded-xl px-5 py-3 font-bold text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"
           >
@@ -112,5 +113,51 @@
         </div>
       </div>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const themeButtons = document.querySelectorAll(".theme-btn");
+
+        function applyTheme(theme) {
+          // 1. Handle logic for System vs Explicit
+          if (theme === "system") {
+            const prefersDark = window.matchMedia(
+              "(prefers-color-scheme: dark)"
+            ).matches;
+            document.documentElement.setAttribute(
+              "data-theme",
+              prefersDark ? "dark" : "light"
+            );
+          } else {
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+
+          // 2. Handle Visual Active State
+          themeButtons.forEach((button) => {
+            if (button.dataset.theme === theme) {
+              button.classList.add("active");
+            } else {
+              button.classList.remove("active");
+            }
+          });
+
+          // 3. Save Preference
+          localStorage.setItem("backpack-theme", theme);
+        }
+
+        // Event Listeners
+        themeButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const theme = button.dataset.theme;
+            applyTheme(theme);
+          });
+        });
+
+        // Initialize on Load
+        // Check localStorage, if empty default to 'system'
+        const savedTheme = localStorage.getItem("backpack-theme") || "system";
+        applyTheme(savedTheme);
+      });
+    </script>
   </body>
 </html>
