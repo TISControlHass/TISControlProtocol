@@ -104,7 +104,39 @@
           <p class="px-8 py-5">Your Passwords</p>
         </div>
 
-        <div class="flex flex-col items-center px-8 py-10">
+        <div class="flex flex-col items-center px-8 py-10 space-y-5">
+          <div
+            class="rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input"
+          >
+            <div class="flex flex-row items-center space-x-5 px-3 py-3">
+              <div
+                class="flex-1 flex-col items-start justify-center space-y-1 w-full"
+              >
+                <p>Title:</p>
+                <input
+                  type="text"
+                  name="title"
+                  id="id"
+                  class="border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary"
+                  placeholder="Type the title ..."
+                />
+              </div>
+
+              <div
+                class="flex-1 flex-col items-start justify-center space-y-1 w-full"
+              >
+                <p>Password:</p>
+                <input
+                  type="password"
+                  name="password"
+                  id="password-id"
+                  class="border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary"
+                  placeholder="Type the password ..."
+                />
+              </div>
+            </div>
+          </div>
+
           <button
             class="bg-primary text-white rounded-xl px-5 py-3 font-bold text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"
           >
@@ -115,6 +147,7 @@
     </div>
 
     <script>
+      // <!-- Theme Stuff -->
       document.addEventListener("DOMContentLoaded", function () {
         const themeButtons = document.querySelectorAll(".theme-btn");
 
@@ -157,6 +190,9 @@
         // Check localStorage, if empty default to 'system'
         const savedTheme = localStorage.getItem("theme") || "system";
         applyTheme(savedTheme);
+
+        // ----------------------------------------
+        // <!-- Password Entities Stuff -->
       });
     </script>
   </body>
