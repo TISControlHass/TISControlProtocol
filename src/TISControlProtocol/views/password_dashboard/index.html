@@ -142,7 +142,7 @@
           });
 
           // 3. Save Preference
-          localStorage.setItem("backpack-theme", theme);
+          localStorage.setItem("theme", theme);
         }
 
         // Event Listeners
@@ -155,7 +155,7 @@
 
         // Initialize on Load
         // Check localStorage, if empty default to 'system'
-        const savedTheme = localStorage.getItem("backpack-theme") || "system";
+        const savedTheme = localStorage.getItem("theme") || "system";
         applyTheme(savedTheme);
       });
     </script>
