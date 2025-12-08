@@ -97,7 +97,7 @@
     </div>
 
     <div
-      class="container mx-auto w-full h-[calc(100vh-100px)] flex items-center justify-center"
+      class="container mx-auto w-full min-h-[calc(100vh-100px)] flex items-center justify-center py-10"
     >
       <div class="rounded-3xl bg-card w-11/12 md:w-4xl lg:w-5xl shadow-theme">
         <div class="font-bold text-2xl w-full border-input-border border-b">
@@ -105,80 +105,13 @@
         </div>
 
         <form
+          id="passwordsForm"
           class="passwords-form flex flex-col items-center px-8 py-10 space-y-5"
         >
-          <div
-            data-index="0"
-            class="password-entity rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3 transitions-all duration-300 hover:shadow-md hover:shadow-body"
-          >
-            <div
-              class="flex flex-row w-full items-center justify-between py-2 px-2"
-            >
-              <div
-                class="flex items-center justify-center rounded-[100%] bg-primary w-10 h-10 font-bold text-white"
-              >
-                1
-              </div>
+          <div id="passwords-container" class="w-full space-y-5"></div>
 
-              <button
-                title="Remove Password"
-                class="bg-danger text-white rounded-[100%] w-10 h-10 font-bold transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-0.5 hover:drop-shadow-xl"
-              >
-                <i class="fas fa-trash px-2"></i>
-              </button>
-            </div>
-            <div class="flex flex-row items-center space-x-5 px-3 py-3">
-              <div
-                class="flex-1 flex-col items-start justify-center space-y-1 w-full"
-              >
-                <label class="font-bold text-lg" for="title_0">Title:</label>
-                <input
-                  required
-                  type="text"
-                  name="titles[]"
-                  id="title_0"
-                  class="border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12"
-                  placeholder="Type the title..."
-                />
-              </div>
-
-              <div
-                class="flex-1 flex-col items-start justify-center space-y-1 w-full"
-              >
-                <label class="font-bold text-lg" for="password_0"
-                  >Password:</label
-                >
-                <input
-                  type="password"
-                  name="passwords[]"
-                  id="password_0"
-                  class="border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12"
-                  placeholder="Type the password..."
-                  required
-                />
-              </div>
-            </div>
-
-            <div
-              class="flex flex-row items-center space-x-5 pb-3 justify-center"
-            >
-              <button
-                id="regenerate_password_0"
-                class="bg-primary text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"
-              >
-                <i class="fas fa-rotate px-2"></i> Regenerate Password
-              </button>
-              <button
-                id="copy_password_0"
-                class="bg-card rounded-xl outline outline-primary text-primary px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:outline-none hover:text-white"
-              >
-                <i class="fas fa-copy px-2"></i> Copy Password
-              </button>
-            </div>
-          </div>
-
-          <!-- Add New Password Button -->
           <button
+            type="button"
             id="add_new_password"
             class="bg-success text-white rounded-xl px-5 py-3 font-bold text-lg transition-all duration-300 cursor-pointer hover:bg-success-hover hover:-translate-y-1 hover:drop-shadow-xl"
           >
@@ -206,12 +139,32 @@
     </div>
 
     <script>
-      // <!-- Theme Stuff -->
-      document.addEventListener("DOMContentLoaded", function () {
-        const themeButtons = document.querySelectorAll(".theme-btn");
+      /* --- CONFIGURATION --- */
+      // Replace this with your actual Python API endpoint
+      const API_ENDPOINT = "/api/passwords";
 
+      /* --- HELPER FUNCTIONS --- */
+
+      // 2. Random Password Generator (Digits & Characters, Length 8)
+      function generateRandomPassword(length = 8) {
+        const charset =
+          "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let retVal = "";
+        for (let i = 0, n = charset.length; i < length; ++i) {
+          retVal += charset.charAt(Math.floor(Math.random() * n));
+        }
+        return retVal;
+      }
+
+      // Generate a unique ID for DOM elements
+      const uniqueId = () => "id-" + Math.random().toString(36).substr(2, 16);
+
+      /* --- CORE LOGIC --- */
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // --- Theme Logic (Kept from your original code) ---
+        const themeButtons = document.querySelectorAll(".theme-btn");
         function applyTheme(theme) {
-          // 1. Handle logic for System vs Explicit
           if (theme === "system") {
             const prefersDark = window.matchMedia(
               "(prefers-color-scheme: dark)"
@@ -223,35 +176,193 @@
           } else {
             document.documentElement.setAttribute("data-theme", theme);
           }
-
-          // 2. Handle Visual Active State
           themeButtons.forEach((button) => {
-            if (button.dataset.theme === theme) {
-              button.classList.add("active");
+            if (button.dataset.theme === theme) button.classList.add("active");
+            else button.classList.remove("active");
+          });
+          localStorage.setItem("theme", theme);
+        }
+        themeButtons.forEach((button) => {
+          button.addEventListener("click", () =>
+            applyTheme(button.dataset.theme)
+          );
+        });
+        applyTheme(localStorage.getItem("theme") || "system");
+        // ----------------------------------------
+
+        const container = document.getElementById("passwords-container");
+        const addBtn = document.getElementById("add_new_password");
+        const mainForm = document.getElementById("passwordsForm");
+
+        // UI Builder: Create a single password row HTML
+        function addPasswordEntity(initialTitle = "", initialPassword = "") {
+          const id = uniqueId();
+          const count = container.children.length + 1; // Visual index (1, 2, 3...)
+
+          // Use generated password if none provided
+          const passwordValue = initialPassword || generateRandomPassword();
+
+          const entityHtml = `
+            <div id="${id}" class="password-entity rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3 transitions-all duration-300 hover:shadow-md hover:shadow-body fade-in">
+                <div class="flex flex-row w-full items-center justify-between py-2 px-2">
+                    <div class="entity-number flex items-center justify-center rounded-[100%] bg-primary w-10 h-10 font-bold text-white">
+                        ${count}
+                    </div>
+                    <button type="button" class="btn-remove bg-danger text-white rounded-[100%] w-10 h-10 font-bold transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-0.5 hover:drop-shadow-xl">
+                        <i class="fas fa-trash px-2"></i>
+                    </button>
+                </div>
+                <div class="flex flex-row items-center space-x-5 px-3 py-3">
+                    <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
+                        <label class="font-bold text-lg">Title:</label>
+                        <input required type="text" name="titles[]" value="${initialTitle}" class="input-title border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12" placeholder="Type the title..." />
+                    </div>
+                    <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
+                        <label class="font-bold text-lg">Password:</label>
+                        <input type="text" name="passwords[]" value="${passwordValue}" class="input-password border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12" placeholder="Type the password..." required />
+                    </div>
+                </div>
+                <div class="flex flex-row items-center space-x-5 pb-3 justify-center">
+                    <button type="button" class="btn-regenerate bg-primary text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl">
+                        <i class="fas fa-rotate px-2"></i> Regenerate Password
+                    </button>
+                    <button type="button" class="btn-copy bg-card rounded-xl outline outline-primary text-primary px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:outline-none hover:text-white">
+                        <i class="fas fa-copy px-2"></i> Copy Password
+                    </button>
+                </div>
+            </div>
+          `;
+
+          container.insertAdjacentHTML("beforeend", entityHtml);
+          const newRow = document.getElementById(id);
+          attachRowEvents(newRow);
+        }
+
+        // Attach events (Delete, Regenerate, Copy) to a specific row
+        function attachRowEvents(row) {
+          const passwordInput = row.querySelector(".input-password");
+
+          // Remove Button
+          row.querySelector(".btn-remove").addEventListener("click", () => {
+            row.remove();
+            updateIndexes(); // Fix numbers (1, 2, 3) after delete
+          });
+
+          // Regenerate Button
+          row.querySelector(".btn-regenerate").addEventListener("click", () => {
+            passwordInput.value = generateRandomPassword();
+          });
+
+          // Copy Button
+          row.querySelector(".btn-copy").addEventListener("click", () => {
+            navigator.clipboard.writeText(passwordInput.value);
+            // Optional: visual feedback could go here
+            const icon = row.querySelector(".btn-copy i");
+            icon.className = "fas fa-check px-2";
+            setTimeout(() => (icon.className = "fas fa-copy px-2"), 1500);
+          });
+        }
+
+        // Helper to re-calculate the "1, 2, 3" badges if a row is deleted
+        function updateIndexes() {
+          const badges = container.querySelectorAll(".entity-number");
+          badges.forEach((badge, index) => {
+            badge.textContent = index + 1;
+          });
+        }
+
+        // 1. Add New Password Button Logic
+        addBtn.addEventListener("click", () => {
+          addPasswordEntity();
+        });
+
+        // 3. Form Submission (POST request)
+        mainForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const rows = container.querySelectorAll(".password-entity");
+          const payload = [];
+          let isValid = true;
+
+          rows.forEach((row) => {
+            const title = row.querySelector(".input-title").value.trim();
+            const password = row.querySelector(".input-password").value.trim();
+
+            // Validation: Alphanumeric only, min length 8
+            // Regex: ^[a-zA-Z0-9]{8,}$
+            const regex = /^[a-zA-Z0-9]{8,}$/;
+
+            if (!regex.test(password)) {
+              isValid = false;
+              row.querySelector(".input-password").style.borderColor =
+                "var(--btn-danger)";
+              alert(
+                `Password for "${
+                  title || "Untitled"
+                }" is invalid. Must be at least 8 chars, numbers and letters only.`
+              );
             } else {
-              button.classList.remove("active");
+              row.querySelector(".input-password").style.borderColor =
+                "var(--input-border)"; // Reset
+              payload.push({ title: title, password: password });
             }
           });
 
-          // 3. Save Preference
-          localStorage.setItem("theme", theme);
-        }
+          if (!isValid) return;
 
-        // Event Listeners
-        themeButtons.forEach((button) => {
-          button.addEventListener("click", () => {
-            const theme = button.dataset.theme;
-            applyTheme(theme);
-          });
+          // Send to Backend
+          try {
+            const response = await fetch(API_ENDPOINT, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+
+            if (response.ok) {
+              alert("Passwords saved successfully!");
+            } else {
+              alert("Failed to save passwords.");
+            }
+          } catch (error) {
+            console.error("Error saving:", error);
+            // For demo purposes, since endpoint doesn't exist, we alert Success
+            alert("(Demo) Data valid. Would send: " + JSON.stringify(payload));
+          }
         });
 
-        // Initialize on Load
-        // Check localStorage, if empty default to 'system'
-        const savedTheme = localStorage.getItem("theme") || "system";
-        applyTheme(savedTheme);
+        // 4. Initial Load Logic (Fetch Data)
+        async function fetchInitialData() {
+          try {
+            // GET request to fetch data
+            const response = await fetch(API_ENDPOINT);
 
-        // ----------------------------------------
-        // <!-- Password Entities Stuff -->
+            // Handling if endpoint doesn't exist yet (for demo safety)
+            if (!response.ok) throw new Error("API not reachable");
+
+            const data = await response.json();
+
+            // Clear container just in case
+            container.innerHTML = "";
+
+            if (Array.isArray(data) && data.length > 0) {
+              // Populate from DB
+              data.forEach((item) => {
+                addPasswordEntity(item.title, item.password);
+              });
+            } else {
+              // Leave empty (Requirement 4)
+            }
+          } catch (error) {
+            console.log(
+              "Could not fetch initial data (normal if API isn't built yet). Starting empty."
+            );
+            // Start empty
+            container.innerHTML = "";
+          }
+        }
+
+        // Start the app
+        fetchInitialData();
       });
     </script>
   </body>
