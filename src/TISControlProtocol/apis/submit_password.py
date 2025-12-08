@@ -28,9 +28,9 @@ class SubmitPasswordEndpoint(HomeAssistantView):
                 "password": password,
                 "feedback_type": "password_feedback",
             }
-            logging.warning(f"password received: {password}")
+
             self.tis_api.hass.bus.async_fire("password_feedback", event_data)
-            logging.warning("password got fired successfully")
+            logging.warning("password event got fired successfully")
 
             # Return the response immediately
             return web.json_response({"message": "Password submitted successfully"})
