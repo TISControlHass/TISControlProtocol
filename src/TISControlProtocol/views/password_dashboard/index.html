@@ -104,59 +104,79 @@
           <p class="px-8 py-5">Your Passwords</p>
         </div>
 
-        <div class="flex flex-col items-center px-8 py-10 space-y-5">
+        <form
+          id="passwords-form"
+          class="flex flex-col items-center px-8 py-10 space-y-5"
+        >
           <div
             class="rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3"
           >
+            <div
+              class="flex flex-row w-full items-center justify-between py-2 px-2"
+            >
+              <div
+                class="flex items-center justify-center rounded-[100%] bg-primary w-10 h-10 font-bold"
+              >
+                1
+              </div>
+
+              <button
+                title="Remove Password"
+                class="bg-danger text-white rounded-[100%] w-10 h-10 font-bold transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-0.5 hover:drop-shadow-xl"
+              >
+                <i class="fas fa-trash px-2"></i>
+              </button>
+            </div>
             <div class="flex flex-row items-center space-x-5 px-3 py-3">
               <div
                 class="flex-1 flex-col items-start justify-center space-y-1 w-full"
               >
-                <label for="title">Title:</label>
+                <label class="font-bold text-lg" for="title_0">Title:</label>
                 <input
                   required
                   type="text"
                   name="title"
                   id="id"
                   class="border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12"
-                  placeholder="Type the title ..."
+                  placeholder="Type the title..."
                 />
               </div>
 
               <div
                 class="flex-1 flex-col items-start justify-center space-y-1 w-full"
               >
-                <label for="password">Password:</label>
+                <label class="font-bold text-lg" for="password"
+                  >Password:</label
+                >
                 <input
                   type="password"
                   name="password"
                   id="password-id"
                   class="border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12"
-                  placeholder="Type the password ..."
+                  placeholder="Type the password..."
                 />
               </div>
             </div>
 
-            <div class="flex flex-row items-center space-x-5 justify-center">
+            <div
+              class="flex flex-row items-center space-x-5 pb-3 justify-center"
+            >
               <button
                 class="bg-primary text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"
               >
                 <i class="fas fa-rotate px-2"></i> Regenerate Password
               </button>
-              <button
-                class="bg-danger text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-1 hover:drop-shadow-xl"
-              >
-                <i class="fas fa-trash px-2"></i> Remove Password
-              </button>
             </div>
           </div>
+
+          <!--  -->
 
           <button
             class="bg-success text-white rounded-xl px-5 py-3 font-bold text-lg transition-all duration-300 cursor-pointer hover:bg-success-hover hover:-translate-y-1 hover:drop-shadow-xl"
           >
-            <i class="fas fa-add px-2"></i> Add New Password
+            <i class="fas fa-add pr-2"></i> Add New Password
           </button>
-        </div>
+        </form>
       </div>
     </div>
 
