@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
     <title>Password Form</title>
   </head>
   <body
@@ -18,17 +23,23 @@
     <div
       class="bg-slate-900 p-8 rounded-lg shadow-xl border border-[#593232] max-w-lg w-full"
     >
-      <form action="" class="flex flex-col space-y-5">
+      <form id="passwordForm" action="" class="flex flex-col space-y-5">
         <h1 class="text-2xl text-center font-bold">Password Form</h1>
+
+        <div
+          id="error-message"
+          class="hidden text-red-500 text-sm font-semibold bg-red-500/10 p-2 rounded border-l-4 border-l-red"
+        ></div>
 
         <input
           type="password"
-          class="w-full border-2 border-[#593232] rounded-2xl min-h-12 px-5 outline-none focus:border-red-600 transition-colors"
+          class="password-input w-full border-2 border-[#593232] rounded-2xl min-h-12 px-5 outline-none focus:border-red-600 transition-colors"
           placeholder="Enter Password..."
           required
         />
 
         <button
+          type="submit"
           class="submit-btn mx-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl transition duration-200 cursor-pointer"
         >
           Submit
@@ -38,7 +49,100 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("passwordForm");
+        const passwordInput = document.querySelector(".password-input");
         const submitButton = document.querySelector(".submit-btn");
+        const errorMessageDiv = document.getElementById("error-message");
+
+        // Helper function to show errors
+        function showError(msg) {
+          errorMessageDiv.textContent = msg;
+          errorMessageDiv.classList.remove("hidden");
+        }
+
+        // Helper function to hide errors
+        function hideError() {
+          errorMessageDiv.textContent = "";
+          errorMessageDiv.classList.add("hidden");
+        }
+
+        // Optional: Hide error when user starts typing again
+        passwordInput.addEventListener("input", hideError);
+
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          hideError(); // Clear previous errors
+
+          const password = passwordInput.value;
+
+          // Regex: Minimum 8 chars, Alphanumeric only
+          const isValid = /^[a-zA-Z0-9]{8,}$/.test(password);
+
+          if (!isValid) {
+            showError("Password must be 8+ chars (letters & numbers only).");
+            return;
+          }
+
+          const apiEndpoint = "https://jsonplaceholder.typicode.com/posts";
+
+          submitButton.disabled = true;
+          submitButton.textContent = "Sending...";
+
+          try {
+            const response = await fetch(apiEndpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ password: password }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              console.log("Success:", data);
+
+              // Show success in green (temporarily changing the style) or just clear form
+              // For now, let's clear the form
+              form.reset();
+
+              // Optional: Show success message in the div with green color
+              errorMessageDiv.textContent = "Success! Password submitted.";
+              errorMessageDiv.classList.remove(
+                "hidden",
+                "text-red-500",
+                "bg-red-500/10",
+                "border-red-500/50"
+              );
+              errorMessageDiv.classList.add(
+                "text-green-500",
+                "bg-green-500/10",
+                "border-green-500/50"
+              );
+
+              // Revert styling after 3 seconds
+              setTimeout(() => {
+                hideError();
+                // Reset classes back to red for next error
+                errorMessageDiv.classList.add(
+                  "text-red-500",
+                  "bg-red-500/10",
+                  "border-red-500/50"
+                );
+                errorMessageDiv.classList.remove(
+                  "text-green-500",
+                  "bg-green-500/10",
+                  "border-green-500/50"
+                );
+              }, 3000);
+            } else {
+              showError("Server error. Please try again.");
+            }
+          } catch (error) {
+            console.error(error);
+            showError("Network error. Check your connection.");
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Submit";
+          }
+        });
       });
     </script>
   </body>
