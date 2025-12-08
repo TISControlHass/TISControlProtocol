@@ -13,6 +13,7 @@ from .bill_config_endpoint import BillConfigEndpoint
 from .get_bill_config_endpoint import GetBillConfigEndpoint
 from .password_form_endpoint import PasswordFormEndpoint
 from .submit_password import SubmitPasswordEndpoint
+from .password_dashboard import PasswordDashboardEndpoint
 
 
 __all__ = [
@@ -24,6 +25,7 @@ __all__ = [
     "UpdateEndpoint",
     "BillConfigEndpoint",
     "GetBillConfigEndpoint",
+    "SubmitPasswordEndpoint",
 ]
 
 
@@ -49,3 +51,4 @@ async def setup_views(hass):
         ]
     )
     hass.http.register_view(PasswordFormEndpoint(views_path))
+    hass.http.register_view(PasswordDashboardEndpoint(views_path))
