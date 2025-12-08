@@ -6,7 +6,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <title>Password Form</title>
   </head>
-  <body class="text-white flex flex-col items-center justify-center h-screen">
+  <body
+    class="text-[#b6a9a9] flex flex-col items-center justify-center h-screen"
+  >
     <div class="w-50 h-50">
       <img
         src="https://www.tiscontrol.com/tp_Public/Home/img/logo.png"
@@ -14,24 +16,30 @@
       />
     </div>
     <div
-      class="bg-slate-900 p-8 rounded-lg shadow-xl border border-slate-700 max-w-lg w-full"
+      class="bg-slate-900 p-8 rounded-lg shadow-xl border border-[#593232] max-w-lg w-full"
     >
       <form action="" class="flex flex-col space-y-5">
         <h1 class="text-2xl text-center font-bold">Password Form</h1>
 
         <input
           type="password"
-          class="w-full border-2 border-slate-700 rounded-2xl min-h-12 px-5 outline-none focus:border-red-600 transition-colors"
+          class="w-full border-2 border-[#593232] rounded-2xl min-h-12 px-5 outline-none focus:border-red-600 transition-colors"
           placeholder="Enter Password..."
+          required
         />
 
         <button
-          onclick="console.log('I have been clicked')"
-          class="mx-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl transition duration-200 cursor-pointer"
+          class="submit-btn mx-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl transition duration-200 cursor-pointer"
         >
           Submit
         </button>
       </form>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const submitButton = document.querySelector(".submit-btn");
+      });
+    </script>
   </body>
 </html>
