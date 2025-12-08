@@ -29,7 +29,7 @@
       }
 
       :root {
-        --body-bg: #f8f9fa;
+        --body-bg: #eaeaeb;
         --card-bg: #fff;
         --text-color: #474d53;
         --input-bg: #fff;
@@ -109,13 +109,14 @@
           class="flex flex-col items-center px-8 py-10 space-y-5"
         >
           <div
-            class="rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3"
+            id="password_entities"
+            class="passwords-container rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3 transitions-all duration-300 hover:shadow-md hover:shadow-body"
           >
             <div
               class="flex flex-row w-full items-center justify-between py-2 px-2"
             >
               <div
-                class="flex items-center justify-center rounded-[100%] bg-primary w-10 h-10 font-bold"
+                class="flex items-center justify-center rounded-[100%] bg-primary w-10 h-10 font-bold text-white"
               >
                 1
               </div>
@@ -135,8 +136,8 @@
                 <input
                   required
                   type="text"
-                  name="title"
-                  id="id"
+                  name="title[]"
+                  id="title_0"
                   class="border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12"
                   placeholder="Type the title..."
                 />
@@ -145,15 +146,16 @@
               <div
                 class="flex-1 flex-col items-start justify-center space-y-1 w-full"
               >
-                <label class="font-bold text-lg" for="password"
+                <label class="font-bold text-lg" for="password_0"
                   >Password:</label
                 >
                 <input
                   type="password"
-                  name="password"
-                  id="password-id"
+                  name="password[]"
+                  id="password_0"
                   class="border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12"
                   placeholder="Type the password..."
+                  required
                 />
               </div>
             </div>
@@ -162,6 +164,7 @@
               class="flex flex-row items-center space-x-5 pb-3 justify-center"
             >
               <button
+                id="regenerate_password_0"
                 class="bg-primary text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"
               >
                 <i class="fas fa-rotate px-2"></i> Regenerate Password
@@ -169,13 +172,30 @@
             </div>
           </div>
 
-          <!--  -->
-
+          <!-- Add New Password Button -->
           <button
+            id="add_new_password"
             class="bg-success text-white rounded-xl px-5 py-3 font-bold text-lg transition-all duration-300 cursor-pointer hover:bg-success-hover hover:-translate-y-1 hover:drop-shadow-xl"
           >
             <i class="fas fa-add pr-2"></i> Add New Password
           </button>
+
+          <div class="w-full border-b border-input-border"></div>
+
+          <div class="submit-container flex flex-row items-center space-x-8">
+            <button
+              type="submit"
+              class="bg-primary text-white rounded-xl px-5 py-3 font-bold text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"
+            >
+              <i class="fas fa-save pr-2"></i> Save Billing Configuration
+            </button>
+            <a
+              href="http://homeassistant.local:8123"
+              class="bg-card rounded-xl px-5 py-3 transition-all duration-300 drop-shadow-md shadow-md hover:bg-body hover:shadow-xl hover:-translate-y-1"
+            >
+              <i class="fas fa-ban pr-2"></i> Cancel
+            </a>
+          </div>
         </form>
       </div>
     </div>
