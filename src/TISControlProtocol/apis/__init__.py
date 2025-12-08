@@ -12,6 +12,7 @@ from .update_endpoint import UpdateEndpoint
 from .bill_config_endpoint import BillConfigEndpoint
 from .get_bill_config_endpoint import GetBillConfigEndpoint
 from .password_form_endpoint import PasswordFormEndpoint
+from .submit_password import SubmitPasswordEndpoint
 
 
 __all__ = [

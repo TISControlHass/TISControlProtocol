@@ -27,6 +27,7 @@ from .apis import (
     UpdateEndpoint,
     BillConfigEndpoint,
     GetBillConfigEndpoint,
+    SubmitPasswordEndpoint,
     setup_views,
 )
 
@@ -97,6 +98,7 @@ class TISApi:
         try:
             await setup_views(self.hass)
             self.hass.http.register_view(TISEndPoint(self))
+            self.hass.http.register_view(SubmitPasswordEndpoint(self))
             self.hass.http.register_view(ScanDevicesEndPoint(self))
             self.hass.http.register_view(GetKeyEndpoint(self))
             self.hass.http.register_view(ChangeSecurityPassEndpoint(self))
