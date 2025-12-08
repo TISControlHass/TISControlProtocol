@@ -244,8 +244,13 @@
 
           // Remove Button
           row.querySelector(".btn-remove").addEventListener("click", () => {
-            row.remove();
-            updateIndexes(); // Fix numbers (1, 2, 3) after delete
+            const confirmation = confirm(
+              "Are you sure you want to remove this password?"
+            );
+            if (confirmation) {
+              row.remove();
+              updateIndexes(); // Fix numbers (1, 2, 3) after delete
+            }
           });
 
           // Regenerate Button
