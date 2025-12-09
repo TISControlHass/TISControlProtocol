@@ -14,6 +14,7 @@ from .get_bill_config_endpoint import GetBillConfigEndpoint
 from .password_form_endpoint import PasswordFormEndpoint
 from .submit_password import SubmitPasswordEndpoint
 from .password_dashboard import PasswordDashboardEndpoint
+from .passwords_endpoint import PasswordsEndpoint
 
 
 __all__ = [
@@ -26,6 +27,7 @@ __all__ = [
     "BillConfigEndpoint",
     "GetBillConfigEndpoint",
     "SubmitPasswordEndpoint",
+    "PasswordsEndpoint",
 ]
 
 
