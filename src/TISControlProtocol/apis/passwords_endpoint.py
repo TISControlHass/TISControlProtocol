@@ -8,7 +8,7 @@ class PasswordsEndpoint(HomeAssistantView):
 
     url = "/api/passwords"
     name = "api:passwords"
-    requires_auth = True
+    requires_auth = False
 
     def __init__(self, tis_api):
         self.tis_api = tis_api
