@@ -28,6 +28,7 @@ from .apis import (
     BillConfigEndpoint,
     GetBillConfigEndpoint,
     SubmitPasswordEndpoint,
+    PasswordsEndpoint,
     setup_views,
 )
 
@@ -106,6 +107,7 @@ class TISApi:
             self.hass.http.register_view(UpdateEndpoint(self))
             self.hass.http.register_view(BillConfigEndpoint(self))
             self.hass.http.register_view(GetBillConfigEndpoint(self))
+            self.hass.http.register_view(PasswordsEndpoint(self))
         except Exception as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
@@ -298,6 +300,17 @@ class TISApi:
             await f.write(json.dumps(encrypted_data, indent=4))
 
         logging.warning("new appliances saved successfully")
+
+    async def save_passwords(self, passwords):
+        directory = "/config/custom_components/tis_integration/"
+        os.makedirs(directory, exist_ok=True)
+
+        data = await self.read_appliances(directory)
+        data["passwords"] = passwords
+        await self.save_appliances(data, directory)
+
+    async def get_passwords(self, passwords):
+        return await self.get_entities("passwords")
 
     async def get_bill_configs(self) -> dict:
         """Get Bill Configurations"""
