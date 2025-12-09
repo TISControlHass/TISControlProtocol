@@ -8,7 +8,7 @@ class PasswordDashboardEndpoint(HomeAssistantView):
 
     url = "/api/password-dashboard"
     name = "api:password-dashboard"
-    requires_auth = False
+    requires_auth = True
 
     def __init__(self, views_path):
         self.views_path = views_path
