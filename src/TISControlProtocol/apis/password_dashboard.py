@@ -7,9 +7,8 @@ import os
 class PasswordDashboardEndpoint(HomeAssistantView):
     """Custom Dashboard Endpoint with Cookie Auth."""
 
-    url = "/password-dashboard"
-    name = "password-dashboard"
-    # We must set this to False so we can handle the redirect manually
+    url = "/api/password-dashboard"
+    name = "api:password-dashboard"
     requires_auth = False
 
     def __init__(self, views_path, hass):
@@ -17,6 +16,7 @@ class PasswordDashboardEndpoint(HomeAssistantView):
         self.views_path = views_path
 
     async def get(self, request):
+        logging.warning(f"request: {request} ,, {await request.json()}")
         try:
             hass = request.app["hass"]
             logging.warning("nothing happened")
@@ -36,6 +36,7 @@ class PasswordDashboardEndpoint(HomeAssistantView):
             if session_id:
                 # Ask HA Auth system to find the session
                 session = await hass.auth.async_get_session(session_id)
+                logging.warning(f"session: {session}")
 
                 # specific check: Session must exist and be active
                 if session and session.is_active:
