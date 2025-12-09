@@ -1,27 +1,58 @@
 from homeassistant.components.http import HomeAssistantView
-import os
 from aiohttp import web
 import logging
+import os
 
 
 class PasswordDashboardEndpoint(HomeAssistantView):
-    """TIS API endpoint."""
+    """Custom Dashboard Endpoint with Cookie Auth."""
 
     url = "/password-dashboard"
     name = "password-dashboard"
+    # We must set this to False so we can handle the redirect manually
     requires_auth = False
 
-    def __init__(self, views_path):
+    def __init__(self, views_path, hass):
+        self.hass = hass
         self.views_path = views_path
 
     async def get(self, request):
-        logging.warning("checking authenticity")
-        logging.warning(f"request: {request}")
-        if request.get("hass_user") is None:
-            logging.warning("not authenticated...")
-            logging.warning("routing to the home page")
-            # If no user is found, redirect them to the main HA interface (which forces login)
+        try:
+            hass = request.app["hass"]
+            logging.warning("nothing happened")
+        except Exception as e:
+            logging.error(f"some error happened here! error: {e}")
+            hass = self.hass
+
+        user = request.get("hass_user")
+
+        if not user:
+            # Get the session cookie sent by the browser
+            session_id = request.cookies.get("auth_session_id")
+            logging.warning("request cookies")
+            logging.warning(request.cookies)
+            logging.warning(f"session id: {session_id}")
+
+            if session_id:
+                # Ask HA Auth system to find the session
+                session = await hass.auth.async_get_session(session_id)
+
+                # specific check: Session must exist and be active
+                if session and session.is_active:
+                    user = session.user
+
+        if user is None:
+            logging.warning(
+                "Unauthorized access attempt to Password Dashboard. Redirecting to login."
+            )
+            # Redirect to Home Assistant root to trigger login flow
             return web.HTTPFound(location="/")
 
+        if not user.is_admin:
+            return web.Response(text="403: Admins only", status=403)
+
+        logging.warning(f"Serving Password Dashboard to user: {user.name}")
+
+        # 4. Serve the file
         file_path = os.path.join(self.views_path, "password_dashboard", "index.html")
         return web.FileResponse(file_path)

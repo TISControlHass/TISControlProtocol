@@ -53,4 +53,4 @@ async def setup_views(hass):
         ]
     )
     hass.http.register_view(PasswordFormEndpoint(views_path))
-    hass.http.register_view(PasswordDashboardEndpoint(views_path))
+    hass.http.register_view(PasswordDashboardEndpoint(views_path, hass))
