@@ -1,6 +1,7 @@
 from homeassistant.components.http import HomeAssistantView
 import os
 from aiohttp import web
+import logging
 
 
 class PasswordDashboardEndpoint(HomeAssistantView):
@@ -14,7 +15,11 @@ class PasswordDashboardEndpoint(HomeAssistantView):
         self.views_path = views_path
 
     async def get(self, request):
+        logging.warning("checking authenticity")
+        logging.warning(f"request: {request}")
         if request.get("hass_user") is None:
+            logging.warning("not authenticated...")
+            logging.warning("routing to the home page")
             # If no user is found, redirect them to the main HA interface (which forces login)
             return web.HTTPFound(location="/")
 
