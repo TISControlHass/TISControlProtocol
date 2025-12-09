@@ -16,7 +16,7 @@ class PasswordDashboardEndpoint(HomeAssistantView):
         self.views_path = views_path
 
     async def get(self, request):
-        logging.warning(f"request: {request} ,, {await request.json()}")
+        logging.warning(f"request: {request}")
         try:
             hass = request.app["hass"]
             logging.warning("nothing happened")
