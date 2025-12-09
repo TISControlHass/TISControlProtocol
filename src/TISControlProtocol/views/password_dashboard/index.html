@@ -313,6 +313,9 @@
             }
           });
 
+          console.log(payload);
+          console.log(JSON.stringify(payload));
+
           if (!isValid) return;
 
           // Send to Backend
@@ -345,6 +348,7 @@
             if (!response.ok) throw new Error("API not reachable");
 
             const data = await response.json();
+            console.log("fetched data: ", data);
 
             // Clear container just in case
             container.innerHTML = "";
