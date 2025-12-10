@@ -120,62 +120,70 @@
 <script>
   // Wrap logic in an IIFE to prevent global scope pollution
   (function () {
-    console.log("Password Dashboard Script Starting...");
+    console.log("Password Dashboard: Script Injected...");
 
-    /* --- SAFE ROOT SELECTION (Fixes Shadow DOM Error) --- */
-    let root = document.getElementById("pw-dashboard-root");
+    /* --- INITIALIZATION DELAY --- 
+       We must wait a few milliseconds to ensure the HTML 
+       is fully attached to the DOM before querying it. 
+    */
+    setTimeout(() => {
+      initDashboard();
+    }, 1000);
 
-    // If global search failed (likely due to Shadow DOM), search relative to this script
-    if (!root) {
-      // document.currentScript refers to this <script> tag itself.
-      // Its parent is the <password-dashboard-loader> element.
-      const scriptContext = document.currentScript;
-      if (scriptContext && scriptContext.parentElement) {
-        root = scriptContext.parentElement.querySelector("#pw-dashboard-root");
+    function initDashboard() {
+      /* --- ROBUST ROOT SELECTION --- */
+      // 1. Try global ID (Standard)
+      let root = document.getElementById("pw-dashboard-root");
+
+      // 2. Fallback: Find the custom element wrapper
+      if (!root) {
+        const loader = document.querySelector("password-dashboard-loader");
+        if (loader) {
+          root = loader.querySelector("#pw-dashboard-root");
+        }
       }
-    }
 
-    // Final Fallback
-    if (!root) {
-      console.error(
-        "⛔ CRITICAL ERROR: Could not find #pw-dashboard-root. Styles and scripts will fail."
-      );
-      return;
-    }
-
-    /* --- CONFIGURATION --- */
-    const API_ENDPOINT = "/api/password-dashboard/passwords";
-
-    /* --- HELPER FUNCTIONS --- */
-    async function fetchWithAuth(url, options = {}) {
-      const headers = options.headers || {};
-      if (window.HASS_AUTH_TOKEN) {
-        headers["Authorization"] = `Bearer ${window.HASS_AUTH_TOKEN}`;
+      // 3. Fail gracefully
+      if (!root) {
+        console.error(
+          "⛔ CRITICAL ERROR: Could not find #pw-dashboard-root after timeout. Styles and scripts will fail."
+        );
+        return;
       }
-      return fetch(url, { ...options, headers });
-    }
 
-    function generateRandomPassword(length = 8) {
-      const charset =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      let retVal = "";
-      for (let i = 0, n = charset.length; i < length; ++i) {
-        retVal += charset.charAt(Math.floor(Math.random() * n));
+      console.log("Password Dashboard: Root found, initializing...");
+
+      /* --- CONFIGURATION --- */
+      const API_ENDPOINT = "/api/password-dashboard/passwords";
+
+      /* --- HELPER FUNCTIONS --- */
+      async function fetchWithAuth(url, options = {}) {
+        const headers = options.headers || {};
+        if (window.HASS_AUTH_TOKEN) {
+          headers["Authorization"] = `Bearer ${window.HASS_AUTH_TOKEN}`;
+        }
+        return fetch(url, { ...options, headers });
       }
-      return retVal;
-    }
 
-    const uniqueId = () => "id-" + Math.random().toString(36).substr(2, 16);
+      function generateRandomPassword(length = 16) {
+        const charset =
+          "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+        let retVal = "";
+        for (let i = 0, n = charset.length; i < length; ++i) {
+          retVal += charset.charAt(Math.floor(Math.random() * n));
+        }
+        return retVal;
+      }
 
-    /* --- CORE LOGIC --- */
-    function init() {
+      const uniqueId = () => "id-" + Math.random().toString(36).substr(2, 16);
+
+      /* --- CORE LOGIC --- */
+
       // --- Theme Logic ---
-      // Now safe because 'root' is guaranteed to be an element
       const themeButtons = root.querySelectorAll(".theme-btn");
 
       function applyTheme(theme) {
-        const rootHtml = document.documentElement;
-
+        // Apply to the specific component root
         let effectiveTheme = theme;
         if (theme === "system") {
           const prefersDark = window.matchMedia(
@@ -184,11 +192,11 @@
           effectiveTheme = prefersDark ? "dark" : "light";
         }
 
-        // Apply to global HTML for Tailwind
-        rootHtml.setAttribute("data-theme", effectiveTheme);
-        // Apply to our scoped root
+        // We set attributes on our Container, NOT document.documentElement
+        // to avoid messing with HA's main theme, but we ensure Tailwind sees it.
         root.setAttribute("data-theme", effectiveTheme);
 
+        // Update Buttons
         themeButtons.forEach((button) => {
           if (button.dataset.theme === theme) button.classList.add("active");
           else button.classList.remove("active");
@@ -208,6 +216,7 @@
       const addBtn = root.querySelector("#add_new_password");
       const mainForm = root.querySelector("#passwordsForm");
 
+      // Add Password UI Generator
       function addPasswordEntity(initialTitle = "", initialPassword = "") {
         const id = uniqueId();
         const count = container.children.length + 1;
@@ -237,23 +246,27 @@
         `;
 
         container.insertAdjacentHTML("beforeend", entityHtml);
-        const newRow = root.querySelector(`#${id}`); // Search within root, not document
+        const newRow = root.querySelector(`#${id}`);
         if (newRow) attachRowEvents(newRow);
       }
 
       function attachRowEvents(row) {
         const passwordInput = row.querySelector(".input-password");
+
         row.querySelector(".btn-remove").addEventListener("click", () => {
           if (confirm("Remove this password?")) {
             row.remove();
             updateIndexes();
           }
         });
+
         row.querySelector(".btn-regenerate").addEventListener("click", () => {
           passwordInput.value = generateRandomPassword();
         });
+
         row.querySelector(".btn-copy").addEventListener("click", () => {
           navigator.clipboard.writeText(passwordInput.value);
+          // Optional: Add visual feedback here
         });
       }
 
@@ -264,68 +277,70 @@
         });
       }
 
-      addBtn.addEventListener("click", () => addPasswordEntity());
+      // Event Listeners
+      if (addBtn) addBtn.addEventListener("click", () => addPasswordEntity());
 
-      mainForm.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const rows = container.querySelectorAll(".password-entity");
-        const payload = [];
-        let isValid = true;
+      if (mainForm)
+        mainForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const rows = container.querySelectorAll(".password-entity");
+          const payload = [];
+          let isValid = true;
 
-        rows.forEach((row) => {
-          const title = row.querySelector(".input-title").value.trim();
-          const password = row.querySelector(".input-password").value.trim();
+          rows.forEach((row) => {
+            const title = row.querySelector(".input-title").value.trim();
+            const password = row.querySelector(".input-password").value.trim();
 
-          if (password.length < 8) {
-            isValid = false;
-            row.querySelector(".input-password").style.borderColor =
-              "var(--btn-danger)";
-          } else {
-            row.querySelector(".input-password").style.borderColor =
-              "var(--input-border)";
-            payload.push({ title, password });
+            if (password.length < 1) {
+              isValid = false;
+              row.querySelector(".input-password").style.borderColor =
+                "var(--btn-danger)";
+            } else {
+              row.querySelector(".input-password").style.borderColor =
+                "var(--input-border)";
+              payload.push({ title, password });
+            }
+          });
+
+          try {
+            const response = await fetchWithAuth(API_ENDPOINT, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            if (response.ok) alert("Passwords saved successfully!");
+            else alert("Failed to save.");
+          } catch (error) {
+            console.error("Error saving:", error);
+            alert("Error: " + error.message);
           }
         });
-
-        if (!isValid) {
-          alert("Passwords must be at least 8 characters.");
-          return;
-        }
-
-        try {
-          const response = await fetchWithAuth(API_ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          if (response.ok) alert("Passwords saved!");
-          else alert("Failed to save.");
-        } catch (error) {
-          console.error("Error saving:", error);
-          alert("Error: " + error.message);
-        }
-      });
 
       // Initial Fetch
       async function fetchInitialData() {
         try {
           const response = await fetchWithAuth(API_ENDPOINT);
-          if (!response.ok) return;
+          if (!response.ok) throw new Error("Fetch failed");
           const data = await response.json();
-          container.innerHTML = "";
+
+          container.innerHTML = ""; // Clear loader
+
           if (Array.isArray(data) && data.length > 0) {
             data.forEach((item) =>
               addPasswordEntity(item.title, item.password)
             );
+          } else {
+            // Add one empty row if no data
+            addPasswordEntity();
           }
         } catch (error) {
-          console.log("Starting with empty data", error);
+          console.log("Starting with empty data or error", error);
+          container.innerHTML = "";
+          addPasswordEntity();
         }
       }
 
       fetchInitialData();
     }
-
-    init();
   })();
 </script>
