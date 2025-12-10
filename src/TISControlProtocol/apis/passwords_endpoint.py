@@ -17,6 +17,7 @@ class PasswordsEndpoint(HomeAssistantView):
         try:
             passwords = await self.tis_api.get_passwords()
             logging.warning("passwords got successfully!")
+            logging.warning(f"passwords: {passwords}")
             return web.json_response(passwords)
         except Exception as e:
             logging.error(
