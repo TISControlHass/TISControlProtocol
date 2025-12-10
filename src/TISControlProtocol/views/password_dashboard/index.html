@@ -118,11 +118,42 @@
 </div>
 
 <script>
-  // Define a global function that the Loader can call
   window.initPasswordDashboard = function (root) {
-    console.log("Password Dashboard: initializing with provided root", root);
+    console.log("Password Dashboard: initializing...", root);
 
-    /* --- CONFIGURATION --- */
+    // --- Theme Logic ---
+    // Use 'root' to find buttons inside this component
+    const themeButtons = root.querySelectorAll(".theme-btn");
+
+    function applyTheme(theme) {
+      let effectiveTheme = theme;
+      if (theme === "system") {
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        effectiveTheme = prefersDark ? "dark" : "light";
+      }
+
+      // Apply to the root element provided by the loader
+      root.setAttribute("data-theme", effectiveTheme);
+
+      themeButtons.forEach((button) => {
+        if (button.dataset.theme === theme) button.classList.add("active");
+        else button.classList.remove("active");
+      });
+      localStorage.setItem("pw-theme", theme);
+    }
+
+    themeButtons.forEach((button) => {
+      button.addEventListener("click", () => applyTheme(button.dataset.theme));
+    });
+    applyTheme(localStorage.getItem("pw-theme") || "system");
+
+    // --- Form Logic ---
+    // Use 'root' for all queries
+    const container = root.querySelector("#passwords-container");
+    const addBtn = root.querySelector("#add_new_password");
+    const mainForm = root.querySelector("#passwordsForm");
     const API_ENDPOINT = "/api/password-dashboard/passwords";
 
     /* --- HELPER FUNCTIONS --- */
@@ -147,38 +178,6 @@
     const uniqueId = () => "id-" + Math.random().toString(36).substr(2, 16);
 
     /* --- CORE LOGIC --- */
-
-    // --- Theme Logic ---
-    // Note: We use 'root' (passed in argument) for all queries now
-    const themeButtons = root.querySelectorAll(".theme-btn");
-
-    function applyTheme(theme) {
-      let effectiveTheme = theme;
-      if (theme === "system") {
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)"
-        ).matches;
-        effectiveTheme = prefersDark ? "dark" : "light";
-      }
-
-      root.setAttribute("data-theme", effectiveTheme);
-
-      themeButtons.forEach((button) => {
-        if (button.dataset.theme === theme) button.classList.add("active");
-        else button.classList.remove("active");
-      });
-      localStorage.setItem("pw-theme", theme);
-    }
-
-    themeButtons.forEach((button) => {
-      button.addEventListener("click", () => applyTheme(button.dataset.theme));
-    });
-    applyTheme(localStorage.getItem("pw-theme") || "system");
-
-    // --- Form Logic ---
-    const container = root.querySelector("#passwords-container");
-    const addBtn = root.querySelector("#add_new_password");
-    const mainForm = root.querySelector("#passwordsForm");
 
     function addPasswordEntity(initialTitle = "", initialPassword = "") {
       const id = uniqueId();
