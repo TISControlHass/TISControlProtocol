@@ -118,15 +118,33 @@
 </div>
 
 <script>
-  // Wrap logic in an IIFE (Immediately Invoked Function Expression)
-  // This ensures variables don't leak globally and logic runs immediately.
+  // Wrap logic in an IIFE to prevent global scope pollution
   (function () {
-    console.log("Password Dashboard Script Loaded");
+    console.log("Password Dashboard Script Starting...");
+
+    /* --- SAFE ROOT SELECTION (Fixes Shadow DOM Error) --- */
+    let root = document.getElementById("pw-dashboard-root");
+
+    // If global search failed (likely due to Shadow DOM), search relative to this script
+    if (!root) {
+      // document.currentScript refers to this <script> tag itself.
+      // Its parent is the <password-dashboard-loader> element.
+      const scriptContext = document.currentScript;
+      if (scriptContext && scriptContext.parentElement) {
+        root = scriptContext.parentElement.querySelector("#pw-dashboard-root");
+      }
+    }
+
+    // Final Fallback
+    if (!root) {
+      console.error(
+        "⛔ CRITICAL ERROR: Could not find #pw-dashboard-root. Styles and scripts will fail."
+      );
+      return;
+    }
 
     /* --- CONFIGURATION --- */
     const API_ENDPOINT = "/api/password-dashboard/passwords";
-    // Scope the selectors to the injected root to prevent selecting elements elsewhere in HA
-    const root = document.getElementById("pw-dashboard-root");
 
     /* --- HELPER FUNCTIONS --- */
     async function fetchWithAuth(url, options = {}) {
@@ -152,24 +170,30 @@
     /* --- CORE LOGIC --- */
     function init() {
       // --- Theme Logic ---
+      // Now safe because 'root' is guaranteed to be an element
       const themeButtons = root.querySelectorAll(".theme-btn");
-      function applyTheme(theme) {
-        const rootHtml = document.documentElement; // Tailwind looks at HTML tag usually
 
+      function applyTheme(theme) {
+        const rootHtml = document.documentElement;
+
+        let effectiveTheme = theme;
         if (theme === "system") {
           const prefersDark = window.matchMedia(
             "(prefers-color-scheme: dark)"
           ).matches;
-          rootHtml.setAttribute("data-theme", prefersDark ? "dark" : "light");
-        } else {
-          rootHtml.setAttribute("data-theme", theme);
+          effectiveTheme = prefersDark ? "dark" : "light";
         }
+
+        // Apply to global HTML for Tailwind
+        rootHtml.setAttribute("data-theme", effectiveTheme);
+        // Apply to our scoped root
+        root.setAttribute("data-theme", effectiveTheme);
 
         themeButtons.forEach((button) => {
           if (button.dataset.theme === theme) button.classList.add("active");
           else button.classList.remove("active");
         });
-        localStorage.setItem("theme", theme);
+        localStorage.setItem("pw-theme", theme);
       }
 
       themeButtons.forEach((button) => {
@@ -177,7 +201,7 @@
           applyTheme(button.dataset.theme)
         );
       });
-      applyTheme(localStorage.getItem("theme") || "system");
+      applyTheme(localStorage.getItem("pw-theme") || "system");
 
       // --- Form Logic ---
       const container = root.querySelector("#passwords-container");
@@ -190,31 +214,31 @@
         const passwordValue = initialPassword || generateRandomPassword();
 
         const entityHtml = `
-          <div id="${id}" class="password-entity rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3 transitions-all duration-300 hover:shadow-md hover:shadow-body fade-in">
+          <div id="${id}" class="password-entity rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3 transition-all duration-300 hover:shadow-md hover:shadow-body fade-in">
               <div class="flex flex-row w-full items-center justify-between py-2 px-2">
-                  <div class="entity-number flex items-center justify-center rounded-[100%] bg-primary w-10 h-10 font-bold text-white">${count}</div>
-                  <button type="button" class="btn-remove bg-danger text-white rounded-[100%] w-10 h-10 font-bold transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-0.5 hover:drop-shadow-xl"><i class="fas fa-trash px-2"></i></button>
+                  <div class="entity-number flex items-center justify-center rounded-full bg-primary w-10 h-10 font-bold text-white">${count}</div>
+                  <button type="button" class="btn-remove bg-danger text-white rounded-full w-10 h-10 font-bold transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-0.5 hover:drop-shadow-xl"><i class="fas fa-trash px-2"></i></button>
               </div>
               <div class="flex flex-row items-center space-x-5 px-3 py-3">
                   <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
                       <label class="font-bold text-lg">Title:</label>
-                      <input required type="text" name="titles[]" value="${initialTitle}" class="input-title border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12" placeholder="Title..." />
+                      <input required type="text" name="titles[]" value="${initialTitle}" class="input-title border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary min-h-12" placeholder="Title..." />
                   </div>
                   <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
                       <label class="font-bold text-lg">Password:</label>
-                      <input type="text" name="passwords[]" value="${passwordValue}" class="input-password border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12" placeholder="Password..." required />
+                      <input type="text" name="passwords[]" value="${passwordValue}" class="input-password border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary min-h-12" placeholder="Password..." required />
                   </div>
               </div>
               <div class="flex flex-row items-center space-x-5 pb-3 justify-center">
                   <button type="button" class="btn-regenerate bg-primary text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"><i class="fas fa-rotate px-2"></i> Regenerate</button>
-                  <button type="button" class="btn-copy bg-card rounded-xl outline outline-primary text-primary px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:outline-none hover:text-white"><i class="fas fa-copy px-2"></i> Copy</button>
+                  <button type="button" class="btn-copy bg-card rounded-xl border border-primary text-primary px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:border-transparent hover:text-white"><i class="fas fa-copy px-2"></i> Copy</button>
               </div>
           </div>
         `;
 
         container.insertAdjacentHTML("beforeend", entityHtml);
-        const newRow = document.getElementById(id);
-        attachRowEvents(newRow);
+        const newRow = root.querySelector(`#${id}`); // Search within root, not document
+        if (newRow) attachRowEvents(newRow);
       }
 
       function attachRowEvents(row) {
@@ -251,7 +275,7 @@
         rows.forEach((row) => {
           const title = row.querySelector(".input-title").value.trim();
           const password = row.querySelector(".input-password").value.trim();
-          // Simple validation
+
           if (password.length < 8) {
             isValid = false;
             row.querySelector(".input-password").style.borderColor =
@@ -289,20 +313,19 @@
           if (!response.ok) return;
           const data = await response.json();
           container.innerHTML = "";
-          if (Array.isArray(data)) {
+          if (Array.isArray(data) && data.length > 0) {
             data.forEach((item) =>
               addPasswordEntity(item.title, item.password)
             );
           }
         } catch (error) {
-          console.log("Starting with empty data");
+          console.log("Starting with empty data", error);
         }
       }
 
       fetchInitialData();
     }
 
-    // Run Init
     init();
   })();
 </script>
