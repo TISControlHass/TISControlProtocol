@@ -97,7 +97,8 @@ class TISApi:
     async def _register_http_views(self):
         """Register HTTP views."""
         try:
-            await setup_views(self.hass)
+            # await setup_views(self.hass)
+            setup_views(self.hass)
             self.hass.http.register_view(TISEndPoint(self))
             self.hass.http.register_view(SubmitPasswordEndpoint(self))
             self.hass.http.register_view(ScanDevicesEndPoint(self))
