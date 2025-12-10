@@ -118,229 +118,183 @@
 </div>
 
 <script>
-  // Wrap logic in an IIFE to prevent global scope pollution
-  (function () {
-    console.log("Password Dashboard: Script Injected...");
+  // Define a global function that the Loader can call
+  window.initPasswordDashboard = function (root) {
+    console.log("Password Dashboard: initializing with provided root", root);
 
-    /* --- INITIALIZATION DELAY --- 
-       We must wait a few milliseconds to ensure the HTML 
-       is fully attached to the DOM before querying it. 
-    */
-    setTimeout(() => {
-      initDashboard();
-    }, 1000);
+    /* --- CONFIGURATION --- */
+    const API_ENDPOINT = "/api/password-dashboard/passwords";
 
-    function initDashboard() {
-      /* --- ROBUST ROOT SELECTION --- */
-      // 1. Try global ID (Standard)
-      let root = document.getElementById("pw-dashboard-root");
+    /* --- HELPER FUNCTIONS --- */
+    async function fetchWithAuth(url, options = {}) {
+      const headers = options.headers || {};
+      if (window.HASS_AUTH_TOKEN) {
+        headers["Authorization"] = `Bearer ${window.HASS_AUTH_TOKEN}`;
+      }
+      return fetch(url, { ...options, headers });
+    }
 
-      // 2. Fallback: Find the custom element wrapper
-      if (!root) {
-        const loader = document.querySelector("password-dashboard-loader");
-        if (loader) {
-          root = loader.querySelector("#pw-dashboard-root");
-        }
+    function generateRandomPassword(length = 16) {
+      const charset =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+      let retVal = "";
+      for (let i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+      }
+      return retVal;
+    }
+
+    const uniqueId = () => "id-" + Math.random().toString(36).substr(2, 16);
+
+    /* --- CORE LOGIC --- */
+
+    // --- Theme Logic ---
+    // Note: We use 'root' (passed in argument) for all queries now
+    const themeButtons = root.querySelectorAll(".theme-btn");
+
+    function applyTheme(theme) {
+      let effectiveTheme = theme;
+      if (theme === "system") {
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        effectiveTheme = prefersDark ? "dark" : "light";
       }
 
-      // 3. Fail gracefully
-      if (!root) {
-        console.error(
-          "⛔ CRITICAL ERROR: Could not find #pw-dashboard-root after timeout. Styles and scripts will fail."
-        );
-        return;
-      }
-
-      console.log("Password Dashboard: Root found, initializing...");
-
-      /* --- CONFIGURATION --- */
-      const API_ENDPOINT = "/api/password-dashboard/passwords";
-
-      /* --- HELPER FUNCTIONS --- */
-      async function fetchWithAuth(url, options = {}) {
-        const headers = options.headers || {};
-        if (window.HASS_AUTH_TOKEN) {
-          headers["Authorization"] = `Bearer ${window.HASS_AUTH_TOKEN}`;
-        }
-        return fetch(url, { ...options, headers });
-      }
-
-      function generateRandomPassword(length = 16) {
-        const charset =
-          "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
-        let retVal = "";
-        for (let i = 0, n = charset.length; i < length; ++i) {
-          retVal += charset.charAt(Math.floor(Math.random() * n));
-        }
-        return retVal;
-      }
-
-      const uniqueId = () => "id-" + Math.random().toString(36).substr(2, 16);
-
-      /* --- CORE LOGIC --- */
-
-      // --- Theme Logic ---
-      const themeButtons = root.querySelectorAll(".theme-btn");
-
-      function applyTheme(theme) {
-        // Apply to the specific component root
-        let effectiveTheme = theme;
-        if (theme === "system") {
-          const prefersDark = window.matchMedia(
-            "(prefers-color-scheme: dark)"
-          ).matches;
-          effectiveTheme = prefersDark ? "dark" : "light";
-        }
-
-        // We set attributes on our Container, NOT document.documentElement
-        // to avoid messing with HA's main theme, but we ensure Tailwind sees it.
-        root.setAttribute("data-theme", effectiveTheme);
-
-        // Update Buttons
-        themeButtons.forEach((button) => {
-          if (button.dataset.theme === theme) button.classList.add("active");
-          else button.classList.remove("active");
-        });
-        localStorage.setItem("pw-theme", theme);
-      }
+      root.setAttribute("data-theme", effectiveTheme);
 
       themeButtons.forEach((button) => {
-        button.addEventListener("click", () =>
-          applyTheme(button.dataset.theme)
-        );
+        if (button.dataset.theme === theme) button.classList.add("active");
+        else button.classList.remove("active");
       });
-      applyTheme(localStorage.getItem("pw-theme") || "system");
+      localStorage.setItem("pw-theme", theme);
+    }
 
-      // --- Form Logic ---
-      const container = root.querySelector("#passwords-container");
-      const addBtn = root.querySelector("#add_new_password");
-      const mainForm = root.querySelector("#passwordsForm");
+    themeButtons.forEach((button) => {
+      button.addEventListener("click", () => applyTheme(button.dataset.theme));
+    });
+    applyTheme(localStorage.getItem("pw-theme") || "system");
 
-      // Add Password UI Generator
-      function addPasswordEntity(initialTitle = "", initialPassword = "") {
-        const id = uniqueId();
-        const count = container.children.length + 1;
-        const passwordValue = initialPassword || generateRandomPassword();
+    // --- Form Logic ---
+    const container = root.querySelector("#passwords-container");
+    const addBtn = root.querySelector("#add_new_password");
+    const mainForm = root.querySelector("#passwordsForm");
 
-        const entityHtml = `
-          <div id="${id}" class="password-entity rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3 transition-all duration-300 hover:shadow-md hover:shadow-body fade-in">
-              <div class="flex flex-row w-full items-center justify-between py-2 px-2">
-                  <div class="entity-number flex items-center justify-center rounded-full bg-primary w-10 h-10 font-bold text-white">${count}</div>
-                  <button type="button" class="btn-remove bg-danger text-white rounded-full w-10 h-10 font-bold transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-0.5 hover:drop-shadow-xl"><i class="fas fa-trash px-2"></i></button>
-              </div>
-              <div class="flex flex-row items-center space-x-5 px-3 py-3">
-                  <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
-                      <label class="font-bold text-lg">Title:</label>
-                      <input required type="text" name="titles[]" value="${initialTitle}" class="input-title border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary min-h-12" placeholder="Title..." />
-                  </div>
-                  <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
-                      <label class="font-bold text-lg">Password:</label>
-                      <input type="text" name="passwords[]" value="${passwordValue}" class="input-password border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary min-h-12" placeholder="Password..." required />
-                  </div>
-              </div>
-              <div class="flex flex-row items-center space-x-5 pb-3 justify-center">
-                  <button type="button" class="btn-regenerate bg-primary text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"><i class="fas fa-rotate px-2"></i> Regenerate</button>
-                  <button type="button" class="btn-copy bg-card rounded-xl border border-primary text-primary px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:border-transparent hover:text-white"><i class="fas fa-copy px-2"></i> Copy</button>
-              </div>
-          </div>
-        `;
+    function addPasswordEntity(initialTitle = "", initialPassword = "") {
+      const id = uniqueId();
+      const count = container.children.length + 1;
+      const passwordValue = initialPassword || generateRandomPassword();
 
-        container.insertAdjacentHTML("beforeend", entityHtml);
-        const newRow = root.querySelector(`#${id}`);
-        if (newRow) attachRowEvents(newRow);
-      }
+      const entityHtml = `
+        <div id="${id}" class="password-entity rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3 transition-all duration-300 hover:shadow-md hover:shadow-body fade-in">
+            <div class="flex flex-row w-full items-center justify-between py-2 px-2">
+                <div class="entity-number flex items-center justify-center rounded-full bg-primary w-10 h-10 font-bold text-white">${count}</div>
+                <button type="button" class="btn-remove bg-danger text-white rounded-full w-10 h-10 font-bold transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-0.5 hover:drop-shadow-xl"><i class="fas fa-trash px-2"></i></button>
+            </div>
+            <div class="flex flex-row items-center space-x-5 px-3 py-3">
+                <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
+                    <label class="font-bold text-lg">Title:</label>
+                    <input required type="text" name="titles[]" value="${initialTitle}" class="input-title border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary min-h-12" placeholder="Title..." />
+                </div>
+                <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
+                    <label class="font-bold text-lg">Password:</label>
+                    <input type="text" name="passwords[]" value="${passwordValue}" class="input-password border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary min-h-12" placeholder="Password..." required />
+                </div>
+            </div>
+            <div class="flex flex-row items-center space-x-5 pb-3 justify-center">
+                <button type="button" class="btn-regenerate bg-primary text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"><i class="fas fa-rotate px-2"></i> Regenerate</button>
+                <button type="button" class="btn-copy bg-card rounded-xl border border-primary text-primary px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:border-transparent hover:text-white"><i class="fas fa-copy px-2"></i> Copy</button>
+            </div>
+        </div>
+      `;
 
-      function attachRowEvents(row) {
-        const passwordInput = row.querySelector(".input-password");
+      container.insertAdjacentHTML("beforeend", entityHtml);
+      const newRow = root.querySelector(`#${id}`);
+      if (newRow) attachRowEvents(newRow);
+    }
 
-        row.querySelector(".btn-remove").addEventListener("click", () => {
-          if (confirm("Remove this password?")) {
-            row.remove();
-            updateIndexes();
-          }
-        });
+    function attachRowEvents(row) {
+      const passwordInput = row.querySelector(".input-password");
+      row.querySelector(".btn-remove").addEventListener("click", () => {
+        if (confirm("Remove this password?")) {
+          row.remove();
+          updateIndexes();
+        }
+      });
+      row.querySelector(".btn-regenerate").addEventListener("click", () => {
+        passwordInput.value = generateRandomPassword();
+      });
+      row.querySelector(".btn-copy").addEventListener("click", () => {
+        navigator.clipboard.writeText(passwordInput.value);
+      });
+    }
 
-        row.querySelector(".btn-regenerate").addEventListener("click", () => {
-          passwordInput.value = generateRandomPassword();
-        });
+    function updateIndexes() {
+      const badges = container.querySelectorAll(".entity-number");
+      badges.forEach((badge, index) => {
+        badge.textContent = index + 1;
+      });
+    }
 
-        row.querySelector(".btn-copy").addEventListener("click", () => {
-          navigator.clipboard.writeText(passwordInput.value);
-          // Optional: Add visual feedback here
-        });
-      }
+    if (addBtn) addBtn.addEventListener("click", () => addPasswordEntity());
 
-      function updateIndexes() {
-        const badges = container.querySelectorAll(".entity-number");
-        badges.forEach((badge, index) => {
-          badge.textContent = index + 1;
-        });
-      }
+    if (mainForm)
+      mainForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const rows = container.querySelectorAll(".password-entity");
+        const payload = [];
+        let isValid = true;
 
-      // Event Listeners
-      if (addBtn) addBtn.addEventListener("click", () => addPasswordEntity());
+        rows.forEach((row) => {
+          const title = row.querySelector(".input-title").value.trim();
+          const password = row.querySelector(".input-password").value.trim();
 
-      if (mainForm)
-        mainForm.addEventListener("submit", async function (e) {
-          e.preventDefault();
-          const rows = container.querySelectorAll(".password-entity");
-          const payload = [];
-          let isValid = true;
-
-          rows.forEach((row) => {
-            const title = row.querySelector(".input-title").value.trim();
-            const password = row.querySelector(".input-password").value.trim();
-
-            if (password.length < 1) {
-              isValid = false;
-              row.querySelector(".input-password").style.borderColor =
-                "var(--btn-danger)";
-            } else {
-              row.querySelector(".input-password").style.borderColor =
-                "var(--input-border)";
-              payload.push({ title, password });
-            }
-          });
-
-          try {
-            const response = await fetchWithAuth(API_ENDPOINT, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-            if (response.ok) alert("Passwords saved successfully!");
-            else alert("Failed to save.");
-          } catch (error) {
-            console.error("Error saving:", error);
-            alert("Error: " + error.message);
-          }
-        });
-
-      // Initial Fetch
-      async function fetchInitialData() {
-        try {
-          const response = await fetchWithAuth(API_ENDPOINT);
-          if (!response.ok) throw new Error("Fetch failed");
-          const data = await response.json();
-
-          container.innerHTML = ""; // Clear loader
-
-          if (Array.isArray(data) && data.length > 0) {
-            data.forEach((item) =>
-              addPasswordEntity(item.title, item.password)
-            );
+          if (password.length < 1) {
+            isValid = false;
+            row.querySelector(".input-password").style.borderColor =
+              "var(--btn-danger)";
           } else {
-            // Add one empty row if no data
-            addPasswordEntity();
+            row.querySelector(".input-password").style.borderColor =
+              "var(--input-border)";
+            payload.push({ title, password });
           }
+        });
+
+        if (!isValid) return alert("Please fill in all passwords");
+
+        try {
+          const response = await fetchWithAuth(API_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (response.ok) alert("Passwords saved!");
+          else alert("Failed to save.");
         } catch (error) {
-          console.log("Starting with empty data or error", error);
-          container.innerHTML = "";
+          console.error("Error saving:", error);
+          alert("Error: " + error.message);
+        }
+      });
+
+    async function fetchInitialData() {
+      try {
+        const response = await fetchWithAuth(API_ENDPOINT);
+        if (!response.ok) throw new Error("Fetch failed");
+        const data = await response.json();
+
+        container.innerHTML = "";
+        if (Array.isArray(data) && data.length > 0) {
+          data.forEach((item) => addPasswordEntity(item.title, item.password));
+        } else {
           addPasswordEntity();
         }
+      } catch (error) {
+        console.log("Starting with empty data", error);
+        container.innerHTML = "";
+        addPasswordEntity();
       }
-
-      fetchInitialData();
     }
-  })();
+
+    fetchInitialData();
+  };
 </script>
