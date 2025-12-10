@@ -1,26 +1,8 @@
-<style type="text/tailwindcss">
-  @theme {
-    --color-body: var(--body-bg);
-    --color-card: var(--card-bg);
-    --color-text-color: var(--text-color);
-    --color-input: var(--input-bg);
-    --color-input-border: var(--input-border);
-
-    --color-primary: var(--btn-primary);
-    --color-primary-hover: var(--btn-primary-hover);
-    --color-success: var(--btn-success);
-    --color-success-hover: var(--btn-success-hover);
-    --color-danger: var(--btn-danger);
-    --color-danger-hover: var(--btn-danger-hover);
-
-    --shadow-theme: var(--box-shadow);
-  }
-
+<style>
   :root {
-    /* Using HA Variables where possible for better native look, falling back to yours */
-    --body-bg: var(--primary-background-color, #eaeaeb);
-    --card-bg: var(--card-background-color, #fff);
-    --text-color: var(--primary-text-color, #474d53);
+    --body-bg: #eaeaeb;
+    --card-bg: #fff;
+    --text-color: #474d53;
     --input-bg: #fff;
     --input-border: #ced4da;
     --btn-primary: #4e73df;
@@ -47,9 +29,9 @@
     --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   }
 
-  /* Additional override for HA dark mode compatibility */
+  /* Force background on the panel body */
   body.type-custom-panel {
-    background-color: var(--body-bg);
+    background-color: var(--body-bg) !important;
   }
 
   .theme-btn.active {
