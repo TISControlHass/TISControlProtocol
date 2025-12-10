@@ -309,7 +309,7 @@ class TISApi:
         data["passwords"] = passwords
         await self.save_appliances(data, directory)
 
-    async def get_passwords(self, passwords):
+    async def get_passwords(self):
         return await self.get_entities("passwords")
 
     async def get_bill_configs(self) -> dict:
