@@ -140,10 +140,26 @@
 
     <script>
       /* --- CONFIGURATION --- */
-      // Replace this with your actual Python API endpoint
-      const API_ENDPOINT = "/api/passwords";
+      const API_ENDPOINT = "/api/password-dashboard/passwords";
 
       /* --- HELPER FUNCTIONS --- */
+
+      // 1. A function to fetch stuff with auth token.
+      async function fetchWithAuth(url, options = {}) {
+        console.log("trying to fetch using the auth token");
+        const headers = options.headers || {};
+
+        // Use the token set by loader.js
+        if (window.HASS_AUTH_TOKEN) {
+          console.log("setting header auth token");
+          headers["Authorization"] = `Bearer ${window.HASS_AUTH_TOKEN}`;
+          console.log(headers["Authorization"]);
+        } else {
+          console.log("no token is saved!");
+        }
+
+        return fetch(url, { ...options, headers });
+      }
 
       // 2. Random Password Generator (Digits & Characters, Length 8)
       function generateRandomPassword(length = 8) {
@@ -320,7 +336,7 @@
 
           // Send to Backend
           try {
-            const response = await fetch(API_ENDPOINT, {
+            const response = await fetchWithAuth(API_ENDPOINT, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
@@ -342,7 +358,7 @@
         async function fetchInitialData() {
           try {
             // GET request to fetch data
-            const response = await fetch(API_ENDPOINT);
+            const response = await fetchWithAuth(API_ENDPOINT);
 
             // Handling if endpoint doesn't exist yet (for demo safety)
             if (!response.ok) throw new Error("API not reachable");
