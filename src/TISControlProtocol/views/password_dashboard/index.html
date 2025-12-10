@@ -1,394 +1,326 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style type="text/tailwindcss">
+  @theme {
+    --color-body: var(--body-bg);
+    --color-card: var(--card-bg);
+    --color-text-color: var(--text-color);
+    --color-input: var(--input-bg);
+    --color-input-border: var(--input-border);
 
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
-    />
+    --color-primary: var(--btn-primary);
+    --color-primary-hover: var(--btn-primary-hover);
+    --color-success: var(--btn-success);
+    --color-success-hover: var(--btn-success-hover);
+    --color-danger: var(--btn-danger);
+    --color-danger-hover: var(--btn-danger-hover);
 
-    <style type="text/tailwindcss">
-      @theme {
-        --color-body: var(--body-bg);
-        --color-card: var(--card-bg);
-        --color-text-color: var(--text-color);
-        --color-input: var(--input-bg);
-        --color-input-border: var(--input-border);
+    --shadow-theme: var(--box-shadow);
+  }
 
-        --color-primary: var(--btn-primary);
-        --color-primary-hover: var(--btn-primary-hover);
-        --color-success: var(--btn-success);
-        --color-success-hover: var(--btn-success-hover);
-        --color-danger: var(--btn-danger);
-        --color-danger-hover: var(--btn-danger-hover);
+  :root {
+    /* Using HA Variables where possible for better native look, falling back to yours */
+    --body-bg: var(--primary-background-color, #eaeaeb);
+    --card-bg: var(--card-background-color, #fff);
+    --text-color: var(--primary-text-color, #474d53);
+    --input-bg: #fff;
+    --input-border: #ced4da;
+    --btn-primary: #4e73df;
+    --btn-primary-hover: #3a5fc4;
+    --btn-success: #28a745;
+    --btn-success-hover: #218838;
+    --btn-danger: #dc3545;
+    --btn-danger-hover: #c82333;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
 
-        --shadow-theme: var(--box-shadow);
-      }
+  [data-theme="dark"] {
+    --body-bg: #1a1d21;
+    --card-bg: #2d343c;
+    --text-color: #e9ecef;
+    --input-bg: #343a40;
+    --input-border: #495057;
+    --btn-primary: #4e73df;
+    --btn-primary-hover: #5a7ae2;
+    --btn-success: #28a745;
+    --btn-success-hover: #34ce57;
+    --btn-danger: #dc3545;
+    --btn-danger-hover: #e4606d;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
 
-      :root {
-        --body-bg: #eaeaeb;
-        --card-bg: #fff;
-        --text-color: #474d53;
-        --input-bg: #fff;
-        --input-border: #ced4da;
-        --btn-primary: #4e73df;
-        --btn-primary-hover: #3a5fc4;
-        --btn-success: #28a745;
-        --btn-success-hover: #218838;
-        --btn-danger: #dc3545;
-        --btn-danger-hover: #c82333;
-        --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
+  /* Additional override for HA dark mode compatibility */
+  body.type-custom-panel {
+    background-color: var(--body-bg);
+  }
 
-      [data-theme="dark"] {
-        --body-bg: #1a1d21;
-        --card-bg: #2d343c;
-        --text-color: #e9ecef;
-        --input-bg: #343a40;
-        --input-border: #495057;
-        --btn-primary: #4e73df;
-        --btn-primary-hover: #5a7ae2;
-        --btn-success: #28a745;
-        --btn-success-hover: #34ce57;
-        --btn-danger: #dc3545;
-        --btn-danger-hover: #e4606d;
-        --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-      }
+  .theme-btn.active {
+    background-color: var(--btn-primary) !important;
+    color: white !important;
+    border-color: var(--btn-primary) !important;
+  }
+</style>
 
-      .theme-btn.active {
-        background-color: var(--btn-primary) !important;
-        color: white !important;
-        border-color: var(--btn-primary) !important;
-      }
-    </style>
-  </head>
+<div
+  id="pw-dashboard-root"
+  class="bg-body text-text-color transition-all duration-300 min-h-screen"
+>
+  <div class="bg-card py-5 shadow-theme">
+    <div class="container mx-auto">
+      <div class="flex flex-row items-center justify-between px-5 md:px-0">
+        <div class="text-2xl font-bold">Passwords Dashboard</div>
 
-  <body class="bg-body text-text-color transition-all duration-300">
-    <div class="bg-card py-5 shadow-theme">
-      <div class="container mx-auto">
-        <div class="flex flex-row items-center justify-between px-5 md:px-0">
-          <div class="text-2xl font-bold">Passwords Dashboard</div>
-
-          <div id="theme-buttons" class="flex flex-row space-x-4">
-            <button
-              class="theme-btn outline-1 outline-input-border px-3 py-3 rounded bg-white text-[#474d53] cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-lg"
-              data-theme="light"
-            >
-              <i class="fas fa-sun px-2"></i> Light
-            </button>
-            <button
-              class="theme-btn outline-1 outline-input-border px-3 py-3 rounded text-white bg-gray-800 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-lg"
-              data-theme="dark"
-            >
-              <i class="fas fa-moon px-2"></i> Dark
-            </button>
-            <button
-              class="theme-btn outline-1 outline-input-border px-3 py-3 rounded bg-card cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-lg"
-              data-theme="system"
-            >
-              <i class="fas fa-laptop px-2"></i> System
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div
-      class="container mx-auto w-full min-h-[calc(100vh-100px)] flex items-center justify-center py-10"
-    >
-      <div class="rounded-3xl bg-card w-11/12 md:w-4xl lg:w-5xl shadow-theme">
-        <div class="font-bold text-2xl w-full border-input-border border-b">
-          <p class="px-8 py-5">Your Passwords</p>
-        </div>
-
-        <form
-          id="passwordsForm"
-          class="passwords-form flex flex-col items-center px-8 py-10 space-y-5"
-        >
-          <div id="passwords-container" class="w-full space-y-5"></div>
-
+        <div id="theme-buttons" class="flex flex-row space-x-4">
           <button
-            type="button"
-            id="add_new_password"
-            class="bg-success text-white rounded-xl px-5 py-3 font-bold text-lg transition-all duration-300 cursor-pointer hover:bg-success-hover hover:-translate-y-1 hover:drop-shadow-xl"
+            class="theme-btn outline-1 outline-input-border px-3 py-3 rounded bg-white text-[#474d53] cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-lg"
+            data-theme="light"
           >
-            <i class="fas fa-add pr-2"></i> Add New Password
+            <i class="fas fa-sun px-2"></i> Light
           </button>
-
-          <div class="w-full border-b border-input-border"></div>
-
-          <div class="submit-container flex flex-row items-center space-x-8">
-            <button
-              type="submit"
-              class="bg-primary text-white rounded-xl px-5 py-3 font-bold text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"
-            >
-              <i class="fas fa-save pr-2"></i> Save Passwords
-            </button>
-            <a
-              href="http://homeassistant.local:8123"
-              class="bg-card rounded-xl outline outline-primary text-primary px-5 py-3 font-bold transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:outline-none hover:text-white"
-            >
-              <i class="fas fa-ban pr-2"></i> Cancel
-            </a>
-          </div>
-        </form>
+          <button
+            class="theme-btn outline-1 outline-input-border px-3 py-3 rounded text-white bg-gray-800 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-lg"
+            data-theme="dark"
+          >
+            <i class="fas fa-moon px-2"></i> Dark
+          </button>
+          <button
+            class="theme-btn outline-1 outline-input-border px-3 py-3 rounded bg-card cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-lg"
+            data-theme="system"
+          >
+            <i class="fas fa-laptop px-2"></i> System
+          </button>
+        </div>
       </div>
     </div>
+  </div>
 
-    <script>
-      /* --- CONFIGURATION --- */
-      const API_ENDPOINT = "/api/password-dashboard/passwords";
+  <div
+    class="container mx-auto w-full min-h-[calc(100vh-100px)] flex items-center justify-center py-10"
+  >
+    <div class="rounded-3xl bg-card w-11/12 md:w-4xl lg:w-5xl shadow-theme">
+      <div class="font-bold text-2xl w-full border-input-border border-b">
+        <p class="px-8 py-5">Your Passwords</p>
+      </div>
 
-      /* --- HELPER FUNCTIONS --- */
+      <form
+        id="passwordsForm"
+        class="passwords-form flex flex-col items-center px-8 py-10 space-y-5"
+      >
+        <div id="passwords-container" class="w-full space-y-5"></div>
 
-      // 1. A function to fetch stuff with auth token.
-      async function fetchWithAuth(url, options = {}) {
-        console.log("trying to fetch using the auth token");
-        const headers = options.headers || {};
+        <button
+          type="button"
+          id="add_new_password"
+          class="bg-success text-white rounded-xl px-5 py-3 font-bold text-lg transition-all duration-300 cursor-pointer hover:bg-success-hover hover:-translate-y-1 hover:drop-shadow-xl"
+        >
+          <i class="fas fa-add pr-2"></i> Add New Password
+        </button>
 
-        // Use the token set by loader.js
-        if (window.HASS_AUTH_TOKEN) {
-          console.log("setting header auth token");
-          headers["Authorization"] = `Bearer ${window.HASS_AUTH_TOKEN}`;
-          console.log(headers["Authorization"]);
+        <div class="w-full border-b border-input-border"></div>
+
+        <div class="submit-container flex flex-row items-center space-x-8">
+          <button
+            type="submit"
+            class="bg-primary text-white rounded-xl px-5 py-3 font-bold text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"
+          >
+            <i class="fas fa-save pr-2"></i> Save Passwords
+          </button>
+          <a
+            href="/lovelace"
+            class="bg-card rounded-xl outline outline-primary text-primary px-5 py-3 font-bold transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:outline-none hover:text-white"
+          >
+            <i class="fas fa-ban pr-2"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Wrap logic in an IIFE (Immediately Invoked Function Expression)
+  // This ensures variables don't leak globally and logic runs immediately.
+  (function () {
+    console.log("Password Dashboard Script Loaded");
+
+    /* --- CONFIGURATION --- */
+    const API_ENDPOINT = "/api/password-dashboard/passwords";
+    // Scope the selectors to the injected root to prevent selecting elements elsewhere in HA
+    const root = document.getElementById("pw-dashboard-root");
+
+    /* --- HELPER FUNCTIONS --- */
+    async function fetchWithAuth(url, options = {}) {
+      const headers = options.headers || {};
+      if (window.HASS_AUTH_TOKEN) {
+        headers["Authorization"] = `Bearer ${window.HASS_AUTH_TOKEN}`;
+      }
+      return fetch(url, { ...options, headers });
+    }
+
+    function generateRandomPassword(length = 8) {
+      const charset =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let retVal = "";
+      for (let i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+      }
+      return retVal;
+    }
+
+    const uniqueId = () => "id-" + Math.random().toString(36).substr(2, 16);
+
+    /* --- CORE LOGIC --- */
+    function init() {
+      // --- Theme Logic ---
+      const themeButtons = root.querySelectorAll(".theme-btn");
+      function applyTheme(theme) {
+        const rootHtml = document.documentElement; // Tailwind looks at HTML tag usually
+
+        if (theme === "system") {
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+          rootHtml.setAttribute("data-theme", prefersDark ? "dark" : "light");
         } else {
-          console.log("no token is saved!");
+          rootHtml.setAttribute("data-theme", theme);
         }
 
-        return fetch(url, { ...options, headers });
-      }
-
-      // 2. Random Password Generator (Digits & Characters, Length 8)
-      function generateRandomPassword(length = 8) {
-        const charset =
-          "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        let retVal = "";
-        for (let i = 0, n = charset.length; i < length; ++i) {
-          retVal += charset.charAt(Math.floor(Math.random() * n));
-        }
-        return retVal;
-      }
-
-      // Generate a unique ID for DOM elements
-      const uniqueId = () => "id-" + Math.random().toString(36).substr(2, 16);
-
-      /* --- CORE LOGIC --- */
-
-      document.addEventListener("DOMContentLoaded", function () {
-        // --- Theme Logic (Kept from your original code) ---
-        const themeButtons = document.querySelectorAll(".theme-btn");
-        function applyTheme(theme) {
-          if (theme === "system") {
-            const prefersDark = window.matchMedia(
-              "(prefers-color-scheme: dark)"
-            ).matches;
-            document.documentElement.setAttribute(
-              "data-theme",
-              prefersDark ? "dark" : "light"
-            );
-          } else {
-            document.documentElement.setAttribute("data-theme", theme);
-          }
-          themeButtons.forEach((button) => {
-            if (button.dataset.theme === theme) button.classList.add("active");
-            else button.classList.remove("active");
-          });
-          localStorage.setItem("theme", theme);
-        }
         themeButtons.forEach((button) => {
-          button.addEventListener("click", () =>
-            applyTheme(button.dataset.theme)
-          );
+          if (button.dataset.theme === theme) button.classList.add("active");
+          else button.classList.remove("active");
         });
-        applyTheme(localStorage.getItem("theme") || "system");
-        // ----------------------------------------
+        localStorage.setItem("theme", theme);
+      }
 
-        const container = document.getElementById("passwords-container");
-        const addBtn = document.getElementById("add_new_password");
-        const mainForm = document.getElementById("passwordsForm");
-
-        // UI Builder: Create a single password row HTML
-        function addPasswordEntity(initialTitle = "", initialPassword = "") {
-          const id = uniqueId();
-          const count = container.children.length + 1; // Visual index (1, 2, 3...)
-
-          // Use generated password if none provided
-          const passwordValue = initialPassword || generateRandomPassword();
-
-          const entityHtml = `
-            <div id="${id}" class="password-entity rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3 transitions-all duration-300 hover:shadow-md hover:shadow-body fade-in">
-                <div class="flex flex-row w-full items-center justify-between py-2 px-2">
-                    <div class="entity-number flex items-center justify-center rounded-[100%] bg-primary w-10 h-10 font-bold text-white">
-                        ${count}
-                    </div>
-                    <button type="button" class="btn-remove bg-danger text-white rounded-[100%] w-10 h-10 font-bold transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-0.5 hover:drop-shadow-xl">
-                        <i class="fas fa-trash px-2"></i>
-                    </button>
-                </div>
-                <div class="flex flex-row items-center space-x-5 px-3 py-3">
-                    <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
-                        <label class="font-bold text-lg">Title:</label>
-                        <input required type="text" name="titles[]" value="${initialTitle}" class="input-title border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12" placeholder="Type the title..." />
-                    </div>
-                    <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
-                        <label class="font-bold text-lg">Password:</label>
-                        <input type="text" name="passwords[]" value="${passwordValue}" class="input-password border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12" placeholder="Type the password..." required />
-                    </div>
-                </div>
-                <div class="flex flex-row items-center space-x-5 pb-3 justify-center">
-                    <button type="button" class="btn-regenerate bg-primary text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl">
-                        <i class="fas fa-rotate px-2"></i> Regenerate Password
-                    </button>
-                    <button type="button" class="btn-copy bg-card rounded-xl outline outline-primary text-primary px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:outline-none hover:text-white">
-                        <i class="fas fa-copy px-2"></i> Copy Password
-                    </button>
-                </div>
-            </div>
-          `;
-
-          container.insertAdjacentHTML("beforeend", entityHtml);
-          const newRow = document.getElementById(id);
-          attachRowEvents(newRow);
-        }
-
-        // Attach events (Delete, Regenerate, Copy) to a specific row
-        function attachRowEvents(row) {
-          const passwordInput = row.querySelector(".input-password");
-
-          // Remove Button
-          row.querySelector(".btn-remove").addEventListener("click", () => {
-            const confirmation = confirm(
-              "Are you sure you want to remove this password?"
-            );
-            if (confirmation) {
-              row.remove();
-              updateIndexes(); // Fix numbers (1, 2, 3) after delete
-            }
-          });
-
-          // Regenerate Button
-          row.querySelector(".btn-regenerate").addEventListener("click", () => {
-            passwordInput.value = generateRandomPassword();
-          });
-
-          // Copy Button
-          row.querySelector(".btn-copy").addEventListener("click", () => {
-            navigator.clipboard.writeText(passwordInput.value);
-            // Optional: visual feedback could go here
-            const icon = row.querySelector(".btn-copy i");
-            icon.className = "fas fa-check px-2";
-            setTimeout(() => (icon.className = "fas fa-copy px-2"), 1500);
-          });
-        }
-
-        // Helper to re-calculate the "1, 2, 3" badges if a row is deleted
-        function updateIndexes() {
-          const badges = container.querySelectorAll(".entity-number");
-          badges.forEach((badge, index) => {
-            badge.textContent = index + 1;
-          });
-        }
-
-        // 1. Add New Password Button Logic
-        addBtn.addEventListener("click", () => {
-          addPasswordEntity();
-        });
-
-        // 3. Form Submission (POST request)
-        mainForm.addEventListener("submit", async function (e) {
-          e.preventDefault();
-
-          const rows = container.querySelectorAll(".password-entity");
-          const payload = [];
-          let isValid = true;
-
-          rows.forEach((row) => {
-            const title = row.querySelector(".input-title").value.trim();
-            const password = row.querySelector(".input-password").value.trim();
-
-            // Validation: Alphanumeric only, min length 8
-            // Regex: ^[a-zA-Z0-9]{8,}$
-            const regex = /^[a-zA-Z0-9]{8,}$/;
-
-            if (!regex.test(password)) {
-              isValid = false;
-              row.querySelector(".input-password").style.borderColor =
-                "var(--btn-danger)";
-              alert(
-                `Password for "${
-                  title || "Untitled"
-                }" is invalid. Must be at least 8 chars, numbers and letters only.`
-              );
-            } else {
-              row.querySelector(".input-password").style.borderColor =
-                "var(--input-border)"; // Reset
-              payload.push({ title: title, password: password });
-            }
-          });
-
-          console.log(payload);
-          console.log(JSON.stringify(payload));
-
-          if (!isValid) return;
-
-          // Send to Backend
-          try {
-            const response = await fetchWithAuth(API_ENDPOINT, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-              alert("Passwords saved successfully!");
-            } else {
-              alert("Failed to save passwords.");
-            }
-          } catch (error) {
-            console.error("Error saving:", error);
-            // For demo purposes, since endpoint doesn't exist, we alert Success
-            alert("(Demo) Data valid. Would send: " + JSON.stringify(payload));
-          }
-        });
-
-        // 4. Initial Load Logic (Fetch Data)
-        async function fetchInitialData() {
-          try {
-            // GET request to fetch data
-            const response = await fetchWithAuth(API_ENDPOINT);
-
-            // Handling if endpoint doesn't exist yet (for demo safety)
-            if (!response.ok) throw new Error("API not reachable");
-
-            const data = await response.json();
-            console.log("fetched data: ", data);
-
-            // Clear container just in case
-            container.innerHTML = "";
-
-            if (Array.isArray(data) && data.length > 0) {
-              // Populate from DB
-              data.forEach((item) => {
-                addPasswordEntity(item.title, item.password);
-              });
-            } else {
-              // Leave empty (Requirement 4)
-            }
-          } catch (error) {
-            console.log(
-              "Could not fetch initial data (normal if API isn't built yet). Starting empty."
-            );
-            // Start empty
-            container.innerHTML = "";
-          }
-        }
-
-        // Start the app
-        fetchInitialData();
+      themeButtons.forEach((button) => {
+        button.addEventListener("click", () =>
+          applyTheme(button.dataset.theme)
+        );
       });
-    </script>
-  </body>
-</html>
+      applyTheme(localStorage.getItem("theme") || "system");
+
+      // --- Form Logic ---
+      const container = root.querySelector("#passwords-container");
+      const addBtn = root.querySelector("#add_new_password");
+      const mainForm = root.querySelector("#passwordsForm");
+
+      function addPasswordEntity(initialTitle = "", initialPassword = "") {
+        const id = uniqueId();
+        const count = container.children.length + 1;
+        const passwordValue = initialPassword || generateRandomPassword();
+
+        const entityHtml = `
+          <div id="${id}" class="password-entity rounded-2xl px-5 py-3 w-full border border-input-border border-l-4 border-l-primary bg-input space-y-3 transitions-all duration-300 hover:shadow-md hover:shadow-body fade-in">
+              <div class="flex flex-row w-full items-center justify-between py-2 px-2">
+                  <div class="entity-number flex items-center justify-center rounded-[100%] bg-primary w-10 h-10 font-bold text-white">${count}</div>
+                  <button type="button" class="btn-remove bg-danger text-white rounded-[100%] w-10 h-10 font-bold transition-all duration-300 cursor-pointer hover:bg-danger-hover hover:-translate-y-0.5 hover:drop-shadow-xl"><i class="fas fa-trash px-2"></i></button>
+              </div>
+              <div class="flex flex-row items-center space-x-5 px-3 py-3">
+                  <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
+                      <label class="font-bold text-lg">Title:</label>
+                      <input required type="text" name="titles[]" value="${initialTitle}" class="input-title border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12" placeholder="Title..." />
+                  </div>
+                  <div class="flex-1 flex-col items-start justify-center space-y-1 w-full">
+                      <label class="font-bold text-lg">Password:</label>
+                      <input type="text" name="passwords[]" value="${passwordValue}" class="input-password border border-input-border bg-input rounded-lg px-5 py-2 w-full focus:outline focus:outline-primary min-h-12" placeholder="Password..." required />
+                  </div>
+              </div>
+              <div class="flex flex-row items-center space-x-5 pb-3 justify-center">
+                  <button type="button" class="btn-regenerate bg-primary text-white rounded-xl px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:bg-primary-hover hover:-translate-y-1 hover:drop-shadow-xl"><i class="fas fa-rotate px-2"></i> Regenerate</button>
+                  <button type="button" class="btn-copy bg-card rounded-xl outline outline-primary text-primary px-5 py-3 font-bold text-sm md:text-md lg:text-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:bg-primary hover:outline-none hover:text-white"><i class="fas fa-copy px-2"></i> Copy</button>
+              </div>
+          </div>
+        `;
+
+        container.insertAdjacentHTML("beforeend", entityHtml);
+        const newRow = document.getElementById(id);
+        attachRowEvents(newRow);
+      }
+
+      function attachRowEvents(row) {
+        const passwordInput = row.querySelector(".input-password");
+        row.querySelector(".btn-remove").addEventListener("click", () => {
+          if (confirm("Remove this password?")) {
+            row.remove();
+            updateIndexes();
+          }
+        });
+        row.querySelector(".btn-regenerate").addEventListener("click", () => {
+          passwordInput.value = generateRandomPassword();
+        });
+        row.querySelector(".btn-copy").addEventListener("click", () => {
+          navigator.clipboard.writeText(passwordInput.value);
+        });
+      }
+
+      function updateIndexes() {
+        const badges = container.querySelectorAll(".entity-number");
+        badges.forEach((badge, index) => {
+          badge.textContent = index + 1;
+        });
+      }
+
+      addBtn.addEventListener("click", () => addPasswordEntity());
+
+      mainForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const rows = container.querySelectorAll(".password-entity");
+        const payload = [];
+        let isValid = true;
+
+        rows.forEach((row) => {
+          const title = row.querySelector(".input-title").value.trim();
+          const password = row.querySelector(".input-password").value.trim();
+          // Simple validation
+          if (password.length < 8) {
+            isValid = false;
+            row.querySelector(".input-password").style.borderColor =
+              "var(--btn-danger)";
+          } else {
+            row.querySelector(".input-password").style.borderColor =
+              "var(--input-border)";
+            payload.push({ title, password });
+          }
+        });
+
+        if (!isValid) {
+          alert("Passwords must be at least 8 characters.");
+          return;
+        }
+
+        try {
+          const response = await fetchWithAuth(API_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (response.ok) alert("Passwords saved!");
+          else alert("Failed to save.");
+        } catch (error) {
+          console.error("Error saving:", error);
+          alert("Error: " + error.message);
+        }
+      });
+
+      // Initial Fetch
+      async function fetchInitialData() {
+        try {
+          const response = await fetchWithAuth(API_ENDPOINT);
+          if (!response.ok) return;
+          const data = await response.json();
+          container.innerHTML = "";
+          if (Array.isArray(data)) {
+            data.forEach((item) =>
+              addPasswordEntity(item.title, item.password)
+            );
+          }
+        } catch (error) {
+          console.log("Starting with empty data");
+        }
+      }
+
+      fetchInitialData();
+    }
+
+    // Run Init
+    init();
+  })();
+</script>
