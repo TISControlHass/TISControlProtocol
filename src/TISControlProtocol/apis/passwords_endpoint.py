@@ -6,9 +6,8 @@ import logging
 class PasswordsEndpoint(HomeAssistantView):
     """TIS API endpoint."""
 
-    url = "/api/passwords"
-    name = "api:passwords"
-    requires_auth = False
+    url = "/api/password-dashboard/passwords"
+    name = "api:password-dashboard:passwords"
 
     def __init__(self, tis_api):
         self.tis_api = tis_api
