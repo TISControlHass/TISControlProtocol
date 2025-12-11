@@ -1,5 +1,8 @@
 import TISControlProtocol.views as views
+import TISControlProtocol.public as public
+from .shared import STATIC_URL_PREFIX
 import importlib.resources
+from homeassistant.components.http import StaticPathConfig
 
 from .tis_endpoint import TISEndPoint
 from .scan_devices_endpoint import ScanDevicesEndPoint
@@ -29,7 +32,7 @@ __all__ = [
 ]
 
 
-def setup_views(hass):
+async def setup_views(hass):
     """
     1. Locate the absolute path of the 'views' folder.
     2. Register it as a static path in Home Assistant.
@@ -38,6 +41,18 @@ def setup_views(hass):
 
     # Get absolute path to 'src/TISControlProtocol/views'
     views_path = str(importlib.resources.files(views))
+    public_path = str(importlib.resources.files(public))
 
+    # Register the ROOT views folder
+    # Now, anything inside 'views/' is accessible via HTTP
+    await hass.http.async_register_static_paths(
+        [
+            StaticPathConfig(
+                url_path=STATIC_URL_PREFIX,
+                path=public_path,
+                cache_headers=True,
+            )
+        ]
+    )
     hass.http.register_view(PasswordFormEndpoint(views_path))
     hass.http.register_view(PasswordDashboardEndpoint(views_path))
