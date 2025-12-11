@@ -3,77 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              body: "var(--body-bg)",
-              card: "var(--card-bg)",
-              "text-color": "var(--text-color)",
-              input: "var(--input-bg)",
-              "input-border": "var(--input-border)",
-              primary: "var(--btn-primary)",
-              "primary-hover": "var(--btn-primary-hover)",
-              success: "var(--btn-success)",
-              "success-hover": "var(--btn-success-hover)",
-              danger: "var(--btn-danger)",
-              "danger-hover": "var(--btn-danger-hover)",
-            },
-            boxShadow: { theme: "var(--box-shadow)" },
-          },
-        },
-      };
-    </script>
-
-    <style>
-      :root {
-        --body-bg: #eaeaeb;
-        --card-bg: #fff;
-        --text-color: #474d53;
-        --input-bg: #fff;
-        --input-border: #ced4da;
-        --btn-primary: #4e73df;
-        --btn-primary-hover: #3a5fc4;
-        --btn-success: #28a745;
-        --btn-success-hover: #218838;
-        --btn-danger: #dc3545;
-        --btn-danger-hover: #c82333;
-        --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      [data-theme="dark"] {
-        --body-bg: #1a1d21;
-        --card-bg: #2d343c;
-        --text-color: #e9ecef;
-        --input-bg: #343a40;
-        --input-border: #495057;
-        --btn-primary: #4e73df;
-        --btn-primary-hover: #5a7ae2;
-        --btn-success: #28a745;
-        --btn-success-hover: #34ce57;
-        --btn-danger: #dc3545;
-        --btn-danger-hover: #e4606d;
-        --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-      }
-
-      /* Force background on the panel body */
-      body.type-custom-panel {
-        background-color: var(--body-bg) !important;
-      }
-
-      .theme-btn.active {
-        background-color: var(--btn-primary) !important;
-        color: white !important;
-        border-color: var(--btn-primary) !important;
-      }
-    </style>
+    <link rel="stylesheet" href="/local/tis_assets/dashboard.css" />
     <title>Password Dashboard</title>
   </head>
   <body>
