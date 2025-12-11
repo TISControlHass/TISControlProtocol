@@ -1,1 +1,59 @@
 @import "tailwindcss";
+
+@theme {
+  --color-body: var(--body-bg);
+  --color-card: var(--card-bg);
+  --color-text-color: var(--text-color);
+  --color-input: var(--input-bg);
+  --color-input-border: var(--input-border);
+
+  --color-primary: var(--btn-primary);
+  --color-primary-hover: var(--btn-primary-hover);
+  --color-success: var(--btn-success);
+  --color-success-hover: var(--btn-success-hover);
+  --color-danger: var(--btn-danger);
+  --color-danger-hover: var(--btn-danger-hover);
+
+  --shadow-theme: var(--box-shadow);
+}
+
+:root {
+  --body-bg: #eaeaeb;
+  --card-bg: #fff;
+  --text-color: #474d53;
+  --input-bg: #fff;
+  --input-border: #ced4da;
+  --btn-primary: #4e73df;
+  --btn-primary-hover: #3a5fc4;
+  --btn-success: #28a745;
+  --btn-success-hover: #218838;
+  --btn-danger: #dc3545;
+  --btn-danger-hover: #c82333;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --body-bg: #1a1d21;
+  --card-bg: #2d343c;
+  --text-color: #e9ecef;
+  --input-bg: #343a40;
+  --input-border: #495057;
+  --btn-primary: #4e73df;
+  --btn-primary-hover: #5a7ae2;
+  --btn-success: #28a745;
+  --btn-success-hover: #34ce57;
+  --btn-danger: #dc3545;
+  --btn-danger-hover: #e4606d;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Other custom CSS */
+body.type-custom-panel {
+  background-color: var(--body-bg) !important;
+}
+
+.theme-btn.active {
+  background-color: var(--btn-primary) !important;
+  color: white !important;
+  border-color: var(--btn-primary) !important;
+}
