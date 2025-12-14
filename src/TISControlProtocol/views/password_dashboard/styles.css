@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --color-body: var(--body-bg);
   --color-card: var(--card-bg);
