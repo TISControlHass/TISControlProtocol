@@ -296,13 +296,13 @@ class TISApi:
         output_file = os.path.join(directory, file_name)
 
         encrypted_data = self.encrypt_data(data)
-        logging.warning(f"file (to be saved) length: {len(encrypted_data)}")
+        logging.info(f"file (to be saved) length: {len(encrypted_data)}")
 
         async with aiofiles.open(output_file, "w") as f:
-            logging.warning("new appliances are getting saved in app.json")
+            logging.info("new appliances are getting saved in app.json")
             await f.write(json.dumps(encrypted_data, indent=4))
 
-        logging.warning("new appliances saved successfully")
+        logging.info("new appliances saved successfully")
 
     async def save_passwords(self, passwords):
         directory = "/config/custom_components/tis_integration/"
