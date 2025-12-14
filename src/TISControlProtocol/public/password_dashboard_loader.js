@@ -1,4 +1,4 @@
-console.log("Loader: File loaded! (Version 4.0.1)");
+console.log("Loader: File loaded! (Version 4.0.0)");
 
 class PasswordDashboardLoader extends HTMLElement {
   set hass(hass) {
