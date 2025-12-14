@@ -15,8 +15,7 @@ class PasswordsEndpoint(HomeAssistantView):
     async def get(self, request: web.Request):
         try:
             passwords = await self.tis_api.get_passwords()
-            logging.warning("passwords got successfully!")
-            logging.warning(f"passwords: {passwords}")
+            logging.info("passwords got successfully!")
             return web.json_response(passwords)
         except Exception as e:
             logging.error(
@@ -35,7 +34,7 @@ class PasswordsEndpoint(HomeAssistantView):
 
         try:
             await self.tis_api.save_passwords(data)
-            logging.warning("passwords saved successfully!")
+            logging.info("passwords saved successfully!")
             return web.json_response({"message": "Passwords saved successfully"})
         except Exception as e:
             logging.error(
