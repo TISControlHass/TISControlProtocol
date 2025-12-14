@@ -7,6 +7,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <!-- <link rel="stylesheet" href="../../public/dashboard.css" /> -->
     <link rel="stylesheet" href="/local/tis_assets/dashboard.css" />
     <title>Password Dashboard</title>
   </head>
@@ -107,8 +108,7 @@
             effectiveTheme = prefersDark ? "dark" : "light";
           }
 
-          // Apply to the root element provided by the loader
-          root.setAttribute("data-theme", effectiveTheme);
+          document.documentElement.setAttribute("data-theme", effectiveTheme);
 
           themeButtons.forEach((button) => {
             if (button.dataset.theme === theme) button.classList.add("active");
@@ -137,12 +137,12 @@
           if (window.HASS_AUTH_TOKEN) {
             headers["Authorization"] = `Bearer ${window.HASS_AUTH_TOKEN}`;
           }
-          return fetch(url, { ...options, headers });
+          return await fetch(url, { ...options, headers });
         }
 
-        function generateRandomPassword(length = 16) {
+        function generateRandomPassword(length = 8) {
           const charset =
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
           let retVal = "";
           for (let i = 0, n = charset.length; i < length; ++i) {
             retVal += charset.charAt(Math.floor(Math.random() * n));
@@ -275,6 +275,7 @@
 
         fetchInitialData();
       };
+      // window.initPasswordDashboard();
     </script>
   </body>
 </html>
