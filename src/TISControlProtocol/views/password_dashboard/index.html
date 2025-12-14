@@ -189,18 +189,69 @@
 
         function attachRowEvents(row) {
           const passwordInput = row.querySelector(".input-password");
+          const copyBtn = row.querySelector(".btn-copy");
+
           row.querySelector(".btn-remove").addEventListener("click", () => {
             if (confirm("Remove this password?")) {
               row.remove();
               updateIndexes();
             }
           });
+
           row.querySelector(".btn-regenerate").addEventListener("click", () => {
             passwordInput.value = generateRandomPassword();
           });
-          row.querySelector(".btn-copy").addEventListener("click", () => {
-            navigator.clipboard.writeText(passwordInput.value);
+
+          // UPDATED COPY LOGIC
+          copyBtn.addEventListener("click", () => {
+            copyToClipboard(passwordInput.value);
+
+            // Optional: Visual feedback (Change icon temporarily)
+            const icon = copyBtn.querySelector("i");
+            const originalClass = icon.className;
+            icon.className = "fas fa-check px-2"; // Change to checkmark
+            setTimeout(() => {
+              icon.className = originalClass; // Revert after 1 second
+            }, 1000);
           });
+        }
+
+        function copyToClipboard(text) {
+          // Try the modern API first (if HTTPS)
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).catch((err) => {
+              console.error("Async: Could not copy text: ", err);
+              // If modern API fails, try fallback
+              fallbackCopyTextToClipboard(text);
+            });
+          } else {
+            // Fallback for HTTP
+            fallbackCopyTextToClipboard(text);
+          }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+          var textArea = document.createElement("textarea");
+          textArea.value = text;
+
+          // Ensure the textarea is not visible but is part of the DOM
+          textArea.style.top = "0";
+          textArea.style.left = "0";
+          textArea.style.position = "fixed";
+
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+
+          try {
+            var successful = document.execCommand("copy");
+            var msg = successful ? "successful" : "unsuccessful";
+            console.log("Fallback: Copying text command was " + msg);
+          } catch (err) {
+            console.error("Fallback: Oops, unable to copy", err);
+          }
+
+          document.body.removeChild(textArea);
         }
 
         function updateIndexes() {
