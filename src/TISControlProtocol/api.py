@@ -15,7 +15,6 @@ from collections import defaultdict
 import json
 import psutil
 
-import ST7789
 from PIL import Image, ImageDraw, ImageFont
 from TISControlProtocol.shared import get_real_mac
 from .apis import (
@@ -31,6 +30,13 @@ from .apis import (
     PasswordsEndpoint,
     setup_views,
 )
+
+try:
+    import ST7789
+
+    HAS_ST7789 = True
+except (ImportError, RuntimeError):
+    HAS_ST7789 = False
 
 
 class TISApi:
@@ -188,22 +194,23 @@ class TISApi:
 
     def run_display(self, style="dots"):
         try:
-            self.display = ST7789.ST7789(
-                width=320,
-                height=240,
-                rotation=0,
-                port=0,
-                cs=0,
-                dc=23,
-                rst=25,
-                backlight=12,
-                spi_speed_hz=60 * 1000 * 1000,
-                offset_left=0,
-                offset_top=0,
-            )
-            # Initialize display.
-            self.display.begin()
-            self.set_display_image()
+            if HAS_ST7789:
+                self.display = ST7789.ST7789(
+                    width=320,
+                    height=240,
+                    rotation=0,
+                    port=0,
+                    cs=0,
+                    dc=23,
+                    rst=25,
+                    backlight=12,
+                    spi_speed_hz=60 * 1000 * 1000,
+                    offset_left=0,
+                    offset_top=0,
+                )
+                # Initialize display.
+                self.display.begin()
+                self.set_display_image()
 
         except Exception as e:
             logging.error(f"error initializing display, {e}")
