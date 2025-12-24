@@ -265,7 +265,7 @@ class TISApi:
             "password": data["configs"]["lock_module_password"]
         }
 
-        self.config_entries["passwords"] = data["passwords"]
+        self.config_entries["passwords"] = data.get("passwords", {})
         return self.config_entries
 
     async def get_entities(self, platform: str | None = None) -> list:
