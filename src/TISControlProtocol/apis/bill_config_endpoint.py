@@ -51,5 +51,5 @@ class BillConfigEndpoint(HomeAssistantView):
 
     async def reload_platforms(self):
         # Reload the platforms
-        for entry in self.api.hass.config_entries.async_entries(self.api.domain):
-            await self.api.hass.config_entries.async_reload(entry.entry_id)
+        for entry in self.tis_api.hass.config_entries.async_entries(self.tis_api.domain):
+            await self.tis_api.hass.config_entries.async_reload(entry.entry_id)

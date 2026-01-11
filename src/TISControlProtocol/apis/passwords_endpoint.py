@@ -1,6 +1,7 @@
 from homeassistant.components.http import HomeAssistantView
 from aiohttp import web
 import logging
+import asyncio
 
 
 class PasswordsEndpoint(HomeAssistantView):
@@ -34,6 +35,10 @@ class PasswordsEndpoint(HomeAssistantView):
 
         try:
             await self.tis_api.save_passwords(data)
+
+            # Start reload operations in the background
+            asyncio.create_task(self.reload_platforms())
+
             logging.info("passwords saved successfully!")
             return web.json_response({"message": "Passwords saved successfully"})
         except Exception as e:
@@ -41,3 +46,10 @@ class PasswordsEndpoint(HomeAssistantView):
                 f"Something went wrong while saving password entities, error: {e}"
             )
             return web.json_response({"error": "Failed to save passwords"}, status=500)
+
+    async def reload_platforms(self):
+        # Reload the platforms
+        for entry in self.tis_api.hass.config_entries.async_entries(
+            self.tis_api.domain
+        ):
+            await self.tis_api.hass.config_entries.async_reload(entry.entry_id)
