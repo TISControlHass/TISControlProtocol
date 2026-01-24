@@ -33,6 +33,7 @@ from .apis import (
 
 try:
     import ST7789
+    import RPi.GPIO as GPIO
 
     HAS_ST7789 = True
 except (ImportError, RuntimeError):
@@ -208,6 +209,11 @@ class TISApi:
                     offset_left=0,
                     offset_top=0,
                 )
+                GPIO.setmode(GPIO.BCM)
+                GPIO.setup(12, GPIO.OUT)
+                pwm = GPIO.PWM(12, 1000)
+                pwm.start(100)
+
                 # Initialize display.
                 self.display.begin()
                 self.set_display_image()
