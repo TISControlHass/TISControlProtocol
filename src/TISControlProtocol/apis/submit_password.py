@@ -20,33 +20,24 @@ class SubmitPasswordEndpoint(HomeAssistantView):
 
     async def post(self, request):
         # Get requester IP
-        peername = request.transport.get_extra_info("peername")
-        ip_address = peername[0] if peername else "unknown"
         client_ip = request.remote
 
-        if client_ip is None:
-            client_ip = "unknown"
-
-        logging.warning(
-            f"Received password submission from IP: client_ip {client_ip} ,, ip_address {ip_address}"
-        )
-
+        logging.warning(f"Received password submission from IP: client_ip {client_ip}")
         logging.warning(f"rate_limit_data: {self.rate_limit_data}")
 
-        if ip_address == client_ip:
-            # Check Throttle
-            current_time = time.time()
-            last_request = self.rate_limit_data.get(ip_address, 0)
+        # Check Throttle
+        current_time = time.time()
+        last_request = self.rate_limit_data.get(client_ip, 0)
 
-            if current_time - last_request < self.cooldown_seconds:
-                logging.warning(f"Rate limit exceeded for IP: {ip_address}")
-                return web.json_response(
-                    {"error": "Too many requests. Please wait."},
-                    status=429,  # HTTP 429 Too Many Requests
-                )
+        if current_time - last_request < self.cooldown_seconds:
+            logging.warning(f"Rate limit exceeded for IP: {client_ip}")
+            return web.json_response(
+                {"error": "Too many requests. Please wait."},
+                status=429,  # HTTP 429 Too Many Requests
+            )
 
-            # Update the last request time
-            self.rate_limit_data[ip_address] = current_time
+        # Update the last request time
+        self.rate_limit_data[client_ip] = current_time
 
         try:
             data = await request.json()
