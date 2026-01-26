@@ -1,6 +1,7 @@
 from homeassistant.components.http import HomeAssistantView
 from aiohttp import web
 import logging
+import time
 
 
 class SubmitPasswordEndpoint(HomeAssistantView):
@@ -13,7 +14,40 @@ class SubmitPasswordEndpoint(HomeAssistantView):
     def __init__(self, tis_api):
         self.tis_api = tis_api
 
+        # Dictionary to store {ip: last_request_time}
+        self.rate_limit_data = {}
+        self.cooldown_seconds = 5
+
     async def post(self, request):
+        # Get requester IP
+        peername = request.transport.get_extra_info("peername")
+        ip_address = peername[0] if peername else "unknown"
+        client_ip = request.remote
+
+        if client_ip is None:
+            client_ip = "unknown"
+
+        logging.warning(
+            f"Received password submission from IP: client_ip {client_ip} ,, ip_address {ip_address}"
+        )
+
+        logging.warning(f"rate_limit_data: {self.rate_limit_data}")
+
+        if ip_address == client_ip:
+            # Check Throttle
+            current_time = time.time()
+            last_request = self.rate_limit_data.get(ip_address, 0)
+
+            if current_time - last_request < self.cooldown_seconds:
+                logging.warning(f"Rate limit exceeded for IP: {ip_address}")
+                return web.json_response(
+                    {"error": "Too many requests. Please wait."},
+                    status=429,  # HTTP 429 Too Many Requests
+                )
+
+            # Update the last request time
+            self.rate_limit_data[ip_address] = current_time
+
         try:
             data = await request.json()
 
