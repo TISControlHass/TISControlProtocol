@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -109,12 +109,12 @@
                 "hidden",
                 "text-red-500",
                 "bg-red-500/10",
-                "border-red-500/50"
+                "border-red-500/50",
               );
               errorMessageDiv.classList.add(
                 "text-green-500",
                 "bg-green-500/10",
-                "border-green-500/50"
+                "border-green-500/50",
               );
 
               // Revert styling after 3 seconds
@@ -124,14 +124,16 @@
                 errorMessageDiv.classList.add(
                   "text-red-500",
                   "bg-red-500/10",
-                  "border-red-500/50"
+                  "border-red-500/50",
                 );
                 errorMessageDiv.classList.remove(
                   "text-green-500",
                   "bg-green-500/10",
-                  "border-green-500/50"
+                  "border-green-500/50",
                 );
               }, 3000);
+            } else if (response.status === 429) {
+              showError("Too many requests. Please wait.");
             } else {
               showError("Server error. Please try again.");
             }
