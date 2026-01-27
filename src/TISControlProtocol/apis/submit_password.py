@@ -22,9 +22,6 @@ class SubmitPasswordEndpoint(HomeAssistantView):
         # Get requester IP
         client_ip = request.remote
 
-        logging.warning(f"Received password submission from IP: client_ip {client_ip}")
-        logging.warning(f"rate_limit_data: {self.rate_limit_data}")
-
         # Check Throttle
         current_time = time.time()
         last_request = self.rate_limit_data.get(client_ip, 0)
