@@ -27,7 +27,7 @@ class SubmitPasswordEndpoint(HomeAssistantView):
         last_request = self.rate_limit_data.get(client_ip, 0)
 
         if current_time - last_request < self.cooldown_seconds:
-            logging.warning(f"Rate limit exceeded for IP: {client_ip}")
+            logging.info(f"Rate limit exceeded for IP: {client_ip}")
             return web.json_response(
                 {"error": "Too many requests. Please wait."},
                 status=429,  # HTTP 429 Too Many Requests
@@ -52,7 +52,6 @@ class SubmitPasswordEndpoint(HomeAssistantView):
             }
 
             self.tis_api.hass.bus.async_fire("password_feedback", event_data)
-            logging.warning("password event got fired successfully")
 
             # Return the response immediately
             return web.json_response({"message": "Password submitted successfully"})
