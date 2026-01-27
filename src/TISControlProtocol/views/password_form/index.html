@@ -88,6 +88,8 @@
           submitButton.disabled = true;
           submitButton.textContent = "Sending...";
 
+          let timeoutId;
+
           try {
             const response = await fetch(apiEndpoint, {
               method: "POST",
@@ -118,7 +120,7 @@
               );
 
               // Revert styling after 3 seconds
-              setTimeout(() => {
+              timeoutId = setTimeout(() => {
                 hideError();
                 // Reset classes back to red for next error
                 errorMessageDiv.classList.add(
@@ -133,6 +135,7 @@
                 );
               }, 3000);
             } else if (response.status === 429) {
+              clearTimeout(timeoutId);
               errorMessageDiv.classList.add(
                 "text-red-500",
                 "bg-red-500/10",
