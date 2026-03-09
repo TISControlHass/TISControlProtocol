@@ -406,7 +406,7 @@ class TISProtocolHandler:
             operation_code=self.OPERATION_AC_UPDATE,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=[entity.ac_number],
+            additional_bytes=[] if entity.ac_number == 0 else [entity.ac_number],
         )
 
     def generate_floor_update_packet(self, entity) -> TISPacket:
@@ -421,36 +421,35 @@ class TISProtocolHandler:
     def generate_floor_on_off_packet(self, entity, state: int) -> TISPacket:
 
         if entity.heater_number == 0:
-            add_bytes=[0x14, state]
+            add_bytes = [0x14, state]
 
         if entity.heater_number == 1:
-            add_bytes=[(entity.heater_number + 0x22), 0x14, state]
-        
+            add_bytes = [(entity.heater_number + 0x22), 0x14, state]
+
         if entity.heater_number >= 2:
-            add_bytes=[0x2E, (entity.heater_number) + 1, 0x03, state]
-        
+            add_bytes = [0x2E, (entity.heater_number) + 1, 0x03, state]
+
         return TISPacket(
             device_id=entity.device_id,
             operation_code=self.OPERATION_FLOOR_CONTROL,
             source_ip=entity.api.host,
             destination_ip=entity.gateway,
-            additional_bytes=add_bytes            
-            
+            additional_bytes=add_bytes,
         )
 
     def generate_floor_set_temp_packet(
         self, entity, target_temperature: int
     ) -> TISPacket:
-        
+
         if entity.heater_number == 0:
-            add_bytes=[0x18, target_temperature]
+            add_bytes = [0x18, target_temperature]
 
         if entity.heater_number == 1:
-            add_bytes=[(entity.heater_number + 0x22), 0x18, target_temperature]
-        
+            add_bytes = [(entity.heater_number + 0x22), 0x18, target_temperature]
+
         if entity.heater_number >= 2:
-            add_bytes=[0x2E, (entity.heater_number) + 1, 0x04, target_temperature]
-    
+            add_bytes = [0x2E, (entity.heater_number) + 1, 0x04, target_temperature]
+
         return TISPacket(
             device_id=entity.device_id,
             operation_code=self.OPERATION_FLOOR_CONTROL,
