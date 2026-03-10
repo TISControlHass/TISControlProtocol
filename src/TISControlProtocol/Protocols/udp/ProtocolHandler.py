@@ -362,12 +362,24 @@ class TISProtocolHandler:
 
         target_temperature = (
             target_temperature
-            if target_temperature is not None
+            if target_temperature
             else entity._attr_target_temperature
+            if entity._attr_target_temperature
+            else entity.default_attributes.get("target_temperature", 0)
         )
-        target_mode = target_mode if target_mode is not None else entity.hvac_mode
+        target_mode = (
+            target_mode
+            if target_mode
+            else entity.hvac_mode
+            if entity.hvac_mode
+            else entity.default_attributes.get("hvac_mode", 0)
+        )
         target_fan_mode = (
-            target_fan_mode if target_fan_mode is not None else entity._attr_fan_mode
+            target_fan_mode
+            if target_fan_mode
+            else entity._attr_fan_mode
+            if entity._attr_fan_mode
+            else entity.default_attributes.get("target_fan_mode", 0)
         )
         # Convert target temperature to byte
         target_temperature_byte = (
