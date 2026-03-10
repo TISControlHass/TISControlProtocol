@@ -364,8 +364,6 @@ class TISProtocolHandler:
             target_temperature
             if target_temperature
             else entity._attr_target_temperature
-            if entity._attr_target_temperature
-            else entity.default_attributes.get("target_temperature", 0)
         )
         target_mode = (
             target_mode
