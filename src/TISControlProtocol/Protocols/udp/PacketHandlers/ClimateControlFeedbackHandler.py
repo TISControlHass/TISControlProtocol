@@ -6,13 +6,27 @@ import logging
 
 
 async def handle_climate_control_feedback(hass: HomeAssistant, info: dict):
-    ac_number = info["additional_bytes"][1]
-    state = info["additional_bytes"][2]
-    cool_temp = info["additional_bytes"][3]
-    hvac_mode = (info["additional_bytes"][4] >> 4) & 0x0F
-    fan_speed = info["additional_bytes"][4] & 0x0F
-    heat_temp = info["additional_bytes"][7]
-    auto_temp = info["additional_bytes"][9]
+    additional_bytes = info["additional_bytes"]
+
+    # Luna sends F8 (for success or F5 for fail) at the beginning of the
+    # additional_bytes unlike the 10 function that doesn't send that F8
+    if additional_bytes[0] == 0xF8:  # Luna case!
+        ac_number = additional_bytes[1]
+        state = additional_bytes[2]
+        cool_temp = additional_bytes[3]
+        hvac_mode = (additional_bytes[4] >> 4) & 0x0F
+        fan_speed = additional_bytes[4] & 0x0F
+        heat_temp = additional_bytes[7]
+        auto_temp = additional_bytes[9]
+
+    else:  # Most probably the 10 function
+        state = additional_bytes[0]
+        cool_temp = additional_bytes[1]
+        hvac_mode = (additional_bytes[2] >> 4) & 0x0F
+        fan_speed = additional_bytes[2] & 0x0F
+        heat_temp = additional_bytes[5]
+        auto_temp = additional_bytes[7]
+        ac_number = 0
 
     event_data = {
         "device_id": info["device_id"],

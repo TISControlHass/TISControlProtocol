@@ -357,9 +357,7 @@ class TISProtocolHandler:
     ) -> TISPacket:
         # Determine the target values, falling back to class attributes if not provided
         if not target_state:
-            if entity._attr_state == "unknown":
-                target_state = False
-            else:
+            if entity._attr_state:
                 target_state = entity._attr_state
 
         target_temperature = (
