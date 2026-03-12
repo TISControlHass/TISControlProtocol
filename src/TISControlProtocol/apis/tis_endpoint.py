@@ -1,6 +1,8 @@
-from homeassistant.components.http import HomeAssistantView
-from aiohttp import web
 import asyncio
+import ipaddress
+
+from aiohttp import web
+from homeassistant.components.http import HomeAssistantView
 
 
 class TISEndPoint(HomeAssistantView):
@@ -15,6 +17,20 @@ class TISEndPoint(HomeAssistantView):
         self.api = tis_api
 
     async def post(self, request):
+        # 1. Get the real remote IP
+        # request.remote usually gives the immediate connection (the Cloudflare container IP)
+        # Home Assistant's HTTP component populates the forwarders if configured correctly.
+        remote_ip = ipaddress.ip_address(request.remote)
+
+        # 2. Define your local network ranges
+        is_local = remote_ip.is_private or remote_ip.is_loopback
+
+        # 3. Block if not local
+        if not is_local:
+            return web.json_response(
+                {"error": "Unauthorized: Local network access only"}, status=403
+            )
+
         directory = "/config/custom_components/tis_integration/"
 
         # Parse the JSON data from the request
