@@ -49,7 +49,7 @@ class TISEndPoint(HomeAssistantView):
         local_mac = await get_real_mac("end0")
 
         if mac_address is None:
-            return web.json_response({"error": "Unauthorized"}, status=400)
+            return web.json_response({"error": "Unauthorized"}, status=403)
 
         # Compare provided MAC with the hardware MAC
         if mac_address.lower() != local_mac.lower():
