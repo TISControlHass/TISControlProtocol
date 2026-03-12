@@ -21,7 +21,7 @@ class TISPacket:
         operation_code: List[int],
         source_ip: str,
         destination_ip: str,
-        additional_bytes: List[int] = None,
+        additional_bytes: List[int] | None = None,
     ):
         if additional_bytes is None:
             additional_bytes = []
@@ -189,7 +189,7 @@ class TISProtocolHandler:
 
     def generate_rgb_light_control_packet(
         self, entity, color: Tuple[int, int, int]
-    ) -> Tuple[TISPacket]:
+    ) -> Tuple[TISPacket, TISPacket, TISPacket]:
         """
         Generate packets to control an RGB light.
         :param entity: The entity object containing device information.
@@ -222,7 +222,7 @@ class TISProtocolHandler:
 
     def generate_rgbw_light_control_packet(
         self, entity, color: Tuple[int, int, int, int]
-    ) -> Tuple[TISPacket]:
+    ) -> Tuple[TISPacket, TISPacket, TISPacket, TISPacket]:
         """
         Generate packets to control an RGBW light.
         :param entity: The entity object containing device information.
