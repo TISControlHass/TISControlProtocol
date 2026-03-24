@@ -13,7 +13,7 @@ class GetBillConfigEndpoint(HomeAssistantView):
     def __init__(self, tis_api):
         self.tis_api = tis_api
 
-    async def post(self, request):
+    async def get(self, request):
         try:
             if self.tis_api.bill_configs:
                 configs = self.tis_api.bill_configs
