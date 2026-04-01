@@ -163,7 +163,9 @@ class TISApi:
             self._cms_task_unsub()
 
         interval = timedelta(minutes=3)
-        self._cms_task_unsub = async_track_time_interval(self.hass, scheduled_task, interval)
+        self._cms_task_unsub = async_track_time_interval(
+            self.hass, scheduled_task, interval
+        )
 
     def _unregister_cms_services(self):
         """Unregister CMS service and stop periodic task."""
@@ -286,7 +288,7 @@ class TISApi:
         }
 
         self.config_entries["passwords"] = data.get("passwords", {})
-        self.config_entries["cms"] = data.get("cms", False)
+        self.config_entries["cms"] = bool(data["configs"].get("cms_send_data", False))
         if self.config_entries["cms"]:
             self._register_services()
             self._schedule_cms_data_task()
