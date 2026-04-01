@@ -20,9 +20,9 @@ class PasswordsEndpoint(HomeAssistantView):
             return web.json_response(passwords)
         except Exception as e:
             logging.error(
-                f"Something went wrong while saving password entities, error: {e}"
+                f"Something went wrong while getting password entities, error: {e}"
             )
-            return web.json_response({"error": "Failed to save passwords"}, status=500)
+            return web.json_response({"error": "Failed to get passwords"}, status=500)
 
     async def post(self, request: web.Request):
         data = await request.json()
