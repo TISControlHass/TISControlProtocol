@@ -1,39 +1,39 @@
-from TISControlProtocol.Protocols import setup_udp_protocol
+import json
+import logging
 import os
+import socket
+from collections import defaultdict
 from datetime import timedelta
-from homeassistant.helpers.event import async_track_time_interval
-from homeassistant.core import HomeAssistant
-
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from typing import Optional
-import aiohttp
 
 import aiofiles
-import socket
-import logging
-from collections import defaultdict
-import json
+import aiohttp
 import psutil
-
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_track_time_interval
 from PIL import Image, ImageDraw, ImageFont
+
+from TISControlProtocol.Protocols import setup_udp_protocol
 from TISControlProtocol.shared import get_real_mac
+
 from .apis import (
-    TISEndPoint,
-    ScanDevicesEndPoint,
-    GetKeyEndpoint,
-    ChangeSecurityPassEndpoint,
-    RestartEndpoint,
-    UpdateEndpoint,
     BillConfigEndpoint,
+    ChangeSecurityPassEndpoint,
     GetBillConfigEndpoint,
-    SubmitPasswordEndpoint,
+    GetKeyEndpoint,
     PasswordsEndpoint,
+    RestartEndpoint,
+    ScanDevicesEndPoint,
+    SubmitPasswordEndpoint,
+    TISEndPoint,
+    UpdateEndpoint,
     setup_views,
 )
 
 try:
-    import ST7789
     import RPi.GPIO as GPIO
+    import ST7789
 
     HAS_ST7789 = True
 except (ImportError, RuntimeError):
@@ -67,6 +67,7 @@ class TISApi:
         self.display = None
         self.version = version
         self.cms_url = "https://cms-tis.com"
+        self._cms_task_unsub = None
 
     async def connect(self):
         """Connect to the TIS API."""
@@ -77,8 +78,8 @@ class TISApi:
             await self._initialize_hass_data()
             await self._register_http_views()
             self.hass.async_add_executor_job(self.run_display)
-            self._register_services()
-            self._schedule_cms_data_task()
+            # self._register_services()
+            # self._schedule_cms_data_task()
         except Exception as e:
             logging.error("Error during connection setup: %s", e)
             raise ConnectionError
@@ -104,7 +105,6 @@ class TISApi:
     async def _register_http_views(self):
         """Register HTTP views."""
         try:
-            # await setup_views(self.hass)
             await setup_views(self.hass)
             self.hass.http.register_view(TISEndPoint(self))
             self.hass.http.register_view(SubmitPasswordEndpoint(self))
@@ -122,6 +122,8 @@ class TISApi:
 
     def _register_services(self):
         """Register Home Assistant services."""
+        if self.hass.services.has_service(self.domain, "send_cms_data"):
+            return
 
         async def handle_cms_data(call):
             data = call.data.get("data", None)
@@ -157,8 +159,20 @@ class TISApi:
             except Exception as e:
                 logging.error(f"Error getting data for CMS: {e}")
 
+        if getattr(self, "_cms_task_unsub", None):
+            self._cms_task_unsub()
+
         interval = timedelta(minutes=3)
-        async_track_time_interval(self.hass, scheduled_task, interval)
+        self._cms_task_unsub = async_track_time_interval(self.hass, scheduled_task, interval)
+
+    def _unregister_cms_services(self):
+        """Unregister CMS service and stop periodic task."""
+        if self.hass.services.has_service(self.domain, "send_cms_data"):
+            self.hass.services.async_remove(self.domain, "send_cms_data")
+
+        if getattr(self, "_cms_task_unsub", None):
+            self._cms_task_unsub()
+            self._cms_task_unsub = None
 
     async def _collect_system_data(self):
         """Collect system data for CMS."""
@@ -272,6 +286,12 @@ class TISApi:
         }
 
         self.config_entries["passwords"] = data.get("passwords", {})
+        self.config_entries["cms"] = data.get("cms", False)
+        if self.config_entries["cms"]:
+            self._register_services()
+            self._schedule_cms_data_task()
+        else:
+            self._unregister_cms_services()
         return self.config_entries
 
     async def get_entities(self, platform: str | None = None) -> list:
