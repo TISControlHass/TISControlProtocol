@@ -1,9 +1,12 @@
-from homeassistant.components.http import HomeAssistantView
-from aiohttp import web
 import asyncio
+import ipaddress
+
+from aiohttp import web
+from homeassistant.components.http import HomeAssistantView
+
 from TISControlProtocol.Protocols.udp.ProtocolHandler import (
-    TISProtocolHandler,
     TISPacket,
+    TISProtocolHandler,
 )
 
 protocol_handler = TISProtocolHandler()
@@ -22,6 +25,14 @@ class ScanDevicesEndPoint(HomeAssistantView):
         self.discovery_packet: TISPacket = protocol_handler.generate_discovery_packet()
 
     async def get(self, request):
+        remote_ip = ipaddress.ip_address(request.remote)
+        is_local = remote_ip.is_private or remote_ip.is_loopback
+
+        if not is_local:
+            return web.json_response(
+                {"error": "Unauthorized: Local network access only"}, status=403
+            )
+
         # Discover network devices
         devices = await self.discover_network_devices()
         devices = [

@@ -1,5 +1,8 @@
-from homeassistant.components.http import HomeAssistantView
+import ipaddress
+
 from aiohttp import web
+from homeassistant.components.http import HomeAssistantView
+
 from TISControlProtocol.shared import get_real_mac
 
 
@@ -15,6 +18,14 @@ class GetKeyEndpoint(HomeAssistantView):
         self.api = tis_api
 
     async def get(self, request):
+        remote_ip = ipaddress.ip_address(request.remote)
+        is_local = remote_ip.is_private or remote_ip.is_loopback
+
+        if not is_local:
+            return web.json_response(
+                {"error": "Unauthorized: Local network access only"}, status=403
+            )
+
         # Get the MAC address
         mac_address = await get_real_mac("end0")
         if mac_address is None:
