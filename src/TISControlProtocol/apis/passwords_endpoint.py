@@ -1,7 +1,8 @@
-from homeassistant.components.http import HomeAssistantView
-from aiohttp import web
-import logging
 import asyncio
+import logging
+
+from aiohttp import web
+from homeassistant.components.http import HomeAssistantView
 
 
 class PasswordsEndpoint(HomeAssistantView):

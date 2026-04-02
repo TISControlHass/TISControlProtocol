@@ -1,6 +1,8 @@
-from homeassistant.components.http import HomeAssistantView
-from aiohttp import web
+import ipaddress
 import logging
+
+from aiohttp import web
+from homeassistant.components.http import HomeAssistantView
 
 
 class GetBillConfigEndpoint(HomeAssistantView):
@@ -14,6 +16,14 @@ class GetBillConfigEndpoint(HomeAssistantView):
         self.tis_api = tis_api
 
     async def get(self, request):
+        remote_ip = ipaddress.ip_address(request.remote)
+        is_local = remote_ip.is_private or remote_ip.is_loopback
+
+        if not is_local:
+            return web.json_response(
+                {"error": "Unauthorized: Local network access only"}, status=403
+            )
+
         try:
             if self.tis_api.bill_configs:
                 configs = self.tis_api.bill_configs

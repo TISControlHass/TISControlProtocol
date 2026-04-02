@@ -1,10 +1,12 @@
-from homeassistant.components.http import HomeAssistantView
-from aiohttp import web
 import asyncio
+import ipaddress
+import json
 import logging
 import os
-import json
+
 import aiofiles
+from aiohttp import web
+from homeassistant.components.http import HomeAssistantView
 
 
 class BillConfigEndpoint(HomeAssistantView):
@@ -18,6 +20,14 @@ class BillConfigEndpoint(HomeAssistantView):
         self.tis_api = tis_api
 
     async def post(self, request):
+        remote_ip = ipaddress.ip_address(request.remote)
+        is_local = remote_ip.is_private or remote_ip.is_loopback
+
+        if not is_local:
+            return web.json_response(
+                {"error": "Unauthorized: Local network access only"}, status=403
+            )
+
         try:
             data = await request.json()
 
@@ -51,5 +61,7 @@ class BillConfigEndpoint(HomeAssistantView):
 
     async def reload_platforms(self):
         # Reload the platforms
-        for entry in self.tis_api.hass.config_entries.async_entries(self.tis_api.domain):
+        for entry in self.tis_api.hass.config_entries.async_entries(
+            self.tis_api.domain
+        ):
             await self.tis_api.hass.config_entries.async_reload(entry.entry_id)

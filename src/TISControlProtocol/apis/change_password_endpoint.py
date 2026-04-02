@@ -1,7 +1,9 @@
-from homeassistant.components.http import HomeAssistantView
-from aiohttp import web
 import asyncio
+import ipaddress
 import logging
+
+from aiohttp import web
+from homeassistant.components.http import HomeAssistantView
 
 
 class ChangeSecurityPassEndpoint(HomeAssistantView):
@@ -15,6 +17,14 @@ class ChangeSecurityPassEndpoint(HomeAssistantView):
         self.tis_api = tis_api
 
     async def post(self, request):
+        remote_ip = ipaddress.ip_address(request.remote)
+        is_local = remote_ip.is_private or remote_ip.is_loopback
+
+        if not is_local:
+            return web.json_response(
+                {"error": "Unauthorized: Local network access only"}, status=403
+            )
+
         try:
             old_pass = request.query.get("old_pass")
             new_pass = request.query.get("new_pass")
