@@ -125,6 +125,8 @@ class TISApi:
         if self.hass.services.has_service(self.domain, "send_cms_data"):
             return
 
+        logging.info("Registering CMS data service")
+
         async def handle_cms_data(call):
             data = call.data.get("data", None)
 
@@ -171,6 +173,8 @@ class TISApi:
         """Unregister CMS service and stop periodic task."""
         if self.hass.services.has_service(self.domain, "send_cms_data"):
             self.hass.services.async_remove(self.domain, "send_cms_data")
+
+        logging.info("CMS data service unregistered")
 
         if getattr(self, "_cms_task_unsub", None):
             self._cms_task_unsub()
