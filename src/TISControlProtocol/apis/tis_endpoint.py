@@ -37,7 +37,7 @@ class TISEndPoint(HomeAssistantView):
 
         # Parse the JSON data from the request body
         try:
-            data = await request.json()
+            data: dict = await request.json()
         except Exception:
             return web.json_response({"error": "Invalid JSON"}, status=400)
 
@@ -55,6 +55,8 @@ class TISEndPoint(HomeAssistantView):
         if mac_address.lower() != local_mac.lower():
             _LOGGER.warning("Unauthorized")
             return web.json_response({"error": "Unauthorized"}, status=403)
+
+        data.pop("mac_address", None) # Remove MAC from data to avoid confusion.
 
         # 3. Process the valid request
         directory = "/config/custom_components/tis_integration/"
