@@ -260,6 +260,33 @@ class TISProtocolHandler:
             ),
         )
 
+    def generate_dali_light_control_packet(
+        self, entity, brightness: int, temperature: int
+    ) -> tuple[TISPacket, TISPacket]:
+        """
+        Generate packets to control a DALI light.
+        :param entity: The entity object containing device information.
+        :param brightness: An integer representing the brightness level.
+        :param temperature: An integer representing the temperature level.
+        :return: A tuple of Packet instances.
+        """
+        return (
+            TISPacket(
+                device_id=entity.device_id,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                source_ip=entity.api.host,
+                destination_ip=entity.gateway,
+                additional_bytes=[entity.brightness_channel, brightness, 0x00, 0x00],
+            ),
+            TISPacket(
+                device_id=entity.device_id,
+                operation_code=TISProtocolHandler.OPERATION_CONTROL,
+                source_ip=entity.api.host,
+                destination_ip=entity.gateway,
+                additional_bytes=[entity.temperature_channel, temperature, 0x00, 0x00],
+            ),
+        )
+
     def generate_no_pos_cover_packet(
         self, entity, mode: Literal["open", "close", "stop"]
     ) -> tuple[TISPacket, TISPacket]:
