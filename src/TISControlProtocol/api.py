@@ -232,14 +232,17 @@ class TISApi:
                     offset_left=0,
                     offset_top=0,
                 )
+                GPIO.setwarnings(False)
                 GPIO.setmode(GPIO.BCM)
                 GPIO.setup(12, GPIO.OUT)
-                pwm = GPIO.PWM(12, 1000)
-                pwm.start(100)
+                self._display_pwm = GPIO.PWM(12, 1000)
+                self._display_pwm.start(100)
 
                 # Initialize display.
                 self.display.begin()
                 self.set_display_image()
+            else:
+                logging.error("Can't start display, some packages are missing")
 
         except Exception as e:
             logging.error(f"error initializing display, {e}")
@@ -256,7 +259,6 @@ class TISApi:
             draw.text((x, y), version_text, font=font, fill=(255, 255, 255))
             img = img.rotate(-90, expand=True)
 
-            self.display.set_backlight(0)
             self.display.display(img)
 
     async def parse_device_manager_request(self, data: dict) -> None:
