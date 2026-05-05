@@ -36,8 +36,11 @@ try:
     import ST7789
 
     HAS_ST7789 = True
-except (ImportError, RuntimeError):
+except (ImportError, RuntimeError) as e:
     HAS_ST7789 = False
+    logging.error(
+        "Failed to load display dependencies. Display will be disabled. Error: %s", e
+    )
 
 
 class TISApi:
