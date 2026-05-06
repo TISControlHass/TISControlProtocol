@@ -32,11 +32,13 @@ from .apis import (
 )
 
 try:
-    import RPi.GPIO as GPIO
-    import ST7789
+    import board
+    import digitalio
+    import busio
+    from adafruit_rgb_display import st7789
 
     HAS_ST7789 = True
-except (ImportError, RuntimeError) as e:
+except (ImportError, RuntimeError, NotImplementedError) as e:
     HAS_ST7789 = False
     logging.error(
         "Failed to load display dependencies. Display will be disabled. Error: %s", e
@@ -219,27 +221,32 @@ class TISApi:
     def run_display(self, style="dots"):
         try:
             if HAS_ST7789:
-                self.display = ST7789.ST7789(
+                # 1. Initialize the SPI bus
+                spi = board.SPI()
+
+                # 2. Define the GPIO pins
+                cs_pin = digitalio.DigitalInOut(board.CE0)
+                dc_pin = digitalio.DigitalInOut(board.D23)
+                rst_pin = digitalio.DigitalInOut(board.D25)
+                bl_pin = digitalio.DigitalInOut(board.D12)
+
+                # 3. Turn on the backlight physically
+                bl_pin.direction = digitalio.Direction.OUTPUT
+                bl_pin.value = True
+                self._bl_pin = bl_pin  # Store to prevent garbage collection
+
+                # 4. Initialize the ST7789 Display
+                self.display = st7789.ST7789(
+                    spi,
+                    cs=cs_pin,
+                    dc=dc_pin,
+                    rst=rst_pin,
+                    baudrate=60000000,
                     width=320,
                     height=240,
-                    rotation=0,
-                    port=0,
-                    cs=0,
-                    dc=23,
-                    rst=25,
-                    backlight=12,
-                    spi_speed_hz=60 * 1000 * 1000,
-                    offset_left=0,
-                    offset_top=0,
+                    rotation=0
                 )
-                GPIO.setwarnings(False)
-                GPIO.setmode(GPIO.BCM)
-                GPIO.setup(12, GPIO.OUT)
-                self._display_pwm = GPIO.PWM(12, 1000)
-                self._display_pwm.start(100)
 
-                # Initialize display.
-                self.display.begin()
                 self.set_display_image()
             else:
                 logging.error("Can't start display, some packages are missing")
@@ -254,12 +261,16 @@ class TISApi:
             version_text = f"V {self.version}"
 
             draw = ImageDraw.Draw(img)
-            font = ImageFont.load_default(size=28)
+            try:
+                font = ImageFont.load_default(size=28)
+            except TypeError:
+                font = ImageFont.load_default()
+            
             x, y = 78, 235
             draw.text((x, y), version_text, font=font, fill=(255, 255, 255))
             img = img.rotate(-90, expand=True)
 
-            self.display.display(img)
+            self.display.image(img)
 
     async def parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""
