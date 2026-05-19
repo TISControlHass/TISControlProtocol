@@ -12,7 +12,6 @@ import psutil
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_track_time_interval
-from PIL import Image, ImageDraw, ImageFont
 
 from TISControlProtocol.Protocols import setup_udp_protocol
 from TISControlProtocol.shared import get_real_mac
@@ -30,19 +29,6 @@ from .apis import (
     UpdateEndpoint,
     setup_views,
 )
-
-try:
-    import time
-    import spidev
-    import gpiod
-    from gpiod.line import Direction, Value
-
-    HAS_ST7789 = True
-except (ImportError, RuntimeError) as e:
-    HAS_ST7789 = False
-    logging.error(
-        "Failed to load display dependencies. Display will be disabled. Error: %s", e
-    )
 
 
 class TISApi:
@@ -218,105 +204,13 @@ class TISApi:
             "ram_percent": mem.percent,
         }
 
-    def send_command(self, cmd):
-        self.gpio_request.set_value(23, Value.INACTIVE) # Command mode (0)
-        self.spi.xfer2([cmd])
-
-    def send_data(self, data):
-        self.gpio_request.set_value(23, Value.ACTIVE) # Data mode (1)
-        self.spi.xfer2(list(data))
-
-    def init_display(self):
-        # Hardware Reset
-        self.gpio_request.set_value(25, Value.INACTIVE)
-        time.sleep(0.1)
-        self.gpio_request.set_value(25, Value.ACTIVE)
-        time.sleep(0.1)
-
-        # ST7789 Initialization Sequence
-        self.send_command(0x11) # Sleep out
-        time.sleep(0.12)
-
-        self.send_command(0x3A) # Color mode 16-bit
-        self.send_data([0x55]) # 0x55 for RGB565
-
-        self.send_command(0x36) # Memory Access Control (MADCTL)
-        self.send_data([0x00]) # Normal rotation
-
-        self.send_command(0x29) # Display on
-        time.sleep(0.1)
-
-    def set_window(self, x1, y1, x2, y2):
-        self.send_command(0x2A) # Column Address Set
-        self.send_data([x1 >> 8, x1 & 0xFF, x2 >> 8, x2 & 0xFF])
-
-        self.send_command(0x2B) # Row Address Set
-        self.send_data([y1 >> 8, y1 & 0xFF, y2 >> 8, y2 & 0xFF])
-
     def run_display(self, style="dots"):
-        try:
-            if HAS_ST7789:
-                # Initialize SPI Bus
-                self.spi = spidev.SpiDev()
-                self.spi.open(0, 0)
-                self.spi.max_speed_hz = 30 * 1000 * 1000  # 30 MHz (conservative and stable)
-                self.spi.mode = 0b00
+        from .display import TISDisplay
 
-                # Open and request GPIO lines using gpiod v2 API
-                self.gpio_request = gpiod.request_lines(
-                    "/dev/gpiochip0",
-                    consumer="display",
-                    config={
-                        23: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=Value.INACTIVE),
-                        25: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=Value.ACTIVE),
-                        12: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=Value.ACTIVE),
-                    },
-                )
-
-                self.init_display()
-                self.set_display_image()
-            else:
-                logging.error("Can't start display, some packages are missing")
-
-        except Exception as e:
-            logging.error(f"error initializing display, {e}")
-            return
-
-    def set_display_image(self):
-        if self.display_logo:
-            img = Image.open(self.display_logo).convert("RGB")
-            version_text = f"V {self.version}"
-
-            draw = ImageDraw.Draw(img)
-            try:
-                font = ImageFont.load_default(size=28)
-            except TypeError:
-                font = ImageFont.load_default()
+        if self.display is None:
+            self.display = TISDisplay(self.display_logo, self.version)
             
-            x, y = 78, 235
-            draw.text((x, y), version_text, font=font, fill=(255, 255, 255))
-            img = img.rotate(-90, expand=True)
-
-            # Convert image to RGB565 (16-bit)
-            img_bytes = []
-            for y in range(img.height):
-                for x in range(img.width):
-                    r, g, b = img.getpixel((x, y))
-                    # Pack into RGB565 format
-                    rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
-                    img_bytes.append((rgb565 >> 8) & 0xFF)
-                    img_bytes.append(rgb565 & 0xFF)
-
-            # Send pixel data
-            self.set_window(0, 0, img.width - 1, img.height - 1)
-            self.send_command(0x2C) # Memory Write
-
-            # Send in chunks to avoid overwhelming the SPI buffer
-            chunk_size = 4096
-            for i in range(0, len(img_bytes), chunk_size):
-                chunk = img_bytes[i:i + chunk_size]
-                self.gpio_request.set_value(23, Value.ACTIVE) # Data mode
-                self.spi.xfer2(chunk)
+        self.display.run_display()
 
     async def parse_device_manager_request(self, data: dict) -> None:
         """Parse the device manager request."""
