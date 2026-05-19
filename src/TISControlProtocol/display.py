@@ -26,6 +26,7 @@ class TISDisplay:
         self.req_dc = None
         self.req_rst = None
         self.global_req_blk = None
+        self.chip0 = None
 
     def _set_pin(self, pin, value):
         try:
@@ -159,8 +160,8 @@ class TISDisplay:
                 )
 
                 try:
-                    chip0 = gpiod.Chip("/dev/gpiochip0")
-                    self.global_req_blk = chip0.request_lines(
+                    self.chip0 = gpiod.Chip("/dev/gpiochip0")
+                    self.global_req_blk = self.chip0.request_lines(
                         config={12: gpiod.LineSettings(direction=Direction.OUTPUT)}
                     )
                     self.global_req_blk.set_value(12, Value.INACTIVE)
