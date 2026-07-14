@@ -278,6 +278,7 @@ class TISApi:
         else:
             self._unregister_cms_services()
 
+        self.config_entries["connected"] = bool(data["configs"].get("connected", True))
         if not self.config_entries["connected"]:
             await self.disconnect()
         return self.config_entries
