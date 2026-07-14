@@ -277,6 +277,9 @@ class TISApi:
             self._schedule_cms_data_task()
         else:
             self._unregister_cms_services()
+
+        if not self.config_entries["connected"]:
+            await self.disconnect()
         return self.config_entries
 
     async def get_entities(self, platform: str | None = None) -> list:
