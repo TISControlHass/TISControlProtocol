@@ -82,6 +82,8 @@ class TISApi:
             await self._setup_udp_protocol()
         except Exception:
             self.sock.close()
+            self.sock = None
+            self.loop = None
             raise
 
     async def disconnect(self):
@@ -89,6 +91,8 @@ class TISApi:
         if self.transport:
             self.transport.close()
             self.transport = None
+        self.protocol = None
+        self.loop = None
         if hasattr(self, "sock") and self.sock:
             self.sock.close()
             self.sock = None
