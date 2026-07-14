@@ -47,8 +47,10 @@ class TISApi:
         """Initialize the API class."""
         self.host = host
         self.port = port
+        self.loop = None
         self.protocol = None
         self.transport = None
+        self.sock = None
         self.hass = hass
         self.config_entries = {}
         self.bill_configs = {}
