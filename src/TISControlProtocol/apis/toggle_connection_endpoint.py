@@ -38,6 +38,10 @@ class ToggleConnectionEndpoint(HomeAssistantView):
             logging.info("Disconnecting from TIS API")
             try:
                 await self.tis_api.disconnect()
+                directory = "/config/custom_components/tis_integration/"
+                data = await self.tis_api.read_appliances(directory=directory)
+                data.setdefault("configs", {})["connected"] = False
+                await self.tis_api.save_appliances(data, directory)
                 return web.json_response({"message": "Disconnected"}, status=200)
             except Exception as e:
                 logging.error(f"Error disconnecting: {e}")
@@ -46,6 +50,10 @@ class ToggleConnectionEndpoint(HomeAssistantView):
             logging.info("Connecting to TIS API")
             try:
                 await self.tis_api.connect()
+                directory = "/config/custom_components/tis_integration/"
+                data = await self.tis_api.read_appliances(directory=directory)
+                data.setdefault("configs", {})["connected"] = True
+                await self.tis_api.save_appliances(data, directory)
                 return web.json_response({"message": "Connected"}, status=200)
             except Exception as e:
                 logging.error(f"Error connecting: {e}")
