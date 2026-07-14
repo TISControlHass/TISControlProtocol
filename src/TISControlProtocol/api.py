@@ -60,20 +60,35 @@ class TISApi:
         self.cms_url = "https://cms-tis.com"
         self._cms_task_unsub = None
 
+    async def setup(self):
+        """Setup the TIS API."""
+        try:
+            await self.connect()
+            await self._initialize_hass_data()
+            await self._register_http_views()
+            self.hass.async_add_executor_job(self.run_display)
+        except Exception as e:
+            logging.error("Error during setup: %s", e)
+
     async def connect(self):
         """Connect to the TIS API."""
         self.loop = self.hass.loop
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
         try:
             await self._setup_udp_protocol()
-            await self._initialize_hass_data()
-            await self._register_http_views()
-            self.hass.async_add_executor_job(self.run_display)
-            # self._register_services()
-            # self._schedule_cms_data_task()
-        except Exception as e:
-            logging.error("Error during connection setup: %s", e)
-            raise ConnectionError
+        except Exception:
+            self.sock.close()
+            raise
+
+    async def disconnect(self):
+        """Disconnect from the TIS API."""
+        if self.transport:
+            self.transport.close()
+            self.transport = None
+        if hasattr(self, "sock") and self.sock:
+            self.sock.close()
+            self.sock = None
 
     async def _setup_udp_protocol(self):
         """Setup the UDP protocol."""
@@ -209,7 +224,7 @@ class TISApi:
 
         if self.display is None:
             self.display = TISDisplay(self.display_logo, self.version)
-            
+
         self.display.run_display()
 
     async def parse_device_manager_request(self, data: dict) -> None:
