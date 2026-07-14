@@ -19,6 +19,7 @@ from TISControlProtocol.shared import get_real_mac
 from .apis import (
     BillConfigEndpoint,
     ChangeSecurityPassEndpoint,
+    ToggleConnectionEndpoint,
     GetBillConfigEndpoint,
     GetKeyEndpoint,
     PasswordsEndpoint,
@@ -124,6 +125,7 @@ class TISApi:
             self.hass.http.register_view(BillConfigEndpoint(self))
             self.hass.http.register_view(GetBillConfigEndpoint(self))
             self.hass.http.register_view(PasswordsEndpoint(self))
+            self.hass.http.register_view(ToggleConnectionEndpoint(self))
         except Exception as e:
             logging.error("Error registering views %s", e)
             raise ConnectionError
