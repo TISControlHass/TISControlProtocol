@@ -56,7 +56,7 @@ class TISEndPoint(HomeAssistantView):
             _LOGGER.warning("Unauthorized")
             return web.json_response({"error": "Unauthorized"}, status=403)
 
-        data.pop("mac_address", None) # Remove MAC from data to avoid confusion.
+        data.pop("mac_address", None)  # Remove MAC from data to avoid confusion.
 
         # 3. Process the valid request
         directory = "/config/custom_components/tis_integration/"

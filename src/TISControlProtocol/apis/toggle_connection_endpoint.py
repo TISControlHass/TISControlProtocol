@@ -1,7 +1,10 @@
-from homeassistant.components.http import HomeAssistantView
-from aiohttp import web
-from TISControlProtocol.shared import get_real_mac
+import asyncio
 import logging
+
+from aiohttp import web
+from homeassistant.components.http import HomeAssistantView
+
+from TISControlProtocol.shared import get_real_mac
 
 
 class ToggleConnectionEndpoint(HomeAssistantView):
@@ -42,6 +45,7 @@ class ToggleConnectionEndpoint(HomeAssistantView):
                 data = await self.tis_api.read_appliances(directory=directory)
                 data.setdefault("configs", {})["connected"] = False
                 await self.tis_api.save_appliances(data, directory)
+                asyncio.create_task(self.reload_platforms())
                 return web.json_response({"message": "Disconnected"}, status=200)
             except Exception as e:
                 logging.error(f"Error disconnecting: {e}")
@@ -54,7 +58,13 @@ class ToggleConnectionEndpoint(HomeAssistantView):
                 data = await self.tis_api.read_appliances(directory=directory)
                 data.setdefault("configs", {})["connected"] = True
                 await self.tis_api.save_appliances(data, directory)
+                asyncio.create_task(self.reload_platforms())
                 return web.json_response({"message": "Connected"}, status=200)
             except Exception as e:
                 logging.error(f"Error connecting: {e}")
                 return web.json_response({"error": "Failed to connect"}, status=500)
+
+    async def reload_platforms(self):
+        """Reload the platforms."""
+        for entry in self.api.hass.config_entries.async_entries(self.api.domain):
+            await self.api.hass.config_entries.async_reload(entry.entry_id)
