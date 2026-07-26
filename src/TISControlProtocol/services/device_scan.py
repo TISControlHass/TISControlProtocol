@@ -40,6 +40,7 @@ class DeviceScanService(BaseService):
         """Start periodic device scanning."""
         if self.is_running:
             return
+        self._register_services()
         self._schedule_scan_task()
         self.is_running = True
 
@@ -47,10 +48,35 @@ class DeviceScanService(BaseService):
         """Stop periodic device scanning."""
         if not self.is_running:
             return
+        self._unregister_services()
+        self.is_running = False
+
+    def _register_services(self) -> None:
+        """Register Home Assistant services."""
+        if self.hass.services.has_service(self.domain, "scan_devices"):
+            return
+
+        logging.info("Registering Device Scan service")
+
+        async def handle_scan_devices(call):
+            await self.scan_and_send()
+
+        self.hass.services.async_register(
+            self.domain,
+            "scan_devices",
+            handle_scan_devices,
+        )
+
+    def _unregister_services(self) -> None:
+        """Unregister Device Scan service and stop periodic task."""
+        if self.hass.services.has_service(self.domain, "scan_devices"):
+            self.hass.services.async_remove(self.domain, "scan_devices")
+
+        logging.info("Device Scan service unregistered")
+
         if self._scan_task_unsub:
             self._scan_task_unsub()
             self._scan_task_unsub = None
-        self.is_running = False
 
     def _schedule_scan_task(self) -> None:
         """Schedule 30-minute device scanning task."""
