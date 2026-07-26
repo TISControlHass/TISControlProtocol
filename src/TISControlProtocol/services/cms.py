@@ -1,6 +1,5 @@
 import logging
 from datetime import timedelta
-from typing import Optional
 
 import aiohttp
 import psutil
@@ -9,6 +8,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_track_time_interval
 
 from TISControlProtocol.shared import get_real_mac
+
 from .base import BaseService
 
 

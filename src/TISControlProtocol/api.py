@@ -10,12 +10,9 @@ from homeassistant.core import HomeAssistant
 
 from TISControlProtocol.Protocols import setup_udp_protocol
 
-from .services import CMSService, ServiceManager
-
 from .apis import (
     BillConfigEndpoint,
     ChangeSecurityPassEndpoint,
-    ToggleConnectionEndpoint,
     GetBillConfigEndpoint,
     GetKeyEndpoint,
     PasswordsEndpoint,
@@ -23,9 +20,11 @@ from .apis import (
     ScanDevicesEndPoint,
     SubmitPasswordEndpoint,
     TISEndPoint,
+    ToggleConnectionEndpoint,
     UpdateEndpoint,
     setup_views,
 )
+from .services import CMSService, ServiceManager
 
 
 class TISApi:
