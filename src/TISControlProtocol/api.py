@@ -24,7 +24,7 @@ from .apis import (
     UpdateEndpoint,
     setup_views,
 )
-from .services import CMSService, ServiceManager
+from .services import CMSService, DeviceScanService, ServiceManager
 
 
 class TISApi:
@@ -58,6 +58,9 @@ class TISApi:
         self.cms_url = "https://cms-tis.com"
         self.service_manager = ServiceManager(self.hass, self.domain)
         self.service_manager.register(CMSService(self.hass, self.domain, self.cms_url))
+        self.service_manager.register(
+            DeviceScanService(self.hass, self.domain, self, self.cms_url)
+        )
 
     async def setup(self):
         """Setup the TIS API."""
@@ -176,6 +179,7 @@ class TISApi:
         self.config_entries["passwords"] = data.get("passwords", {})
         self.config_entries["cms"] = bool(data["configs"].get("cms_send_data", False))
         self.service_manager.toggle("cms", self.config_entries["cms"])
+        self.service_manager.toggle("scan_devices", self.config_entries["cms"])
 
         self.config_entries["connected"] = bool(data["configs"].get("connected", True))
         if not self.config_entries["connected"]:
