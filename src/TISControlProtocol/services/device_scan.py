@@ -16,6 +16,18 @@ from .cms import CMSDataSender
 protocol_handler = TISProtocolHandler()
 
 
+class TISDevice:
+    def __init__(self, tis_api, device) -> None:
+        self.api = tis_api
+        self.device_id = device["device_id"]
+        self.device_type_code = device["device_type"]
+        self.device_type_name = self.api.devices_dict.get(
+            tuple(device["device_type"]),
+            tuple(device["device_type"]),
+        )
+        self.gateway = device["gateway"]
+
+
 class DeviceScanService(BaseService):
     """Service to periodically scan TIS network devices and report to CMS."""
 
@@ -98,17 +110,15 @@ class DeviceScanService(BaseService):
     async def scan_and_send(self) -> bool:
         """Perform network device scan and send payload to CMS."""
         logging.info("Starting periodic device scan for CMS")
-        raw_devices = await self.discover_network_devices()
+        connected_devices = await self.discover_network_devices()
         devices = [
             {
-                "device_id": device["device_id"],
-                "device_type_code": device["device_type"],
-                "device_type_name": self.api.devices_dict.get(
-                    tuple(device["device_type"]), tuple(device["device_type"])
-                ),
-                "gateway": device["source_ip"],
+                "device_id": device.device_id,
+                "device_type_code": device.device_type_code,
+                "device_type_name": device.device_type_name,
+                "gateway": device.gateway,
             }
-            for device in raw_devices
+            for device in connected_devices
         ]
 
         mac_address = await get_real_mac("end0")
@@ -119,16 +129,14 @@ class DeviceScanService(BaseService):
 
         return await self.sender.send_data(payload)
 
-    async def discover_network_devices(self, broadcast_attempts: int = 30) -> list:
+    async def discover_network_devices(self, attempts=5) -> list:
         """Discover network devices by broadcasting discovery packets."""
         self.api.hass.data[self.api.domain]["discovered_devices"] = []
-        for _ in range(broadcast_attempts):
-            if (
-                self.api.protocol
-                and hasattr(self.api.protocol, "sender")
-                and self.api.protocol.sender
-            ):
-                await self.api.protocol.sender.broadcast_packet(self.discovery_packet)
-            await asyncio.sleep(1)
 
+        for device_dict in self.api.raw_devices:
+            device = TISDevice(self.api, device_dict)
+            packet = protocol_handler.generate_heartbeat_packet(device)
+            await self.api.protocol.sender.send_packet_with_ack(
+                packet, attempts=attempts
+            )
         return self.api.hass.data[self.api.domain]["discovered_devices"]
