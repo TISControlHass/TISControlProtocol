@@ -540,3 +540,12 @@ class TISProtocolHandler:
             destination_ip=entity.gateway,
             additional_bytes=[entity.channel_number, entity.universal_type],
         )
+
+    def generate_heartbeat_packet(self, device) -> TISPacket:
+        return TISPacket(
+            device_id=device.device_id,
+            operation_code=TISProtocolHandler.OPERATION_DISCOVERY,
+            source_ip=device.api.host,
+            destination_ip=device.gateway,
+            additional_bytes=[],
+        )
