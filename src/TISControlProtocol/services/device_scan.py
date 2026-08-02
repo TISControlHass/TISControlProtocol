@@ -42,7 +42,6 @@ class DeviceScanService(BaseService):
         self.api = tis_api
         self.cms_url = cms_url
         self._scan_task_unsub = None
-        self.discovery_packet = protocol_handler.generate_discovery_packet()
         self.sender = CMSDataSender(
             external_url=f"{self.cms_url}/api/scan-devices",
             hass=self.hass,
