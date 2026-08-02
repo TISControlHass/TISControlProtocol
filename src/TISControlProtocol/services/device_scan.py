@@ -113,10 +113,12 @@ class DeviceScanService(BaseService):
         connected_devices = await self.discover_network_devices()
         devices = [
             {
-                "device_id": device.device_id,
-                "device_type_code": device.device_type_code,
-                "device_type_name": device.device_type_name,
-                "gateway": device.gateway,
+                "device_id": device["device_id"],
+                "device_type_code": device["device_type"],
+                "device_type_name": self.api.devices_dict.get(
+                    tuple(device["device_type"]), tuple(device["device_type"])
+                ),
+                "gateway": device["source_ip"],
             }
             for device in connected_devices
         ]
