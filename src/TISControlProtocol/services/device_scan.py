@@ -19,13 +19,10 @@ protocol_handler = TISProtocolHandler()
 class TISDevice:
     def __init__(self, tis_api, device) -> None:
         self.api = tis_api
-        self.device_id = device["device_id"]
-        self.device_type_code = device["device_type"]
-        self.device_type_name = self.api.devices_dict.get(
-            tuple(device["device_type"]),
-            tuple(device["device_type"]),
-        )
-        self.gateway = device["gateway"]
+        self.device_id = list(device["device_address"])
+        self.device_type_code = device["device_type_code"]
+        self.device_type_name = device["device_name"]
+        self.gateway = str(device["gateway"])
 
 
 class DeviceScanService(BaseService):
