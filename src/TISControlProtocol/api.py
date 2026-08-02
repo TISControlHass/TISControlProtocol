@@ -166,6 +166,9 @@ class TISApi:
             for appliance, details in data["appliances"].items()
         }
 
+        self.raw_devices = data["devices"]
+        logging.info(f"raw devices: {self.raw_devices}")
+
         grouped = defaultdict(list)
         for appliance, details in converted.items():
             grouped[details["appliance_type"]].append({appliance: details})
