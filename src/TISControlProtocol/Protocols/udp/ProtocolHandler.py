@@ -547,5 +547,5 @@ class TISProtocolHandler:
             operation_code=TISProtocolHandler.OPERATION_DISCOVERY,
             source_ip=device.api.host,
             destination_ip=device.gateway,
-            additional_bytes=[],
+            additional_bytes=[0],
         )
