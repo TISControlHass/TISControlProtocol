@@ -19,7 +19,11 @@ protocol_handler = TISProtocolHandler()
 class TISDevice:
     def __init__(self, tis_api, device) -> None:
         self.api = tis_api
-        self.device_id = list(device["device_address"])
+        addr = device["device_address"]
+        if isinstance(addr, str):
+            self.device_id = [int(x.strip()) for x in addr.split(",") if x.strip()]
+        else:
+            self.device_id = [int(x) for x in addr]
         self.device_type_code = device["device_type_code"]
         self.device_type_name = device["device_name"]
         self.gateway = str(device["gateway"])
