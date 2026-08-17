@@ -64,7 +64,7 @@ async def handle_weather_feedback(hass: HomeAssistant, info: dict):
 
     event_data = {
         "device_id": device_id,
-        "feedback_type": "health_feedback",
+        "feedback_type": "weather_feedback",
         "wind": wind_direction,
         "temperature": temperature,
         "humidity": humidity,
@@ -80,4 +80,4 @@ async def handle_weather_feedback(hass: HomeAssistant, info: dict):
         hass.bus.async_fire(str(info["device_id"]), event_data)
 
     except Exception as e:
-        logging.error(f"error in firing event for feedback health: {e}")
+        logging.error(f"error in firing event for feedback weather: {e}")
