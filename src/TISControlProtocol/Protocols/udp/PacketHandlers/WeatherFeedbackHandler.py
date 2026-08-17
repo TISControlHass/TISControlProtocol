@@ -16,7 +16,7 @@ wind_direction_dict = {
 
 def big_endian_to_float(value):
     binary = value.to_bytes(4, "big")
-    float_value = struct.unpack(".>f", binary)
+    float_value = struct.unpack(">f", binary)[0]
     return float_value
 
 
