@@ -18,7 +18,6 @@ class PacketReceiver:
         self._hass = hass
         self.dispatcher = PacketDispatcher(self._hass, OPERATIONS_DICT)
         self.transport = None
-        self
 
     def connection_made(self, transport):
         self.transport = transport
